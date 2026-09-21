@@ -1,0 +1,216 @@
+/*
+  Editor layout: top bar, tool rail, workspace, side panel and page strip.
+*/
+
+.editor {
+  display: grid;
+  grid-template-columns: var(--rail-width) 1fr var(--panel-width);
+  grid-template-rows: var(--topbar-height) 1fr var(--pages-height);
+  grid-template-areas:
+    "top top top"
+    "rail work panel"
+    "pages pages pages";
+  height: 100vh;
+  background: var(--bg);
+}
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.topbar__name {
+  width: 220px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-weight: 600;
+}
+
+.topbar__name:hover {
+  border-color: var(--border);
+}
+
+.topbar__name:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.zoom-select {
+  width: 84px;
+  height: 30px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.rail__tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.rail__tool:hover {
+  background: var(--bg-muted);
+  color: var(--text);
+}
+
+.rail__tool--active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.workspace {
+  grid-area: work;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-workspace);
+}
+
+.workspace--text {
+  cursor: text;
+}
+
+.workspace canvas {
+  display: block;
+}
+
+.text-edit {
+  margin: 0;
+  padding: 0;
+  border: 1px dashed var(--accent);
+  background: transparent;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  z-index: 5;
+}
+
+.pages {
+  grid-area: pages;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  overflow-x: auto;
+}
+
+.pages__list {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.page-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 150px;
+  height: 56px;
+  padding: 6px 10px 6px 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  text-align: left;
+}
+
+.page-card:hover {
+  border-color: var(--border-strong);
+}
+
+.page-card--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.page-card--add {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  padding: 6px 12px;
+  color: var(--text-muted);
+}
+
+.page-card__index {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.page-card__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.page-card__input {
+  height: 24px;
+  width: 130px;
+}
+
+.page-card__actions {
+  position: absolute;
+  right: 4px;
+  top: -14px;
+  display: none;
+  gap: 0;
+  padding: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.page-card__actions .icon-btn {
+  width: 24px;
+  height: 24px;
+}
+
+.page-card:hover .page-card__actions,
+.page-card:focus-within .page-card__actions {
+  display: flex;
+}

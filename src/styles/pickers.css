@@ -1,0 +1,91 @@
+/*
+  Colour and font pickers inside the side panel.
+*/
+
+.color-field {
+  position: relative;
+}
+
+.color-preview--none {
+  background:
+    linear-gradient(45deg, transparent 45%, var(--danger) 45%, var(--danger) 55%, transparent 55%);
+}
+
+.color-popover {
+  position: absolute;
+  left: 0;
+  top: 54px;
+  z-index: 20;
+  width: 252px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.color-grid--scroll {
+  max-height: 210px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.color-native {
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.font-picker {
+  position: relative;
+}
+
+.font-picker__value {
+  justify-content: flex-start;
+}
+
+.font-picker__list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58px;
+  z-index: 20;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.font-picker__scroll {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.font-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.font-picker__item:hover {
+  background: var(--bg-muted);
+}
+
+.font-picker__item--active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}

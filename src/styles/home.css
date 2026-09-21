@@ -1,0 +1,215 @@
+/*
+  Home page, new project page and shared page level layout.
+*/
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home,
+.new-project {
+  padding: 0 24px 64px;
+}
+
+.home__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topbar-height);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 24px auto 48px;
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero__title {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.hero__lead {
+  font-size: 20px;
+  max-width: 640px;
+}
+
+.hero__sub {
+  max-width: 640px;
+}
+
+.home__projects {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.home__heading {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  overflow: visible;
+}
+
+.project-card__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.project-card__thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.project-card__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.project-card__name {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card__menu {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  z-index: 10;
+  min-width: 140px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.menu__item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu__item:hover {
+  background: var(--bg-muted);
+  text-decoration: none;
+}
+
+.menu__item--danger {
+  color: var(--danger);
+}
+
+.new-project__body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 24px auto 0;
+}
+
+.new-project__title {
+  grid-column: 1 / -1;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.new-project__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-self: start;
+  position: sticky;
+  top: 16px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset:hover {
+  border-color: var(--border-strong);
+}
+
+.preset--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preset__shape {
+  display: block;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.preset__name {
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .new-project__body {
+    grid-template-columns: 1fr;
+  }
+
+  .new-project__form {
+    position: static;
+  }
+}
