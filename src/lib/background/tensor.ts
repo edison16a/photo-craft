@@ -5,22 +5,22 @@
  * the worker, so this file can be unit tested on its own.
  */
 
-/** The model takes a square of this many pixels on each side. */
+/** Input square of the small model, and the default for the helpers here. */
 export const MODEL_INPUT_SIZE = 320;
 
-/** ImageNet channel means the model was trained with, as RGB fractions. */
-const MEAN = [0.485, 0.456, 0.406];
+/** ImageNet channel means the models were trained with, as RGB fractions. */
+const MEAN: readonly number[] = [0.485, 0.456, 0.406];
 /** ImageNet channel deviations, matching MEAN. */
-const STD = [0.229, 0.224, 0.225];
+const STD: readonly number[] = [0.229, 0.224, 0.225];
 
 /**
- * Turns RGBA pixels of a MODEL_INPUT_SIZE square into the model's input:
- * planar RGB, each channel normalised by the ImageNet mean and deviation.
- * Values are scaled by the brightest channel value in the picture rather
- * than a fixed 255, the same as the reference implementation, so a dim
- * picture is stretched before it is judged.
+ * Turns RGBA pixels of a size by size square into the model's input:
+ * planar RGB, each channel offset by mean and divided by std. Values are
+ * scaled by the brightest channel value in the picture rather than a
+ * fixed 255, the same as the reference implementation, so a dim picture
+ * is stretched before it is judged.
  */
-export function pixelsToTensor(pixels: Uint8ClampedArray, size: number = MODEL_INPUT_SIZE): Float32Array {
+export function pixelsToTensor(pixels: Uint8ClampedArray, size: number = MODEL_INPUT_SIZE, mean: readonly number[] = MEAN, std: readonly number[] = STD): Float32Array {
   const area = size * size;
   if (pixels.length !== area * 4) throw new Error(`Expected ${area * 4} bytes of RGBA, got ${pixels.length}.`);
   let brightest = 1;
@@ -30,9 +30,9 @@ export function pixelsToTensor(pixels: Uint8ClampedArray, size: number = MODEL_I
   }
   const tensor = new Float32Array(3 * area);
   for (let pixel = 0, byte = 0; pixel < area; pixel += 1, byte += 4) {
-    tensor[pixel] = (pixels[byte] / brightest - MEAN[0]) / STD[0];
-    tensor[area + pixel] = (pixels[byte + 1] / brightest - MEAN[1]) / STD[1];
-    tensor[2 * area + pixel] = (pixels[byte + 2] / brightest - MEAN[2]) / STD[2];
+    tensor[pixel] = (pixels[byte] / brightest - mean[0]) / std[0];
+    tensor[area + pixel] = (pixels[byte + 1] / brightest - mean[1]) / std[1];
+    tensor[2 * area + pixel] = (pixels[byte + 2] / brightest - mean[2]) / std[2];
   }
   return tensor;
 }

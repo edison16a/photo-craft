@@ -18,8 +18,11 @@ export interface RemovalProgressState {
   ready: boolean;
   /** Ids of jobs waiting or running, oldest first. */
   pending: number[];
+  /** Which engine runs the model, once known. */
+  backend: "webgpu" | "wasm" | null;
 
   setPhase: (phase: RemovalPhase | null, loaded?: number, total?: number) => void;
+  setBackend: (backend: "webgpu" | "wasm") => void;
   setReady: () => void;
   addPending: (id: number) => void;
   removePending: (id: number) => void;
@@ -32,8 +35,10 @@ export const useRemovalProgressStore = create<RemovalProgressState>()((set) => (
   total: 0,
   ready: false,
   pending: [],
+  backend: null,
 
   setPhase: (phase, loaded = 0, total = 0) => set({ phase, loaded, total }),
+  setBackend: (backend) => set({ backend }),
   setReady: () => set({ ready: true }),
   addPending: (id) => set((state) => ({ pending: [...state.pending, id] })),
   removePending: (id) => set((state) => ({ pending: state.pending.filter((candidate) => candidate !== id) })),
@@ -43,9 +48,16 @@ export const useRemovalProgressStore = create<RemovalProgressState>()((set) => (
 export function describeRemovalPhase(state: Pick<RemovalProgressState, "phase" | "loaded" | "total">): string | null {
   if (state.phase === "download") {
     const percent = state.total > 0 ? Math.round((state.loaded / state.total) * 100) : null;
-    return percent === null ? "Downloading the model" : `Downloading the model ${percent}%`;
+    const size = state.total > 0 ? ` of ${Math.round(state.total / 1000000)} MB` : "";
+    return percent === null ? "Downloading the model" : `Downloading the model ${percent}%${size}`;
   }
   if (state.phase === "load") return "Loading the model";
   if (state.phase === "run") return "Removing background";
   return null;
+}
+
+/** One line on what is doing the work, once that is known. */
+export function describeRemovalEngine(state: Pick<RemovalProgressState, "backend">): string | null {
+  if (!state.backend) return null;
+  return state.backend === "webgpu" ? "Running on your graphics card." : "Running on the processor. A browser with graphics card access is faster.";
 }

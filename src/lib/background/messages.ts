@@ -13,6 +13,12 @@ export interface RemoveRequest {
   bitmap: ImageBitmap;
 }
 
+/** Which engine the worker settled on, sent once before the first download. */
+export interface BackendMessage {
+  type: "backend";
+  backend: "webgpu" | "wasm";
+}
+
 /** Progress on a job, or on the one time model download when id is null. */
 export interface ProgressMessage {
   type: "progress";
@@ -41,4 +47,4 @@ export interface ErrorMessage {
 }
 
 export type WorkerRequest = RemoveRequest;
-export type WorkerResponse = ProgressMessage | ResultMessage | ErrorMessage;
+export type WorkerResponse = BackendMessage | ProgressMessage | ResultMessage | ErrorMessage;

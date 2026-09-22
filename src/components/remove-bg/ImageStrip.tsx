@@ -1,4 +1,5 @@
 "use client";
+import { describeRemovalEngine, useRemovalProgressStore } from "@/store/removal-progress-store";
 import type { RemovalItem, RemovalStatus } from "@/store/remove-bg-store";
 import { Icon } from "../ui/Icon";
 
@@ -18,8 +19,10 @@ const STATUS_LABEL: Record<RemovalStatus, string | null> = {
   failed: "Failed",
 };
 
-/** Thumbnails of every picture on the page, with a way to add more. */
+/** Thumbnails of every picture on the page, a way to add more, and a note on what does the work. */
 export function ImageStrip({ items, selectedId, onSelect, onRemove, onAdd }: ImageStripProps) {
+  const backend = useRemovalProgressStore((s) => s.backend);
+  const engine = describeRemovalEngine({ backend });
   return (
     <aside className="strip" aria-label="Pictures">
       <ul className="strip__list">
@@ -51,6 +54,11 @@ export function ImageStrip({ items, selectedId, onSelect, onRemove, onAdd }: Ima
         <Icon name="upload" size={18} />
         Upload Photo
       </button>
+      {engine ? (
+        <p className="small muted strip__engine" data-backend={backend ?? undefined}>
+          {engine}
+        </p>
+      ) : null}
     </aside>
   );
 }

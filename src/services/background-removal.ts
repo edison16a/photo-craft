@@ -1,8 +1,8 @@
 /**
  * Main thread side of the background remover. Starts the worker on first
  * use, hands it pictures one by one and resolves each caller's promise
- * when its cutout comes back. Progress goes to the removal progress store
- * so any button or panel can show it.
+ * when its cutout comes back. Progress, and which model ended up in use,
+ * go to the removal progress store so any button or panel can show them.
  */
 import { fileToDataUrl, type LoadedImage } from "../lib/image-loading";
 import { dataUrlToBlob } from "../lib/download";
@@ -50,6 +50,10 @@ function failAll(message: string): void {
 function onMessage(event: MessageEvent<WorkerResponse>): void {
   const message = event.data;
   const progress = useRemovalProgressStore.getState();
+  if (message.type === "backend") {
+    progress.setBackend(message.backend);
+    return;
+  }
   if (message.type === "progress") {
     progress.setPhase(message.phase, message.loaded, message.total);
     return;
