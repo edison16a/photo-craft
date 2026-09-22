@@ -113,7 +113,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   exportOpen: false,
   busyImageIds: [],
   reveal: null,
-  drawOptions: { closed: true, grid: 20 },
+  drawOptions: { closed: true, grid: 20, smooth: false },
   drawPoints: [],
 
   // Leaving the draw tool drops any half drawn shape.

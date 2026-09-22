@@ -24,11 +24,9 @@ export function DrawPanel() {
           ))}
         </div>
         <Toggle checked={options.closed} onChange={(closed) => setOptions({ closed })} label="Close the shape" />
+        <Toggle checked={options.smooth} onChange={(smooth) => setOptions({ smooth })} label="Smooth corners" />
       </div>
-      <p className="small muted">
-        Click to place corners. They snap to the grid, so sides come out straight and lined up. Double click, click the first corner or press Enter to
-        finish. Backspace takes the last corner back and Escape starts over. Round the corners afterwards with the slider in the selection panel.
-      </p>
+      <p className="small muted">Click or drag along the grid. Draw back to the start to finish.</p>
       <span className="small muted">
         {corners} {corners === 1 ? "corner" : "corners"} placed{corners < needed ? `, ${needed - corners} more needed` : ""}.
       </span>

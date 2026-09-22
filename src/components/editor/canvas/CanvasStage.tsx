@@ -153,11 +153,15 @@ export function CanvasStage() {
               ))}
             </Group>
           </Layer>
+          {tool === "draw" ? (
+            <Layer listening={false}>
+              <DrawGrid pageWidth={project.width} pageHeight={project.height} grid={drawOptions.grid} zoom={zoom} />
+            </Layer>
+          ) : null}
           <Layer listening={false}>
             <GuideLines guides={guides} pageWidth={project.width} pageHeight={project.height} zoom={zoom} />
             <LockedOutlines elements={lockedSelected} zoom={zoom} />
             <MarqueeRect rect={marquee.rect} zoom={zoom} />
-            {tool === "draw" ? <DrawGrid pageWidth={project.width} pageHeight={project.height} grid={drawOptions.grid} zoom={zoom} /> : null}
             {tool === "draw" ? <DrawPreview points={drawPoints} hover={drawing.hover} options={drawOptions} zoom={zoom} /> : null}
           </Layer>
           <Layer listening={tool !== "draw"}>

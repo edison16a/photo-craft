@@ -1,9 +1,11 @@
 "use client";
 /**
- * Pointer handling for the draw tool. Every click places a corner on the
- * nearest grid crossing, so sides come out straight and lined up. A double
- * click on one spot, or a click on the first corner once there are three,
- * finishes the shape.
+ * Pointer handling for the draw tool. Every corner lands on the nearest
+ * grid crossing, so sides come out straight and lined up. A click places
+ * one corner; holding the mouse down and dragging plots a corner at every
+ * crossing the pointer passes. Reaching the first corner again with three
+ * or more down closes and finishes the shape, as does a double click on
+ * one spot.
  */
 import { useCallback, useRef, useState } from "react";
 import { snapToGrid } from "@/lib/drawing";
@@ -11,34 +13,54 @@ import type { Point } from "@/model/types";
 import { addDrawPoint, finishDrawing } from "@/store/drawing-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 
-/** How far from the first corner, in screen pixels, a click still counts as closing the shape. */
-const CLOSE_RADIUS_PX = 10;
+function samePoint(a: Point, b: Point): boolean {
+  return Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5;
+}
 
 /** Handlers for the stage while the draw tool is active, plus the snapped pointer position for the rubber band. */
 export function useShapeDrawing() {
-  const pressed = useRef<Point | null>(null);
+  const down = useRef(false);
+  /** Whether the last press landed on the corner before it, which is what a double click on one spot looks like. */
+  const lastPressRepeated = useRef(false);
   const [hover, setHover] = useState<Point | null>(null);
 
   const snap = (point: Point) => snapToGrid(point, useEditorUiStore.getState().drawOptions.grid);
-  const zoom = () => useEditorUiStore.getState().zoom;
 
-  const onMouseDown = useCallback((point: Point) => {
-    pressed.current = snap(point);
+  /**
+   * Adds a corner unless it repeats the last one. Landing on the first
+   * corner with enough corners down finishes instead.
+   */
+  const plot = useCallback((point: Point): "added" | "repeat" | "finished" => {
+    const { drawPoints, drawOptions } = useEditorUiStore.getState();
+    const count = drawPoints.length / 2;
+    if (count > 0 && samePoint(point, { x: drawPoints[drawPoints.length - 2], y: drawPoints[drawPoints.length - 1] })) return "repeat";
+    // Corners sit on grid crossings, so closing means landing on the very first one.
+    const closing = count >= 3 && drawOptions.closed && samePoint(point, { x: drawPoints[0], y: drawPoints[1] });
+    if (closing && finishDrawing()) return "finished";
+    addDrawPoint(point);
+    return "added";
   }, []);
 
-  const onMouseMove = useCallback((point: Point) => {
-    setHover(snap(point));
-  }, []);
+  const onMouseDown = useCallback(
+    (point: Point) => {
+      const outcome = plot(snap(point));
+      lastPressRepeated.current = outcome === "repeat";
+      down.current = outcome !== "finished";
+    },
+    [plot],
+  );
 
-  /** The corner goes where the press started, so a slight drag is still a click. */
+  const onMouseMove = useCallback(
+    (point: Point) => {
+      const snapped = snap(point);
+      setHover(snapped);
+      if (down.current && plot(snapped) === "finished") down.current = false;
+    },
+    [plot],
+  );
+
   const onMouseUp = useCallback(() => {
-    const corner = pressed.current;
-    pressed.current = null;
-    if (!corner) return;
-    const { drawPoints } = useEditorUiStore.getState();
-    const nearFirst = drawPoints.length >= 6 && Math.hypot(corner.x - drawPoints[0], corner.y - drawPoints[1]) * zoom() <= CLOSE_RADIUS_PX;
-    if (nearFirst && finishDrawing()) return;
-    addDrawPoint(corner);
+    down.current = false;
   }, []);
 
   /**
@@ -47,16 +69,14 @@ export function useShapeDrawing() {
    * are just corners placed quickly.
    */
   const onDoubleClick = useCallback(() => {
-    pressed.current = null;
-    const { drawPoints } = useEditorUiStore.getState();
-    if (drawPoints.length < 4) return;
-    const [x1, y1, x2, y2] = drawPoints.slice(-4);
-    if (Math.hypot(x2 - x1, y2 - y1) * zoom() <= CLOSE_RADIUS_PX) finishDrawing();
+    down.current = false;
+    // Only when the second click landed on the corner the first one placed.
+    if (lastPressRepeated.current) finishDrawing();
   }, []);
 
   const onMouseLeave = useCallback(() => {
     setHover(null);
-    pressed.current = null;
+    down.current = false;
   }, []);
 
   return { hover, onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onDoubleClick };
