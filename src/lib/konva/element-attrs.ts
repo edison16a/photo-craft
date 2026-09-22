@@ -85,7 +85,6 @@ function paintAttrs(element: ShapeElement) {
     fill: element.fill === "transparent" ? undefined : element.fill,
     stroke: element.stroke === "transparent" || element.strokeWidth <= 0 ? undefined : element.stroke,
     strokeWidth: element.strokeWidth,
-    strokeScaleEnabled: false,
   };
 }
 
@@ -122,7 +121,6 @@ export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
           stroke: element.stroke === "transparent" ? element.fill : element.stroke,
           strokeWidth: Math.max(1, element.strokeWidth),
           lineCap: "round",
-          strokeScaleEnabled: false,
         },
       };
     case "arrow":
@@ -136,7 +134,6 @@ export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
           pointerLength: Math.max(8, element.strokeWidth * 3),
           pointerWidth: Math.max(8, element.strokeWidth * 3),
           lineCap: "round",
-          strokeScaleEnabled: false,
         },
       };
     default:
