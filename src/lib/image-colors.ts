@@ -141,6 +141,7 @@ export function extractImageColors(
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
     if (!context) return [];
+    context.imageSmoothingEnabled = false;
     context.drawImage(image, 0, 0, width, height);
     const { data } = context.getImageData(0, 0, width, height);
     return quantizeColors(data, maxColors).map((color) => color.hex);
