@@ -2,27 +2,33 @@
 /**
  * Dragging one or many selected elements together, with alignment guides.
  *
- * Konva moves the grabbed node on its own. On every move we work out how
- * far it went, snap the whole selection's box to the page and to other
- * elements, then place every selected node at the snapped offset. On drag
- * end the new positions go into the store as one undo step.
+ * The delta comes from the pointer, not from node positions. Konva's
+ * transformer also nudges the other attached nodes and starts drags on
+ * them, which fires extra dragstart and dragmove events; measuring the
+ * pointer keeps every node exactly where the grabbed one says it should
+ * be. On drag end the new positions go into the store as one undo step.
  */
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useMemo } from "react";
 import { unionRects } from "@/lib/geometry";
-import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import { computeSnap, type Guide } from "@/lib/snapping";
 import type { Point, Rect } from "@/model/types";
 import { elementBounds } from "@/store/alignment";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
+import { screenToPage } from "@/store/viewport-actions";
 
 interface DragSession {
-  startPositions: Map<string, Point>;
+  /** Where the pointer was when the drag began, in page pixels. */
+  pointerStart: Point;
+  /** Top left corner and size of every moving element when the drag began. */
+  start: Map<string, Rect>;
   startBounds: Rect;
   targets: Rect[];
+  /** Latest snapped top left corner per element, written on every move. */
+  latest: Map<string, Point>;
 }
 
 /** Screen pixels within which an edge snaps. Divided by zoom on use. */
@@ -34,42 +40,48 @@ function sameGuides(a: Guide[], b: Guide[]): boolean {
   return a.length === b.length && a.every((g, i) => g.orientation === b[i].orientation && g.position === b[i].position);
 }
 
-function findNode(layer: Konva.Layer | null, id: string): Konva.Node | undefined {
-  return layer?.findOne(`#${id}`) ?? undefined;
+function pagePointer(node: Konva.Node): Point | null {
+  const pointer = node.getStage()?.getPointerPosition();
+  return pointer ? screenToPage(pointer) : null;
 }
 
+/** Drag handlers for element groups. Share one instance across all elements. */
 export function useElementDrag() {
   return useMemo(() => {
     const onDragStart = (event: KonvaEventObject<DragEvent>) => {
+      // The transformer starts drags on the other selected nodes. Ignore those.
+      if (session) return;
       const node = event.target;
       const id = node.id();
+      const pointer = pagePointer(node);
       const state = useProjectStore.getState();
+      if (!pointer) return;
+
       const elements = selectCurrentElements(state);
       const selected = state.selectedIds.includes(id) ? state.selectedIds : [id];
       if (!state.selectedIds.includes(id)) state.setSelection([id]);
 
       const moving = elements.filter((el) => selected.includes(el.id) && !el.locked);
       const movingIds = new Set(moving.map((el) => el.id));
-      const layer = node.getLayer();
-      const startPositions = new Map<string, Point>();
-      for (const el of moving) {
-        const target = findNode(layer, el.id);
-        if (target) startPositions.set(el.id, target.position());
-      }
+      const start = new Map<string, Rect>();
+      for (const el of moving) start.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });
+
       session = {
-        startPositions,
+        pointerStart: pointer,
+        start,
         startBounds: unionRects(moving.map(elementBounds)),
         targets: elements.filter((el) => !movingIds.has(el.id)).map(elementBounds),
+        latest: new Map(),
       };
     };
 
     const onDragMove = (event: KonvaEventObject<DragEvent>) => {
       const node = event.target;
-      const start = session?.startPositions.get(node.id());
       const project = useProjectStore.getState().project;
-      if (!session || !start || !project) return;
+      const pointer = session ? pagePointer(node) : null;
+      if (!session || !pointer || !project) return;
 
-      const delta = { x: node.x() - start.x, y: node.y() - start.y };
+      const delta = { x: pointer.x - session.pointerStart.x, y: pointer.y - session.pointerStart.y };
       const ui = useEditorUiStore.getState();
       const moved = { ...session.startBounds, x: session.startBounds.x + delta.x, y: session.startBounds.y + delta.y };
       const snap = computeSnap(moved, {
@@ -80,23 +92,20 @@ export function useElementDrag() {
       });
 
       const layer = node.getLayer();
-      for (const [id, origin] of session.startPositions) {
-        findNode(layer, id)?.position({ x: origin.x + delta.x + snap.dx, y: origin.y + delta.y + snap.dy });
+      for (const [id, box] of session.start) {
+        const topLeft = { x: box.x + delta.x + snap.dx, y: box.y + delta.y + snap.dy };
+        session.latest.set(id, topLeft);
+        // Node positions are box centres, see groupAttrs.
+        layer?.findOne(`#${id}`)?.position({ x: topLeft.x + box.width / 2, y: topLeft.y + box.height / 2 });
       }
       if (!sameGuides(ui.guides, snap.guides)) ui.setGuides(snap.guides);
     };
 
-    const onDragEnd = (event: KonvaEventObject<DragEvent>) => {
+    const onDragEnd = () => {
+      // Every dragged node fires dragend. The first one commits for all of them.
       if (!session) return;
-      const layer = event.target.getLayer();
       const patches: Record<string, { x: number; y: number }> = {};
-      const elements = selectCurrentElements(useProjectStore.getState());
-      for (const id of session.startPositions.keys()) {
-        const target = findNode(layer, id);
-        const element = elements.find((el) => el.id === id);
-        if (!target || !element) continue;
-        // Node positions are box centres, the model stores the top left corner.
-        const topLeft = topLeftFromCentre(target.position(), element.width, element.height);
+      for (const [id, topLeft] of session.latest) {
         patches[id] = { x: Math.round(topLeft.x * 100) / 100, y: Math.round(topLeft.y * 100) / 100 };
       }
       session = null;
