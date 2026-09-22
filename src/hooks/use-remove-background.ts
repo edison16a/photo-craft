@@ -7,6 +7,7 @@
  */
 import { useCallback, useSyncExternalStore } from "react";
 import type { ImageElement } from "../model/types";
+import { getCachedImage } from "../lib/image-cache";
 import { isBackgroundRemovalSupported, removeBackgroundFromDataUrl } from "../services/background-removal";
 import { useEditorUiStore } from "../store/editor-ui-store";
 import { useProjectStore } from "../store/project-store";
@@ -48,6 +49,8 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
     setImageBusy(element.id, true);
     try {
       const result = await removeBackgroundFromDataUrl(element.src);
+      // Decode the cutout into the shared cache first, so the canvas shows it before the sweep starts.
+      await getCachedImage(result.src).catch(() => undefined);
       const store = useProjectStore.getState();
       const page = store.project?.pages.find((candidate) => candidate.id === pageId);
       const stillHere = store.currentPageId === pageId && page?.elements.some((el) => el.id === element.id);

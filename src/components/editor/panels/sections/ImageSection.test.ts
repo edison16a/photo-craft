@@ -1,7 +1,7 @@
 /**
  * Renders the real properties panel with the real stores. Only the worker
- * call is mocked, so the test can hold a removal open and poke at the
- * selection while it runs.
+ * call and the image decode are mocked, so the test can hold a removal
+ * open and poke at the selection while it runs.
  */
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -16,6 +16,12 @@ import { PropertiesPanel } from "../PropertiesPanel";
 vi.mock("@/services/background-removal", () => ({
   isBackgroundRemovalSupported: () => true,
   removeBackgroundFromDataUrl: vi.fn(),
+}));
+
+// jsdom never finishes loading an image, so the cutout decode resolves at once here.
+vi.mock("@/lib/image-cache", () => ({
+  getCachedImage: vi.fn(async () => new Image()),
+  peekCachedImage: () => undefined,
 }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
