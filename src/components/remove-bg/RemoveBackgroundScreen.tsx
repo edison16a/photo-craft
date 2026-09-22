@@ -13,6 +13,7 @@ import { ComparePreview } from "./ComparePreview";
 import { DownloadPanel } from "./DownloadPanel";
 import { ImageStrip } from "./ImageStrip";
 import { Landing } from "./Landing";
+import { TouchUpPanel } from "./TouchUpPanel";
 
 /**
  * The background remover. Drop, paste or pick pictures, watch them get cut
@@ -79,7 +80,10 @@ export function RemoveBackgroundScreen() {
         <section className="remove-bg__work">
           <ImageStrip items={items} selectedId={selectedId} onSelect={(id) => useRemoveBgStore.getState().select(id)} onRemove={removeItem} onAdd={openPicker} />
           <ComparePreview key={selected?.id ?? "none"} item={selected} />
-          <DownloadPanel key={`download-${selected?.id ?? "none"}`} item={selected} items={items} format={format} onFormatChange={setFormat} onClear={clearAll} />
+          <div className="remove-bg__side">
+            {selected?.status === "done" ? <TouchUpPanel item={selected} /> : null}
+            <DownloadPanel key={`download-${selected?.id ?? "none"}`} item={selected} items={items} format={format} onFormatChange={setFormat} onClear={clearAll} />
+          </div>
         </section>
       )}
       <Toast />

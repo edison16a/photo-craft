@@ -4,6 +4,7 @@ import { describeRemovalPhase, useRemovalProgressStore } from "@/store/removal-p
 import { useRemoveBgStore, type RemovalItem } from "@/store/remove-bg-store";
 import { CompareView } from "../ui/CompareView";
 import { Sparkles } from "../ui/Sparkles";
+import { TouchUpCanvas } from "./TouchUpCanvas";
 
 interface ComparePreviewProps {
   item: RemovalItem | null;
@@ -20,8 +21,9 @@ const REVEAL_MS = 1400;
 /**
  * The big view of the chosen picture. While it is being worked on, stars
  * twinkle over the original. When the cutout arrives it sweeps in from the
- * right, and from then on the line can be dragged to compare. Render it
- * with the item's id as its key so the state resets when the picture changes.
+ * right, and from then on the line can be dragged to compare, or a brush
+ * can paint on it. Render it with the item's id as its key so the state
+ * resets when the picture changes.
  */
 export function ComparePreview({ item }: ComparePreviewProps) {
   const containerRef = useRef<HTMLElement>(null);
@@ -32,6 +34,7 @@ export function ComparePreview({ item }: ComparePreviewProps) {
   const phase = useRemovalProgressStore((s) => s.phase);
   const loaded = useRemovalProgressStore((s) => s.loaded);
   const total = useRemovalProgressStore((s) => s.total);
+  const touchUp = useRemoveBgStore((s) => s.touchUp);
   const width = item?.width ?? 0;
   const height = item?.height ?? 0;
 
@@ -83,9 +86,13 @@ export function ComparePreview({ item }: ComparePreviewProps) {
   const busy = item.status === "working" || item.status === "queued";
   const busyText = item.status === "working" ? (describeRemovalPhase({ phase, loaded, total }) ?? "Removing background") : "Waiting for its turn";
 
+  const painting = done && touchUp.tool !== null;
   return (
     <section ref={containerRef} className="preview">
-      {box ? (
+      {box && painting && touchUp.tool ? (
+        <TouchUpCanvas item={item} brush={{ mode: touchUp.tool, size: touchUp.size, softness: touchUp.softness }} width={box.width} height={box.height} />
+      ) : null}
+      {box && !painting ? (
         <CompareView
           originalUrl={item.originalUrl}
           cutoutUrl={done ? item.resultUrl : undefined}

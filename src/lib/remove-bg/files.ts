@@ -5,6 +5,7 @@
 import { dataUrlToBlob } from "../download";
 import { importImageFile, importImageFromUrl, type LoadedImage } from "../image-loading";
 import type { RemovalItem } from "../../store/remove-bg-store";
+import { dropWork } from "./touch-up";
 
 let counter = 0;
 
@@ -52,4 +53,5 @@ export async function itemFromUrl(url: string): Promise<RemovalItem> {
 export function releaseItem(item: RemovalItem): void {
   URL.revokeObjectURL(item.originalUrl);
   if (item.resultUrl) URL.revokeObjectURL(item.resultUrl);
+  dropWork(item.id);
 }

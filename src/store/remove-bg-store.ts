@@ -27,12 +27,24 @@ export interface RemovalItem {
   resultUrl?: string;
   /** Why it failed, when it did. */
   error?: string;
+  /** What the model made, kept once brushes have changed the cutout, so it can be reset. */
+  pristine?: Blob;
+}
+
+/** The brush settings shared by every picture on the page. */
+export interface TouchUpState {
+  tool: "restore" | "erase" | null;
+  /** Brush diameter in picture pixels. */
+  size: number;
+  /** Softness of the brush edge, 0 to 1. */
+  softness: number;
 }
 
 /** State and actions of the remove background page. */
 export interface RemoveBgState {
   items: RemovalItem[];
   selectedId: string | null;
+  touchUp: TouchUpState;
 
   /** Appends pictures and shows the first of them when nothing is showing. */
   addItems: (items: RemovalItem[]) => void;
@@ -42,6 +54,9 @@ export interface RemoveBgState {
   markWorking: (id: string) => void;
   finish: (id: string, result: Blob, resultUrl: string) => void;
   fail: (id: string, error: string) => void;
+  /** Swaps in a cutout changed by the brushes, remembering the model's own when given. */
+  updateResult: (id: string, result: Blob, resultUrl: string, pristine: Blob | undefined) => void;
+  setTouchUp: (patch: Partial<TouchUpState>) => void;
   /** Puts a failed picture back in the queue. */
   retry: (id: string) => void;
   /** Drops a picture. When it was showing, its neighbour shows instead. */
@@ -57,6 +72,7 @@ function patchItem(items: RemovalItem[], id: string, patch: Partial<RemovalItem>
 export const useRemoveBgStore = create<RemoveBgState>()((set, get) => ({
   items: [],
   selectedId: null,
+  touchUp: { tool: null, size: 40, softness: 0.5 },
 
   addItems: (added) =>
     set((state) => ({
@@ -75,6 +91,8 @@ export const useRemoveBgStore = create<RemoveBgState>()((set, get) => ({
   finish: (id, result, resultUrl) =>
     set((state) => ({ items: patchItem(state.items, id, { status: "done", result, resultUrl, error: undefined }) })),
   fail: (id, error) => set((state) => ({ items: patchItem(state.items, id, { status: "failed", error }) })),
+  updateResult: (id, result, resultUrl, pristine) => set((state) => ({ items: patchItem(state.items, id, { result, resultUrl, pristine }) })),
+  setTouchUp: (patch) => set((state) => ({ touchUp: { ...state.touchUp, ...patch } })),
   retry: (id) => set((state) => ({ items: patchItem(state.items, id, { status: "queued", error: undefined }) })),
   remove: (id) =>
     set((state) => {

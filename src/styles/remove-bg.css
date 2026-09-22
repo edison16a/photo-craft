@@ -375,3 +375,45 @@
   height: 100%;
   border-radius: 0;
 }
+
+.remove-bg__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: start;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.touch-up {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.touch-up__canvas {
+  display: block;
+  cursor: none;
+}
+
+.touch-up__canvas--loading {
+  opacity: 0;
+}
+
+.touch-up__cursor {
+  position: absolute;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.touch-up__cursor--erase {
+  border-color: var(--danger);
+}
+
+.touch-up__cursor--restore {
+  border-color: var(--accent);
+}
