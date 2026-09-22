@@ -10,7 +10,11 @@ import { TransformSection } from "./sections/TransformSection";
 
 const TYPE_LABEL = { text: "Text", shape: "Shape", image: "Image" } as const;
 
-/** Everything about the selected element, or the shared actions for several. */
+/**
+ * Everything about the selected element, or the shared actions for several.
+ * Sections are keyed by element so their drafts never leak to another
+ * element. Siblings need distinct keys, hence the prefixes.
+ */
 export function PropertiesPanel() {
   const selectedIds = useProjectStore((s) => s.selectedIds);
   const elements = useProjectStore(selectCurrentElements);
@@ -40,10 +44,10 @@ export function PropertiesPanel() {
           {element.locked ? <span className="small muted">Locked</span> : null}
         </div>
       </div>
-      {element.type === "text" ? <TextSection key={element.id} element={element} /> : null}
-      {element.type === "shape" ? <ShapeSection key={element.id} element={element} /> : null}
-      {element.type === "image" ? <ImageSection key={element.id} element={element} /> : null}
-      <TransformSection key={element.id} element={element} />
+      {element.type === "text" ? <TextSection key={`text-${element.id}`} element={element} /> : null}
+      {element.type === "shape" ? <ShapeSection key={`shape-${element.id}`} element={element} /> : null}
+      {element.type === "image" ? <ImageSection key={`image-${element.id}`} element={element} /> : null}
+      <TransformSection key={`transform-${element.id}`} element={element} />
       <ArrangeSection elements={[element]} />
     </div>
   );
