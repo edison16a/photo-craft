@@ -31,10 +31,6 @@
   color: var(--text);
 }
 
-.drop-zone__note {
-  max-width: 420px;
-}
-
 .remove-bg__work {
   display: grid;
   flex: 1;
