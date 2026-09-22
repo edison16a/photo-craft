@@ -16,7 +16,7 @@ describe("settings", () => {
 
   it("returns the defaults when nothing is stored", () => {
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
-    expect(DEFAULT_SETTINGS).toEqual({ autosave: true });
+    expect(DEFAULT_SETTINGS).toEqual({ autosave: true, backgroundModel: "best", modelHintShown: false });
   });
 
   it("does not hand out the shared defaults object", () => {
@@ -27,7 +27,7 @@ describe("settings", () => {
 
   it("round trips through localStorage", () => {
     const saved = saveSettings({ autosave: false });
-    expect(saved).toEqual({ autosave: false });
+    expect(saved).toEqual({ ...DEFAULT_SETTINGS, autosave: false });
     expect(JSON.parse(window.localStorage.getItem(KEY) ?? "{}")).toEqual(saved);
     expect(loadSettings()).toEqual(saved);
   });
@@ -35,13 +35,13 @@ describe("settings", () => {
   it("merges a partial patch with what was already saved", () => {
     saveSettings({ autosave: false });
     const next = saveSettings({ autosave: false });
-    expect(next).toEqual({ autosave: false });
+    expect(next).toEqual({ ...DEFAULT_SETTINGS, autosave: false });
   });
 
   it("leaves a field alone when the patch sets it to undefined", () => {
     saveSettings({ autosave: false });
     const next = saveSettings({ autosave: undefined });
-    expect(next).toEqual({ autosave: false });
+    expect(next).toEqual({ ...DEFAULT_SETTINGS, autosave: false });
     expect(loadSettings()).toEqual(next);
   });
 
@@ -51,8 +51,10 @@ describe("settings", () => {
   });
 
   it("fills missing fields and ignores wrongly typed ones", () => {
-    window.localStorage.setItem(KEY, JSON.stringify({ unknown: "k", autosave: "yes" }));
-    expect(loadSettings()).toEqual({ autosave: true });
+    window.localStorage.setItem(KEY, JSON.stringify({ unknown: "k", autosave: "yes", backgroundModel: "huge" }));
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
+    window.localStorage.setItem(KEY, JSON.stringify({ backgroundModel: "light", modelHintShown: true }));
+    expect(loadSettings()).toEqual({ autosave: true, backgroundModel: "light", modelHintShown: true });
     window.localStorage.setItem(KEY, JSON.stringify(null));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     window.localStorage.setItem(KEY, JSON.stringify([1, 2]));

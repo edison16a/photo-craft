@@ -8,15 +8,23 @@
  * (through the browser's storage event).
  */
 
+import { DEFAULT_TIER, isModelTier, type ModelTier } from "../lib/background/model";
+
 /** Everything the user can configure. Keep it flat and JSON friendly. */
 export interface AppSettings {
   /** Save projects automatically while editing. */
   autosave: boolean;
+  /** Which cutout model the background remover uses. */
+  backgroundModel: ModelTier;
+  /** Whether the one time hint about changing the model has been shown. */
+  modelHintShown: boolean;
 }
 
 /** What a fresh install starts with. */
 export const DEFAULT_SETTINGS: AppSettings = {
   autosave: true,
+  backgroundModel: DEFAULT_TIER,
+  modelHintShown: false,
 };
 
 const STORAGE_KEY = "photo-craft:settings";
@@ -41,6 +49,8 @@ function coerceSettings(raw: unknown): AppSettings {
   if (typeof raw !== "object" || raw === null) return result;
   const source = raw as Record<string, unknown>;
   if (typeof source.autosave === "boolean") result.autosave = source.autosave;
+  if (isModelTier(source.backgroundModel)) result.backgroundModel = source.backgroundModel;
+  if (typeof source.modelHintShown === "boolean") result.modelHintShown = source.modelHintShown;
   return result;
 }
 

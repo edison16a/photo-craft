@@ -55,9 +55,3 @@ export function describeRemovalPhase(state: Pick<RemovalProgressState, "phase" |
   if (state.phase === "run") return "Removing background";
   return null;
 }
-
-/** One line on what is doing the work, once that is known. */
-export function describeRemovalEngine(state: Pick<RemovalProgressState, "backend">): string | null {
-  if (!state.backend) return null;
-  return state.backend === "webgpu" ? "Running on your graphics card." : "Running on the processor. A browser with graphics card access is faster.";
-}

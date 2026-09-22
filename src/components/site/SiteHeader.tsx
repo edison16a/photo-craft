@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef, useState } from "react";
 import { REPO_URL } from "@/data/site";
 import { CubeLogo } from "../logo/CubeLogo";
+import { SettingsButton } from "../settings/SettingsButton";
 import { GitHubMark } from "../ui/GitHubMark";
 import { ThemeToggle } from "../ui/ThemeToggle";
 
@@ -68,6 +69,7 @@ export function SiteHeader() {
           <GitHubMark />
           View on GitHub
         </a>
+        <SettingsButton />
         <ThemeToggle />
       </div>
     </header>

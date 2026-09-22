@@ -6,11 +6,19 @@
 /** Where the worker is in getting ready or in doing a job. */
 export type RemovalPhase = "download" | "load" | "run";
 
-/** A picture to cut out. The bitmap is transferred, not copied. */
+import type { ModelTier } from "./model";
+
+/** A picture to cut out with the chosen model. The bitmap is transferred, not copied. */
 export interface RemoveRequest {
   type: "remove";
   id: number;
   bitmap: ImageBitmap;
+  tier: ModelTier;
+}
+
+/** Drop the loaded model, for example after it was deleted from the computer. */
+export interface ForgetRequest {
+  type: "forget";
 }
 
 /** Which engine the worker settled on, sent once before the first download. */
@@ -46,5 +54,5 @@ export interface ErrorMessage {
   message: string;
 }
 
-export type WorkerRequest = RemoveRequest;
+export type WorkerRequest = RemoveRequest | ForgetRequest;
 export type WorkerResponse = BackendMessage | ProgressMessage | ResultMessage | ErrorMessage;

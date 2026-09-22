@@ -8,6 +8,8 @@ import { fileToDataUrl, type LoadedImage } from "../lib/image-loading";
 import { dataUrlToBlob } from "../lib/download";
 import type { WorkerRequest, WorkerResponse } from "../lib/background/messages";
 import { useRemovalProgressStore } from "../store/removal-progress-store";
+import { useSettingsUiStore } from "../store/settings-ui-store";
+import { loadSettings } from "./settings";
 
 /** A finished cutout: a PNG with transparency at the picture's own size. */
 export interface CutOut {
@@ -109,11 +111,20 @@ export async function removeBackground(source: Blob | ImageBitmap): Promise<CutO
   const id = nextId++;
   const progress = useRemovalProgressStore.getState();
   progress.addPending(id);
+  // The first ever use points at the settings, where the model can be changed.
+  useSettingsUiStore.getState().showModelHint();
   return new Promise<CutOut>((resolve, reject) => {
     jobs.set(id, { resolve, reject });
-    const request: WorkerRequest = { type: "remove", id, bitmap };
+    const request: WorkerRequest = { type: "remove", id, bitmap, tier: loadSettings().backgroundModel };
     getWorker().postMessage(request, [bitmap]);
   });
+}
+
+/** Drops the model held in memory, so the next picture loads the chosen one afresh. */
+export function forgetLoadedModel(): void {
+  const request: WorkerRequest = { type: "forget" };
+  worker?.postMessage(request);
+  useRemovalProgressStore.setState({ ready: false });
 }
 
 /** Cuts out a data URL picture and returns the result as a data URL, for the editor. */

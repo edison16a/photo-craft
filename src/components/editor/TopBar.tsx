@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { CubeLogo } from "../logo/CubeLogo";
+import { SettingsButton } from "../settings/SettingsButton";
 import { Icon } from "../ui/Icon";
 import { IconButton } from "../ui/IconButton";
 import { ThemeToggle } from "../ui/ThemeToggle";
@@ -66,6 +67,7 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
 
       <div className="row" style={{ justifyContent: "flex-end" }}>
         <Toggle checked={autosave} onChange={onAutosaveChange} label="Autosave" />
+        <SettingsButton />
         <ThemeToggle />
         <button
           type="button"

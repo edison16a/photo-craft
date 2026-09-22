@@ -102,3 +102,54 @@
   cursor: pointer;
   padding: 0;
 }
+
+/* The settings gear, and the pulse that draws the eye to it the first time. */
+.settings-btn--hint {
+  color: var(--accent-text);
+  animation: settings-pulse 1.6s ease-out infinite;
+}
+
+@keyframes settings-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(77, 163, 255, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(77, 163, 255, 0);
+  }
+}
+
+.model-list {
+  gap: 8px;
+}
+
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.model-option--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.model-option__pick {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.model-option__name {
+  font-weight: 600;
+}

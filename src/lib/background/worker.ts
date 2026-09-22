@@ -7,8 +7,8 @@
  * resizing and the final compose.
  */
 import type * as OrtTypes from "onnxruntime-web";
-import type { WorkerRequest, WorkerResponse } from "./messages";
-import { loadModelBytes, MODEL, type ModelSpec } from "./model";
+import type { RemoveRequest, WorkerRequest, WorkerResponse } from "./messages";
+import { loadModelBytes, MODELS, type ModelSpec, type ModelTier } from "./model";
 import { alphaToGreyPixels, applyAlpha, greyPixelsToAlpha, outputToAlpha, pixelsToTensor } from "./tensor";
 
 type Ort = typeof OrtTypes;
@@ -32,6 +32,8 @@ interface Engine {
 const scope = self as unknown as WorkerScope;
 
 let enginePromise: Promise<Engine> | null = null;
+/** Which model the engine promise is for. */
+let engineTier: ModelTier | null = null;
 /** Set once WebGPU has failed on a picture, so later pictures use WebAssembly. */
 let avoidWebGpu = false;
 /** Jobs run one after another; this is the tail of the chain. */
@@ -60,8 +62,8 @@ async function loadRuntime(backend: Backend): Promise<Ort> {
   return ort;
 }
 
-async function createEngine(backend: Backend): Promise<Engine> {
-  const spec = MODEL;
+async function createEngine(backend: Backend, tier: ModelTier): Promise<Engine> {
+  const spec = MODELS[tier];
   post({ type: "backend", backend });
   const ort = await loadRuntime(backend);
   const bytes = await loadModelBytes(spec, scope.location.origin, (loaded, total) => post({ type: "progress", id: null, phase: "download", loaded, total }));
@@ -71,18 +73,21 @@ async function createEngine(backend: Backend): Promise<Engine> {
 }
 
 /**
- * Gets the model ready on first use. A graphics card that turns out not to
+ * Gets the chosen model ready, loading it on first use or when the choice
+ * changed since the last picture. A graphics card that turns out not to
  * work falls back to WebAssembly. A failure clears the promise so a retry
  * can try again.
  */
-function ensureEngine(): Promise<Engine> {
+function ensureEngine(tier: ModelTier): Promise<Engine> {
+  if (enginePromise && engineTier !== tier) enginePromise = null;
+  engineTier = tier;
   enginePromise ??= (async () => {
     const backend = avoidWebGpu ? "wasm" : await detectBackend();
-    if (backend === "wasm") return createEngine("wasm");
+    if (backend === "wasm") return createEngine("wasm", tier);
     try {
-      return await createEngine("webgpu");
+      return await createEngine("webgpu", tier);
     } catch {
-      return createEngine("wasm");
+      return createEngine("wasm", tier);
     }
   })().catch((error: unknown) => {
     enginePromise = null;
@@ -131,8 +136,8 @@ async function cutOut({ ort, session, spec }: Engine, bitmap: ImageBitmap): Prom
  * Runs one picture. A graphics card that fails part way through is given
  * up on: the engine is rebuilt on WebAssembly and the picture tried again.
  */
-async function process(id: number, bitmap: ImageBitmap): Promise<void> {
-  const engine = await ensureEngine();
+async function process(id: number, bitmap: ImageBitmap, tier: ModelTier): Promise<void> {
+  const engine = await ensureEngine(tier);
   post({ type: "progress", id, phase: "run", loaded: 0, total: 0 });
   try {
     const result = await cutOut(engine, bitmap);
@@ -141,14 +146,14 @@ async function process(id: number, bitmap: ImageBitmap): Promise<void> {
     if (engine.backend !== "webgpu" || avoidWebGpu) throw error;
     avoidWebGpu = true;
     enginePromise = null;
-    await process(id, bitmap);
+    await process(id, bitmap, tier);
   }
 }
 
-async function handle(request: WorkerRequest): Promise<void> {
-  const { id, bitmap } = request;
+async function handle(request: RemoveRequest): Promise<void> {
+  const { id, bitmap, tier } = request;
   try {
-    await process(id, bitmap);
+    await process(id, bitmap, tier);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Background removal failed.";
     post({ type: "error", id, message });
@@ -159,6 +164,14 @@ async function handle(request: WorkerRequest): Promise<void> {
 
 scope.onmessage = (event) => {
   const request = event.data;
+  if (request?.type === "forget") {
+    // Runs after the pictures already queued, which still get the old model.
+    queue = queue.then(() => {
+      enginePromise = null;
+      engineTier = null;
+    });
+    return;
+  }
   if (request?.type !== "remove") return;
   queue = queue.then(() => handle(request));
 };
