@@ -16,6 +16,7 @@
     "jspdf": "^3.0.1",
     "konva": "^9.3.20",
     "next": "^15.5.0",
+    "onnxruntime-web": "^1.30.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-konva": "^19.2.7",
