@@ -2,6 +2,8 @@
 
 Tired of paying for Canva? Try this free alternative, built only for simple image editing, creation and iteration.
 
+Use it at **[photo-craft.vercel.app](https://photo-craft.vercel.app)**, or run it yourself (see below). The hosted version has everything except background removal, which needs Python on the server.
+
 Photo Craft runs entirely in your browser. Pick a canvas size, add text, shapes and images, arrange them, then export at any size in PNG, JPG, WebP or PDF, with a transparent background if you want one. Projects are saved in the browser's own storage. There is no account, no watermark and no paywall.
 
 ## What it does

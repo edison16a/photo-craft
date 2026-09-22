@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { SITE_URL } from "@/data/site";
 import "./globals.css";
 import "@/styles/ui.css";
 import "@/styles/overlays.css";
@@ -8,11 +9,20 @@ import "@/styles/editor.css";
 import "@/styles/panels.css";
 import "@/styles/pickers.css";
 
-/** Site wide title and description. */
+const DESCRIPTION = "A free, open source alternative to Canva for simple image editing, creation and iteration.";
+
+/** Site wide title, description and link preview details. */
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Photo Craft",
-  description:
-    "A free, open source alternative to Canva for simple image editing, creation and iteration.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "Photo Craft",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Photo Craft",
+    type: "website",
+  },
 };
 
 /**

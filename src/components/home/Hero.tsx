@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_HOST, SITE_URL } from "@/data/site";
 import { CubeLogo } from "../logo/CubeLogo";
 
 /** The pitch at the top of the home page. */
@@ -22,6 +23,9 @@ export function Hero() {
         <Link href="/new" className="btn btn--primary">
           New project
         </Link>
+        <a className="btn btn--ghost" href={SITE_URL} target="_blank" rel="noreferrer">
+          {SITE_HOST}
+        </a>
         <a
           className="btn btn--ghost"
           href="https://github.com/edison16a/photo-craft"
