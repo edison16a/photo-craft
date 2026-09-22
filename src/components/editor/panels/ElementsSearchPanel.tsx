@@ -31,7 +31,7 @@ export function ElementsSearchPanel() {
   const ready = hasGoogleCredentials(settings);
 
   const run = async (start?: number) => {
-    if (!query.trim() || !ready) return;
+    if (!query.trim() || !ready || busy) return;
     setBusy(true);
     setError(undefined);
     try {
@@ -39,7 +39,7 @@ export function ElementsSearchPanel() {
         { apiKey: settings.googleApiKey, searchEngineId: settings.googleSearchEngineId },
         { query: query.trim(), start, transparentOnly },
       );
-      setResults(start ? [...results, ...page.results] : page.results);
+      setResults((current) => (start ? [...current, ...page.results] : page.results));
       setNextStart(page.nextStart);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
@@ -54,12 +54,10 @@ export function ElementsSearchPanel() {
     useEditorUiStore.getState().showToast("Drag any image from the popup onto your page");
   };
 
+  /** Full size hosts often block downloads. Google's own thumbnail is the fallback. */
   const pick = async (result: ImageSearchResult) => {
-    try {
-      await addImageUrl(result.imageUrl);
-    } catch {
-      await addImageUrl(result.thumbnailUrl);
-    }
+    const added = await addImageUrl(result.imageUrl, undefined, true);
+    if (!added) await addImageUrl(result.thumbnailUrl);
   };
 
   return (

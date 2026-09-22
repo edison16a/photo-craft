@@ -1,14 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSettings } from "@/hooks/use-settings";
 
 /** Fields for the free Google Custom Search API key and engine ID. */
 export function GoogleSetup() {
-  const { settings, updateSettings } = useSettings();
-  const [open, setOpen] = useState(!settings.googleApiKey);
+  const { settings, loaded, updateSettings } = useSettings();
+  const [open, setOpen] = useState<boolean | null>(null);
+
+  // Start collapsed when a key is already stored. Decided once, after the settings load.
+  useEffect(() => {
+    if (loaded && open === null) setOpen(!settings.googleApiKey);
+  }, [loaded, open, settings.googleApiKey]);
 
   return (
-    <details className="setup" open={open} onToggle={(event) => setOpen((event.target as HTMLDetailsElement).open)}>
+    <details className="setup" open={open ?? false} onToggle={(event) => setOpen((event.target as HTMLDetailsElement).open)}>
       <summary className="setup__summary">Google search setup</summary>
       <div className="stack" style={{ gap: 8, paddingTop: 8 }}>
         <p className="small muted">

@@ -70,13 +70,16 @@ export function useAddElement() {
     [addLoadedImage],
   );
 
+  /** Adds an image from a URL. Resolves with false (and a toast unless quiet) when it fails. */
   const addImageUrl = useCallback(
-    async (url: string, at?: { x: number; y: number }) => {
+    async (url: string, at?: { x: number; y: number }, quiet = false): Promise<boolean> => {
       const { showToast } = useEditorUiStore.getState();
       try {
         addLoadedImage(await importImageFromUrl(url), at);
+        return true;
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "Could not load that image", "error");
+        if (!quiet) showToast(error instanceof Error ? error.message : "Could not load that image", "error");
+        return false;
       }
     },
     [addLoadedImage],
