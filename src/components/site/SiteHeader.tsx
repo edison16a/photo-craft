@@ -9,7 +9,7 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 
 /** The two sections of the site, in the order they appear. */
 const SECTIONS = [
-  { href: "/", label: "Projects" },
+  { href: "/", label: "Photo Editor" },
   { href: "/remove-bg", label: "Remove background" },
 ] as const;
 
