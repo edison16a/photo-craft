@@ -77,6 +77,7 @@ export function useElementDrag() {
       const start = new Map<string, Rect>();
       for (const el of moving) start.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });
 
+      useEditorUiStore.getState().setInteracting(true);
       session = {
         pointerStart: pressPointer ?? pointer,
         start,
@@ -122,6 +123,7 @@ export function useElementDrag() {
       session = null;
       pressPointer = null;
       useEditorUiStore.getState().setGuides([]);
+      useEditorUiStore.getState().setInteracting(false);
       useProjectStore.getState().patchElements(patches);
     };
 

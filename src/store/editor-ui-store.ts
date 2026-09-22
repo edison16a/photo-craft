@@ -28,6 +28,8 @@ export interface EditorUiState {
   /** Size of the workspace in screen pixels, kept current by a resize observer. */
   viewportSize: { width: number; height: number };
   editingTextId: string | null;
+  /** True while an element is being dragged or resized on the canvas. */
+  interacting: boolean;
   guides: Guide[];
   toast: Toast | null;
   exportOpen: boolean;
@@ -43,6 +45,7 @@ export interface EditorUiState {
   setViewport: (zoom: number, pan: Point) => void;
   setViewportSize: (size: { width: number; height: number }) => void;
   setEditingText: (id: string | null) => void;
+  setInteracting: (on: boolean) => void;
   setGuides: (guides: Guide[]) => void;
   showToast: (message: string, kind?: Toast["kind"]) => void;
   hideToast: () => void;
@@ -74,6 +77,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   pan: { x: 0, y: 0 },
   viewportSize: { width: 0, height: 0 },
   editingTextId: null,
+  interacting: false,
   guides: [],
   toast: null,
   exportOpen: false,
@@ -85,6 +89,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
     set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom)), pan }),
   setViewportSize: (viewportSize) => set({ viewportSize }),
   setEditingText: (id) => set({ editingTextId: id }),
+  setInteracting: (on) => set((state) => (state.interacting === on ? state : { interacting: on })),
   setGuides: (guides) => set({ guides }),
   showToast: (message, kind = "info") => {
     if (toastTimer) clearTimeout(toastTimer);
