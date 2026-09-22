@@ -24,9 +24,11 @@ export function FontPicker({ value, onChange }: FontPickerProps) {
   }, [query]);
   const shown = matches.slice(0, limit);
 
+  // Only fetch fonts for the rows on screen while the list is open.
   useEffect(() => {
-    for (const font of shown) void ensureFontLoaded(font.family);
-  }, [shown]);
+    if (!open) return;
+    for (const font of matches.slice(0, limit)) void ensureFontLoaded(font.family);
+  }, [open, matches, limit]);
 
   useEffect(() => {
     if (!open) return;
