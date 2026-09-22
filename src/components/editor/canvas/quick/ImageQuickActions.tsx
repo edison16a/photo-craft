@@ -8,9 +8,9 @@ interface ImageQuickActionsProps {
   element: ImageElement;
 }
 
-/** Background removal and flips for an image. */
+/** Background removal (or putting it back) and flips for an image. */
 export function ImageQuickActions({ element }: ImageQuickActionsProps) {
-  const { supported, busy, progress, run } = useRemoveBackground(element);
+  const { supported, busy, removed, label, progress, run } = useRemoveBackground(element);
   const store = useProjectStore.getState;
   return (
     <>
@@ -18,10 +18,10 @@ export function ImageQuickActions({ element }: ImageQuickActionsProps) {
         type="button"
         className="btn btn--sm"
         disabled={busy || !supported}
-        title={supported ? "Cut out the subject and make the rest transparent" : "This browser cannot run the background remover"}
+        title={supported ? (removed ? "Put the background back" : "Cut out the subject and make the rest transparent") : "This browser cannot run the background remover"}
         onClick={() => void run()}
       >
-        {busy ? (progress ?? "Removing") : "Remove background"}
+        {busy ? (progress ?? "Removing") : label}
       </button>
       <IconButton icon="flipH" label="Flip horizontally" onClick={() => store().flip([element.id], "x")} />
       <IconButton icon="flipV" label="Flip vertically" onClick={() => store().flip([element.id], "y")} />

@@ -70,6 +70,7 @@ export function ContextMenu() {
         selected,
         point: menu.point,
         removeBackgroundAvailable: removal.supported && !removal.busy,
+        removeBackgroundLabel: removal.label,
         onRemoveBackground: () => void removal.run(),
       })
     : pageMenuEntries(menu.point);

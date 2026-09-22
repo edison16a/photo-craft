@@ -100,9 +100,21 @@ describe("ImageSection busy state", () => {
     await act(async () => first.resolve({ src: "data:image/png;base64,CUTOUT", width: 200, height: 120 }));
     await flush();
     expect(button().disabled).toBe(false);
-    expect(button().textContent).toBe("Remove background");
+    expect(button().textContent).toBe("Restore background");
     expect(store().history.past.length - pastBefore).toBe(1);
     expect(useEditorUiStore.getState().toast?.kind).toBe("info");
+    const image = store().project?.pages[0].elements[0];
+    expect(image?.type === "image" && image.originalSrc).toBe(ORIGINAL);
+
+    // The same button puts the original back, without another request.
+    await act(async () => {
+      button().click();
+    });
+    await flush();
+    const restored = store().project?.pages[0].elements[0];
+    expect(restored?.type === "image" ? [restored.src, restored.originalSrc] : []).toEqual([ORIGINAL, undefined]);
+    expect(button().textContent).toBe("Remove background");
+    expect(removeBackgroundFromDataUrl).toHaveBeenCalledTimes(1);
   });
 
   it("clears the busy flag when the request fails", async () => {

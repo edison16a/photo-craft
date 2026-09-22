@@ -1,8 +1,9 @@
 "use client";
 /**
- * Runs background removal for one image element. Shared by the side
- * panel, the quick toolbar and the right click menu so they all show the
- * same state and the same messages.
+ * Runs background removal for one image element, or puts the background
+ * back when it was already removed. Shared by the side panel, the quick
+ * toolbar and the right click menu so they all show the same state and
+ * the same messages.
  */
 import { useCallback, useSyncExternalStore } from "react";
 import type { ImageElement } from "../model/types";
@@ -19,6 +20,10 @@ export interface RemoveBackgroundControls {
   ready: boolean;
   /** True while this element's cutout is queued or running. */
   busy: boolean;
+  /** True when the background was removed and the original is still around. */
+  removed: boolean;
+  /** What the button should say. */
+  label: string;
   /** What the remover is doing right now, for a busy label. */
   progress: string | null;
   run: () => Promise<void>;
@@ -38,9 +43,16 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
   const loaded = useRemovalProgressStore((s) => s.loaded);
   const total = useRemovalProgressStore((s) => s.total);
 
+  const removed = Boolean(element.originalSrc);
+
   const run = useCallback(async () => {
     const { showToast, setImageBusy, busyImageIds } = useEditorUiStore.getState();
     if (busyImageIds.includes(element.id)) return;
+    if (element.originalSrc) {
+      useProjectStore.getState().updateElement(element.id, { src: element.originalSrc, originalSrc: undefined });
+      showToast("Background put back.");
+      return;
+    }
     const pageId = useProjectStore.getState().currentPageId;
     setImageBusy(element.id, true);
     try {
@@ -52,14 +64,15 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
         showToast("The image is no longer on this page, so the cut out was not applied.", "error");
         return;
       }
-      store.updateElement(element.id, { src: result.src, naturalWidth: result.width, naturalHeight: result.height });
-      showToast("Background removed. Undo with Ctrl+Z to bring it back.");
+      store.updateElement(element.id, { src: result.src, naturalWidth: result.width, naturalHeight: result.height, originalSrc: element.src });
+      showToast("Background removed. Press the button again to put it back.");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Background removal failed", "error");
     } finally {
       setImageBusy(element.id, false);
     }
-  }, [element.id, element.src]);
+  }, [element.id, element.src, element.originalSrc]);
 
-  return { supported, ready, busy, progress: busy ? describeRemovalPhase({ phase, loaded, total }) : null, run };
+  const label = removed ? "Restore background" : "Remove background";
+  return { supported, ready, busy, removed, label, progress: busy ? describeRemovalPhase({ phase, loaded, total }) : null, run };
 }

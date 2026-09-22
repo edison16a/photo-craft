@@ -24,6 +24,8 @@ interface MenuContext {
   /** Page position of the right click, for actions that place things. */
   point: { x: number; y: number };
   removeBackgroundAvailable: boolean;
+  /** What the background entry says, since it also puts a background back. */
+  removeBackgroundLabel: string;
   onRemoveBackground: () => void;
 }
 
@@ -54,7 +56,7 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
   if (single?.type === "image") {
     entries.push({
       id: "remove-background",
-      label: "Remove background",
+      label: context.removeBackgroundLabel,
       icon: "image",
       disabled: !context.removeBackgroundAvailable,
       run: context.onRemoveBackground,

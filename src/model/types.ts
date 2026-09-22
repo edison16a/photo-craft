@@ -75,6 +75,8 @@ export interface ImageElement extends ElementBase {
   src: string;
   naturalWidth: number;
   naturalHeight: number;
+  /** The picture before its background was removed, so it can be put back. */
+  originalSrc?: string;
 }
 
 /** Anything that can sit on a page. */
