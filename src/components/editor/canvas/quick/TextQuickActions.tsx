@@ -1,5 +1,6 @@
 "use client";
 import type { TextAlign, TextElement } from "@/model/types";
+import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
 import { useProjectStore } from "@/store/project-store";
 import { ColorPicker } from "../../../ui/ColorPicker";
 import { IconButton } from "../../../ui/IconButton";
@@ -16,14 +17,16 @@ const ALIGN_ICON = { left: "textLeft", center: "textCenter", right: "textRight" 
 /** Font, size, style, colour and alignment for a text element. */
 export function TextQuickActions({ element }: TextQuickActionsProps) {
   const update = (patch: Partial<TextElement>) => useProjectStore.getState().updateElement(element.id, patch);
+  const live = useLiveElementUpdate([element.id]);
   return (
     <>
       <FontPicker compact value={element.fontFamily} onChange={(fontFamily) => update({ fontFamily })} />
-      <NumberField compact label="Font size" value={element.fontSize} min={1} max={2000} onCommit={(fontSize) => update({ fontSize })} />
+      <NumberField compact label="Font size" value={element.fontSize} min={1} max={2000}
+        onPreview={(fontSize) => live.preview({ fontSize })} onCommit={(fontSize) => live.commit({ fontSize })} />
       <IconButton icon="bold" label="Bold" active={element.fontWeight === "bold"} onClick={() => update({ fontWeight: element.fontWeight === "bold" ? "normal" : "bold" })} />
       <IconButton icon="italic" label="Italic" active={element.fontStyle === "italic"} onClick={() => update({ fontStyle: element.fontStyle === "italic" ? "normal" : "italic" })} />
       <IconButton icon="underline" label="Underline" active={element.underline} onClick={() => update({ underline: !element.underline })} />
-      <ColorPicker compact label="Text colour" value={element.fill} onChange={(fill) => update({ fill })} />
+      <ColorPicker compact label="Text colour" value={element.fill} onChange={(fill) => live.commit({ fill })} onPreview={(fill) => live.preview({ fill })} />
       <IconButton icon={ALIGN_ICON[element.align]} label={`Align ${element.align}, click to change`} onClick={() => update({ align: NEXT_ALIGN[element.align] })} />
       <span className="quick-toolbar__divider" />
     </>

@@ -11,6 +11,8 @@ import { NativeColorInput } from "./NativeColorInput";
 interface ColorPaletteProps {
   value: string;
   onChange: (hex: string) => void;
+  /** Live preview while the browser colour dialog is open. */
+  onPreview?: (hex: string) => void;
   /** Show a "None" option that sets the colour to "transparent". */
   allowTransparent?: boolean;
 }
@@ -41,7 +43,7 @@ function Swatches({ colors, value, onChange, scroll }: SwatchRowProps) {
 }
 
 /** Colour choices shared by every picker in the app. */
-export function ColorPalette({ value, onChange, allowTransparent }: ColorPaletteProps) {
+export function ColorPalette({ value, onChange, onPreview, allowTransparent }: ColorPaletteProps) {
   const projectColors = useProjectColors();
   const [hexDraft, setHexDraft] = useState(value);
 
@@ -85,7 +87,7 @@ export function ColorPalette({ value, onChange, allowTransparent }: ColorPalette
           onBlur={commitHex}
           onKeyDown={(event) => event.key === "Enter" && commitHex()}
         />
-        <NativeColorInput value={isValidHex(value) ? normalizeHex(value) : "#000000"} onCommit={onChange} />
+        <NativeColorInput value={isValidHex(value) ? normalizeHex(value) : "#000000"} onCommit={onChange} onPreview={onPreview} />
         {allowTransparent ? (
           <button type="button" className="btn btn--sm" onClick={() => onChange("transparent")}>
             None

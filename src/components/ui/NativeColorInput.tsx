@@ -5,14 +5,16 @@ interface NativeColorInputProps {
   /** A normalised six digit hex colour. */
   value: string;
   onCommit: (hex: string) => void;
+  /** Shows each colour on the canvas while the dialog is open. */
+  onPreview?: (hex: string) => void;
 }
 
 /**
  * The browser's own colour dialog. React's onChange fires for every move
- * inside the dialog, so the value is kept locally and only stored on the
- * native change event, which fires once when the dialog closes.
+ * inside the dialog and drives the live preview; the value is only stored
+ * on the native change event, which fires once when the dialog closes.
  */
-export function NativeColorInput({ value, onCommit }: NativeColorInputProps) {
+export function NativeColorInput({ value, onCommit, onPreview }: NativeColorInputProps) {
   const [draft, setDraft] = useState(value);
   const ref = useRef<HTMLInputElement>(null);
   const commitRef = useRef(onCommit);
@@ -35,7 +37,10 @@ export function NativeColorInput({ value, onCommit }: NativeColorInputProps) {
       className="color-native"
       aria-label="Custom colour"
       value={draft}
-      onChange={(event) => setDraft(event.target.value)}
+      onChange={(event) => {
+        setDraft(event.target.value);
+        onPreview?.(event.target.value);
+      }}
     />
   );
 }

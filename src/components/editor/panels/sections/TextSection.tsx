@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
 import type { TextAlign, TextElement } from "@/model/types";
 import { useProjectStore } from "@/store/project-store";
 import { ColorPicker } from "../../../ui/ColorPicker";
@@ -18,6 +19,9 @@ interface TextSectionProps {
  */
 export function TextSection({ element }: TextSectionProps) {
   const update = (patch: Partial<TextElement>) => useProjectStore.getState().updateElement(element.id, patch);
+  const live = useLiveElementUpdate([element.id]);
+  const preview = (patch: Partial<TextElement>) => live.preview(patch);
+  const commit = (patch: Partial<TextElement>) => live.commit(patch);
   const [draft, setDraft] = useState(element.text);
   const commitRef = useRef<() => void>(() => undefined);
 
@@ -48,8 +52,9 @@ export function TextSection({ element }: TextSectionProps) {
       />
       <FontPicker value={element.fontFamily} onChange={(fontFamily) => update({ fontFamily })} />
       <div className="row" style={{ alignItems: "flex-end" }}>
-        <NumberField label="Size" value={element.fontSize} min={1} max={2000} suffix="px" onCommit={(fontSize) => update({ fontSize })} />
-        <ColorPicker label="Colour" value={element.fill} onChange={(fill) => update({ fill })} />
+        <NumberField label="Size" value={element.fontSize} min={1} max={2000} suffix="px"
+          onPreview={(fontSize) => preview({ fontSize })} onCommit={(fontSize) => commit({ fontSize })} />
+        <ColorPicker label="Colour" value={element.fill} onChange={(fill) => commit({ fill })} onPreview={(fill) => preview({ fill })} />
       </div>
       <div className="row row--wrap">
         <IconButton icon="bold" label="Bold" active={element.fontWeight === "bold"} onClick={() => update({ fontWeight: element.fontWeight === "bold" ? "normal" : "bold" })} />
@@ -61,8 +66,10 @@ export function TextSection({ element }: TextSectionProps) {
         ))}
       </div>
       <div className="row">
-        <NumberField label="Line height" value={element.lineHeight} min={0.5} max={4} step={0.1} decimals={2} onCommit={(lineHeight) => update({ lineHeight })} />
-        <NumberField label="Letter spacing" value={element.letterSpacing} min={-20} max={100} suffix="px" onCommit={(letterSpacing) => update({ letterSpacing })} />
+        <NumberField label="Line height" value={element.lineHeight} min={0.5} max={4} step={0.1} decimals={2}
+          onPreview={(lineHeight) => preview({ lineHeight })} onCommit={(lineHeight) => commit({ lineHeight })} />
+        <NumberField label="Letter spacing" value={element.letterSpacing} min={-20} max={100} suffix="px"
+          onPreview={(letterSpacing) => preview({ letterSpacing })} onCommit={(letterSpacing) => commit({ letterSpacing })} />
       </div>
     </section>
   );

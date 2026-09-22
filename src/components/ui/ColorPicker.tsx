@@ -7,6 +7,8 @@ interface ColorPickerProps {
   label: string;
   value: string;
   onChange: (hex: string) => void;
+  /** Live preview while the browser colour dialog is open. */
+  onPreview?: (hex: string) => void;
   /** Show a "None" option that sets the colour to "transparent". */
   allowTransparent?: boolean;
   /** Just the swatch, for toolbars. The label becomes the tooltip. */
@@ -14,7 +16,7 @@ interface ColorPickerProps {
 }
 
 /** Swatch button that opens the colour popover next to itself. */
-export function ColorPicker({ label, value, onChange, allowTransparent, compact }: ColorPickerProps) {
+export function ColorPicker({ label, value, onChange, onPreview, allowTransparent, compact }: ColorPickerProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
   const isTransparent = value === "transparent";
@@ -43,7 +45,7 @@ export function ColorPicker({ label, value, onChange, allowTransparent, compact 
         </div>
       )}
       <Popover open={open} anchorRef={anchorRef} onClose={() => setOpen(false)} label={`${label} colours`} width={252}>
-        <ColorPalette value={value} onChange={onChange} allowTransparent={allowTransparent} />
+        <ColorPalette value={value} onChange={onChange} onPreview={onPreview} allowTransparent={allowTransparent} />
       </Popover>
     </>
   );
