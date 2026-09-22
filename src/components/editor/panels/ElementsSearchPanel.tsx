@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAddElement } from "@/hooks/use-add-element";
 import { useSettings } from "@/hooks/use-settings";
 import {
@@ -14,6 +14,16 @@ import { Toggle } from "../../ui/Toggle";
 import { GoogleSetup } from "./GoogleSetup";
 import { SearchResults } from "./SearchResults";
 
+interface LastSearch {
+  query: string;
+  transparentOnly: boolean;
+  results: ImageSearchResult[];
+  nextStart: number | undefined;
+}
+
+/** The most recent search, kept while the editor is open. */
+let lastSearch: LastSearch = { query: "", transparentOnly: true, results: [], nextStart: undefined };
+
 /**
  * Search Google Images for elements. With API credentials the results show
  * inline. Without them, or as well, a popup opens Google Images and you can
@@ -22,13 +32,19 @@ import { SearchResults } from "./SearchResults";
 export function ElementsSearchPanel() {
   const { settings } = useSettings();
   const { addImageUrl } = useAddElement();
-  const [query, setQuery] = useState("");
-  const [transparentOnly, setTransparentOnly] = useState(true);
-  const [results, setResults] = useState<ImageSearchResult[]>([]);
-  const [nextStart, setNextStart] = useState<number | undefined>();
+  const [query, setQuery] = useState(lastSearch.query);
+  const [transparentOnly, setTransparentOnly] = useState(lastSearch.transparentOnly);
+  const [results, setResults] = useState<ImageSearchResult[]>(lastSearch.results);
+  const [nextStart, setNextStart] = useState<number | undefined>(lastSearch.nextStart);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const ready = hasGoogleCredentials(settings);
+
+  // Adding an image switches to the selection panel, which unmounts this one.
+  // Remember the search so coming back does not cost another API call.
+  useEffect(() => {
+    lastSearch = { query, transparentOnly, results, nextStart };
+  }, [query, transparentOnly, results, nextStart]);
 
   const run = async (start?: number) => {
     if (!query.trim() || !ready || busy) return;
