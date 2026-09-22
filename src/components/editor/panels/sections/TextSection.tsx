@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TextAlign, TextElement } from "@/model/types";
 import { useProjectStore } from "@/store/project-store";
 import { ColorPicker } from "../../../ui/ColorPicker";
@@ -11,12 +11,24 @@ interface TextSectionProps {
   element: TextElement;
 }
 
-/** Content, font, size, style, alignment, colour and spacing for text. */
+/**
+ * Content, font, size, style, alignment, colour and spacing for text.
+ * Mounted with a key per element, so the draft always belongs to the
+ * element it was typed for and is committed if the section goes away.
+ */
 export function TextSection({ element }: TextSectionProps) {
   const update = (patch: Partial<TextElement>) => useProjectStore.getState().updateElement(element.id, patch);
   const [draft, setDraft] = useState(element.text);
+  const commitRef = useRef<() => void>(() => undefined);
 
-  useEffect(() => setDraft(element.text), [element.id, element.text]);
+  useEffect(() => setDraft(element.text), [element.text]);
+
+  const commitText = () => {
+    if (draft !== element.text && draft.trim()) update({ text: draft });
+    else setDraft(element.text);
+  };
+  commitRef.current = commitText;
+  useEffect(() => () => commitRef.current(), []);
 
   const aligns: { id: TextAlign; icon: "textLeft" | "textCenter" | "textRight" }[] = [
     { id: "left", icon: "textLeft" },
@@ -32,7 +44,7 @@ export function TextSection({ element }: TextSectionProps) {
         value={draft}
         aria-label="Text content"
         onChange={(event) => setDraft(event.target.value)}
-        onBlur={() => draft !== element.text && draft.trim() && update({ text: draft })}
+        onBlur={commitText}
       />
       <FontPicker value={element.fontFamily} onChange={(fontFamily) => update({ fontFamily })} />
       <div className="row" style={{ alignItems: "flex-end" }}>

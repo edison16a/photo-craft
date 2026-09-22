@@ -1,6 +1,7 @@
 "use client";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { Group } from "react-konva";
+import { blurActiveField } from "@/lib/focus";
 import { flipAttrs, groupAttrs } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { useEditorUiStore } from "@/store/editor-ui-store";
@@ -27,6 +28,7 @@ export function ElementNode({ element }: ElementNodeProps) {
   const onMouseDown = (event: KonvaEventObject<MouseEvent>) => {
     if (tool !== "select") return;
     event.cancelBubble = true;
+    blurActiveField();
     const store = useProjectStore.getState();
     if (event.evt.shiftKey) {
       store.toggleSelected(element.id);

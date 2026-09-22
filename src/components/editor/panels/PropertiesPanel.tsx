@@ -39,9 +39,9 @@ export function PropertiesPanel() {
           {element.locked ? <span className="small muted">Locked</span> : null}
         </div>
       </div>
-      {element.type === "text" ? <TextSection element={element} /> : null}
-      {element.type === "shape" ? <ShapeSection element={element} /> : null}
-      <TransformSection element={element} />
+      {element.type === "text" ? <TextSection key={element.id} element={element} /> : null}
+      {element.type === "shape" ? <ShapeSection key={element.id} element={element} /> : null}
+      <TransformSection key={element.id} element={element} />
       <ArrangeSection elements={[element]} />
     </div>
   );

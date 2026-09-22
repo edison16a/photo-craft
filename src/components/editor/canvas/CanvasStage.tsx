@@ -3,6 +3,7 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import { useRef } from "react";
 import { Group, Layer, Stage } from "react-konva";
 import { useAddElement } from "@/hooks/use-add-element";
+import { blurActiveField } from "@/lib/focus";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
@@ -49,6 +50,7 @@ export function CanvasStage() {
     const onEmpty = event.target === stage || event.target.name() === PAGE_BACKGROUND_NAME;
     const point = pointerOnPage(event);
     if (!onEmpty || !point) return;
+    blurActiveField();
     if (tool === "text") {
       void addText({ x: Math.round(point.x), y: Math.round(point.y) });
       return;
