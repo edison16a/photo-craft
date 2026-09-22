@@ -1,14 +1,13 @@
 /**
- * Runs scripts/background_remover.py as a long lived worker. Server only.
- *
- * The worker loads the model once and answers requests in order over
- * stdin and stdout, see frame-protocol.ts. It is started on the first
- * request and stopped again after a while without work.
+ * Background removal on the server: checks the setup, keeps one Python
+ * worker alive while there is work, and stops it after a quiet spell.
  */
-import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
-import { concatBytes, decodeResponse, encodeRequest, STATUS_OK } from "./frame-protocol";
+import { startWorker, type BackgroundWorker } from "./background-worker";
 import { findPython } from "./python";
+
+export { ImageError } from "./background-worker";
 
 /** What the API reports about the remover. */
 export interface RemovalStatus {
@@ -30,119 +29,83 @@ const SETUP_HINT = "Install Python 3 and run: pip install -r requirements.txt, t
 
 let statusCache: { value: RemovalStatus; at: number } | null = null;
 
+function describeMissingPython(): string {
+  const configured = process.env.PHOTO_CRAFT_PYTHON;
+  const hint = configured ? `PHOTO_CRAFT_PYTHON is set to "${configured}" but it does not run. ` : "No Python interpreter was found. ";
+  return `${hint}${SETUP_HINT}`;
+}
+
 /** Checks that Python and rembg are installed. Cached for a short while. */
 export function getRemovalStatus(): RemovalStatus {
   if (statusCache && Date.now() - statusCache.at < STATUS_TTL_MS) return statusCache.value;
   const python = findPython();
   let value: RemovalStatus;
   if (!python) {
-    value = { available: false, reason: `No Python interpreter was found. ${SETUP_HINT}`, model: MODEL };
+    value = { available: false, reason: describeMissingPython(), model: MODEL };
   } else {
     const probe = spawnSync(python, [SCRIPT, "--check"], { timeout: 15_000, encoding: "utf8" });
     const ok = probe.status === 0 && probe.stdout.includes('"ok": true');
+    const configured = process.env.PHOTO_CRAFT_PYTHON;
+    const wrongInterpreter = configured && configured !== python ? `PHOTO_CRAFT_PYTHON is set to "${configured}" but it does not run, so ${python} was used. ` : "";
     value = ok
       ? { available: true, model: MODEL }
-      : { available: false, reason: `The rembg package is not installed for ${python}. ${SETUP_HINT}`, model: MODEL };
+      : { available: false, reason: `${wrongInterpreter}The rembg package is not installed for ${python}. ${SETUP_HINT}`, model: MODEL };
   }
   statusCache = { value, at: Date.now() };
   return value;
 }
 
-interface Pending {
-  resolve: (png: Uint8Array) => void;
-  reject: (error: Error) => void;
-  timer: ReturnType<typeof setTimeout>;
+let worker: BackgroundWorker | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearIdleTimer(): void {
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = null;
 }
 
-interface Worker {
-  process: ChildProcess;
-  ready: Promise<void>;
-  buffer: Uint8Array;
-  queue: Pending[];
-  idleTimer: ReturnType<typeof setTimeout> | null;
+/** Stops the worker after a quiet spell, but never while a request is in flight. */
+function armIdleTimer(current: BackgroundWorker): void {
+  clearIdleTimer();
+  idleTimer = setTimeout(() => {
+    idleTimer = null;
+    if (worker === current && !current.busy()) current.stop("Idle.");
+    else if (worker === current) armIdleTimer(current);
+  }, IDLE_TIMEOUT_MS);
 }
 
-let worker: Worker | null = null;
-
-function stopWorker(reason: string): void {
-  const current = worker;
-  if (!current) return;
-  worker = null;
-  if (current.idleTimer) clearTimeout(current.idleTimer);
-  for (const pending of current.queue.splice(0)) {
-    clearTimeout(pending.timer);
-    pending.reject(new Error(reason));
-  }
-  current.process.kill();
-}
-
-/** Hands finished frames in the buffer to the requests waiting for them. */
-function drain(current: Worker): void {
-  for (;;) {
-    const decoded = decodeResponse(current.buffer);
-    if (!decoded) return;
-    current.buffer = current.buffer.slice(decoded.consumed);
-    const pending = current.queue.shift();
-    if (!pending) continue;
-    clearTimeout(pending.timer);
-    if (decoded.frame.status === STATUS_OK) pending.resolve(decoded.frame.payload);
-    else pending.reject(new Error(new TextDecoder().decode(decoded.frame.payload)));
-  }
-}
-
-function startWorker(python: string): Worker {
-  const child = spawn(python, [SCRIPT], { stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, PYTHONUNBUFFERED: "1" } });
-  let announce: { resolve: () => void; reject: (error: Error) => void } | null = null;
-  const ready = new Promise<void>((resolve, reject) => {
-    announce = { resolve, reject };
+function getWorker(python: string): BackgroundWorker {
+  if (worker) return worker;
+  const started: BackgroundWorker = startWorker({
+    python,
+    script: SCRIPT,
+    startupTimeoutMs: STARTUP_TIMEOUT_MS,
+    requestTimeoutMs: REQUEST_TIMEOUT_MS,
+    onExit: (reason) => {
+      if (worker === started) {
+        worker = null;
+        clearIdleTimer();
+      }
+      if (reason !== "Idle.") console.warn(`[background-remover] ${reason}`);
+    },
   });
-  const startupTimer = setTimeout(() => stopWorker("The background remover took too long to start."), STARTUP_TIMEOUT_MS);
-  const current: Worker = { process: child, ready, buffer: new Uint8Array(), queue: [], idleTimer: null };
-  let announced = false;
-
-  child.stdout?.on("data", (chunk: Buffer) => {
-    current.buffer = concatBytes(current.buffer, new Uint8Array(chunk));
-    if (!announced) {
-      const newline = current.buffer.indexOf(10);
-      if (newline < 0) return;
-      const line = new TextDecoder().decode(current.buffer.slice(0, newline));
-      current.buffer = current.buffer.slice(newline + 1);
-      announced = true;
-      clearTimeout(startupTimer);
-      const info = JSON.parse(line) as { ready?: boolean; error?: string };
-      if (info.ready) announce?.resolve();
-      else stopWorker(`The background remover failed to start: ${info.error ?? "unknown error"}`);
-    }
-    drain(current);
-  });
-  child.stderr?.on("data", (chunk: Buffer) => {
-    const text = chunk.toString().trim();
-    if (text) console.warn(`[background-remover] ${text}`);
-  });
-  child.on("exit", (code) => {
-    clearTimeout(startupTimer);
-    if (worker === current) stopWorker(`The background remover stopped (exit code ${code ?? "unknown"}).`);
-    announce?.reject(new Error("The background remover stopped before it was ready."));
-  });
-  ready.catch(() => undefined);
-  return current;
+  worker = started;
+  return started;
 }
 
-/** Removes the background from an image and returns a PNG with transparency. */
+/**
+ * Removes the background from an image and returns a PNG with transparency.
+ * Rejects with ImageError when the bytes are not a readable image, and with
+ * a plain Error when the worker is missing or fails.
+ */
 export async function removeBackground(image: Uint8Array): Promise<Uint8Array> {
   const python = findPython();
-  if (!python) throw new Error(`No Python interpreter was found. ${SETUP_HINT}`);
-  if (!worker) worker = startWorker(python);
-  const current = worker;
-  await current.ready;
-  if (current.idleTimer) clearTimeout(current.idleTimer);
-
-  const png = await new Promise<Uint8Array>((resolve, reject) => {
-    const timer = setTimeout(() => stopWorker("The background remover took too long and was restarted."), REQUEST_TIMEOUT_MS);
-    current.queue.push({ resolve, reject, timer });
-    current.process.stdin?.write(encodeRequest(image));
-  });
-
-  if (worker === current) current.idleTimer = setTimeout(() => stopWorker("Idle."), IDLE_TIMEOUT_MS);
-  return png;
+  if (!python) throw new Error(describeMissingPython());
+  const current = getWorker(python);
+  clearIdleTimer();
+  try {
+    await current.ready;
+    return await current.send(image);
+  } finally {
+    if (worker === current) armIdleTimer(current);
+  }
 }
