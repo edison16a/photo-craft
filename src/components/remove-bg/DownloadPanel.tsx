@@ -82,7 +82,6 @@ export function DownloadPanel({ item, items, format, onFormatChange, onClear }: 
               </button>
             ))}
           </div>
-          <p className="small muted">Proportions are always kept. The background stays transparent.</p>
           <button type="button" className="btn btn--primary btn--block" disabled={!ready || busy} onClick={() => void run(() => downloadCutout(item, chosen, format))}>
             {ready ? `Download ${format.toUpperCase()}` : "Not ready yet"}
           </button>
@@ -93,7 +92,6 @@ export function DownloadPanel({ item, items, format, onFormatChange, onClear }: 
           <button type="button" className="btn btn--block" disabled={doneCount === 0 || busy} onClick={() => void run(() => downloadAllCutouts(items, scale, format))}>
             Download all ({doneCount}) as ZIP
           </button>
-          <p className="small muted">Every picture is scaled the same way as this one.</p>
         </>
       ) : null}
       <button type="button" className="btn btn--ghost btn--block" onClick={onClear}>
