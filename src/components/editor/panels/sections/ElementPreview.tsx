@@ -36,7 +36,7 @@ export function ShapePreview({ kind, fill, stroke, size = 48, element }: ShapePr
     }
     switch (kind) {
       case "rectangle":
-        return <rect x={0} y={0} width={box} height={box} rx={2} {...paint} />;
+        return <rect x={0} y={0} width={box} height={box} rx={Math.max(2, previewRadius)} {...paint} />;
       case "ellipse":
         return <ellipse cx={box / 2} cy={box / 2} rx={box / 2} ry={box / 2} {...paint} />;
       case "line":

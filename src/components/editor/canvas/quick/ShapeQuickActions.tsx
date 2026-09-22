@@ -1,4 +1,5 @@
 "use client";
+import { shapeGeometry } from "@/data/shapes";
 import type { ShapeElement } from "@/model/types";
 import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
 import { ColorPicker } from "../../../ui/ColorPicker";
@@ -8,12 +9,15 @@ interface ShapeQuickActionsProps {
   element: ShapeElement;
 }
 
-/** Fill, outline and corner radius for a shape. */
+/** Fill, outline and corner rounding for a shape. */
 export function ShapeQuickActions({ element }: ShapeQuickActionsProps) {
   const live = useLiveElementUpdate([element.id]);
   const preview = (patch: Partial<ShapeElement>) => live.preview(patch);
   const update = (patch: Partial<ShapeElement>) => live.commit(patch);
-  const strokeOnly = element.shape === "line" || element.shape === "arrow";
+  const strokeOnly = element.shape === "line" || element.shape === "arrow" || (element.shape === "custom" && element.closed === false);
+  const geometry = shapeGeometry(element.shape);
+  const roundable = geometry === "rect" || geometry === "polygon" || geometry === "custom";
+  const maxRadius = Math.max(1, Math.floor(Math.min(element.width, element.height) / 2));
   return (
     <>
       {strokeOnly ? null : (
@@ -29,8 +33,8 @@ export function ShapeQuickActions({ element }: ShapeQuickActionsProps) {
       />
       <NumberField compact label={strokeOnly ? "Thickness" : "Outline width"} value={element.strokeWidth} min={0} max={200}
         onPreview={(strokeWidth) => preview({ strokeWidth })} onCommit={(strokeWidth) => update({ strokeWidth })} />
-      {element.shape === "rectangle" ? (
-        <NumberField compact label="Corner radius" value={element.cornerRadius} min={0} max={1000}
+      {roundable ? (
+        <NumberField compact label="Corner rounding" value={element.cornerRadius} min={0} max={maxRadius}
           onPreview={(cornerRadius) => preview({ cornerRadius })} onCommit={(cornerRadius) => update({ cornerRadius })} />
       ) : null}
       <span className="quick-toolbar__divider" />
