@@ -18,7 +18,6 @@ export interface Toast {
   kind: "info" | "error";
 }
 
-/** State and actions of the editor UI store. */
 /** An open right click menu: where it is on screen and what was clicked. */
 export interface ContextMenuState {
   x: number;
