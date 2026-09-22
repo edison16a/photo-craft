@@ -37,10 +37,6 @@ export function HomeScreen() {
       <section className="home__projects">
         {error ? <p className="muted">{error}</p> : null}
         <div className="project-grid">
-          <Link href="/new" className="project-card project-card--new" aria-label="New project">
-            <Icon name="plus" size={28} />
-            <span>New project</span>
-          </Link>
           {loading
             ? null
             : projects.map((project) => (
@@ -52,6 +48,11 @@ export function HomeScreen() {
                   onDelete={() => setDeleting(project)}
                 />
               ))}
+          {/* Last in the grid, so it follows the projects instead of leading them. */}
+          <Link href="/new" className="project-card project-card--new" aria-label="New project">
+            <Icon name="plus" size={28} />
+            <span>New project</span>
+          </Link>
         </div>
       </section>
 
