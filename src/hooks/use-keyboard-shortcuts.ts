@@ -25,11 +25,16 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
       if (useEditorUiStore.getState().editingTextId) return;
+      // A dialog owns the keyboard while it is open.
+      if (document.querySelector('[aria-modal="true"]')) return;
 
       const store = useProjectStore.getState();
       const ids = store.selectedIds;
       const mod = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
+
+      if (!mod && !event.altKey && key === "v") return stop(event, () => useEditorUiStore.getState().setTool("select"));
+      if (!mod && !event.altKey && key === "t") return stop(event, () => useEditorUiStore.getState().setTool("text"));
 
       if (mod && key === "z" && event.shiftKey) return stop(event, store.redo);
       if (mod && key === "z") return stop(event, store.undo);

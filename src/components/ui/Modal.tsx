@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { IconButton } from "./IconButton";
 
 interface ModalProps {
@@ -10,15 +10,25 @@ interface ModalProps {
   width?: number;
 }
 
-/** Centred dialog with a backdrop. Escape and the backdrop close it. */
+/**
+ * Centred dialog with a backdrop. Escape and the backdrop close it. The
+ * dialog takes focus when it opens, and editor shortcuts stay quiet while
+ * an element with aria-modal is on the page.
+ */
 export function Modal({ open, title, onClose, children, width }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!open) return;
+    dialogRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -26,10 +36,12 @@ export function Modal({ open, title, onClose, children, width }: ModalProps) {
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div
+        ref={dialogRef}
         className="modal"
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        tabIndex={-1}
         style={width ? { maxWidth: width } : undefined}
         onMouseDown={(event) => event.stopPropagation()}
       >
