@@ -35,9 +35,9 @@ export function QuickToolbar() {
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setSize({ width: Math.round(width), height: Math.round(height) });
+    // The border box, not contentRect, so padding and border count.
+    const observer = new ResizeObserver(() => {
+      setSize({ width: node.offsetWidth, height: node.offsetHeight });
     });
     observer.observe(node);
     return () => observer.disconnect();
