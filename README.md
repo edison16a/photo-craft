@@ -8,9 +8,7 @@ I built it because I was tired of using Canva and being limited on features that
 
 <img width="1510" height="857" alt="image" src="https://github.com/user-attachments/assets/60f2e79a-4dc0-4473-b224-f3ee90faec28" />
 
-<img width="1509" height="858" alt="image" src="https://github.com/user-attachments/assets/e54a09ef-2874-4019-9081-4967a9ca0e3a" />
-
-
+<img width="1512" height="858" alt="image" src="https://github.com/user-attachments/assets/3432091e-355f-48f5-935c-901eea392618" />
 
 ## What you get
 
