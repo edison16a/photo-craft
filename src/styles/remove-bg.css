@@ -357,3 +357,21 @@
     linear-gradient(45deg, transparent 75%, #1c2028 75%),
     linear-gradient(-45deg, transparent 75%, #1c2028 75%);
 }
+
+/* Effects over an image on the editor canvas: stars while busy, the sweep after. */
+.image-effect {
+  position: absolute;
+  z-index: 5;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.image-effect--busy {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.image-effect__compare {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}

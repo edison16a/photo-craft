@@ -53,6 +53,8 @@ export interface EditorUiState {
    * the image is deselected and selected again mid run.
    */
   busyImageIds: string[];
+  /** The image whose cutout just landed, with both pictures for the sweep. */
+  reveal: { elementId: string; originalSrc: string; cutoutSrc: string } | null;
   /** What the draw tool makes: closed or open, and the grid its corners snap to. */
   drawOptions: DrawOptions;
   /** Corners placed so far with the draw tool, as page coordinates in x, y pairs. */
@@ -73,6 +75,8 @@ export interface EditorUiState {
   hideToast: () => void;
   setExportOpen: (open: boolean) => void;
   setImageBusy: (id: string, busy: boolean) => void;
+  startReveal: (reveal: { elementId: string; originalSrc: string; cutoutSrc: string }) => void;
+  endReveal: () => void;
   setDrawOptions: (patch: Partial<DrawOptions>) => void;
   setDrawPoints: (points: number[]) => void;
 }
@@ -108,6 +112,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   toast: null,
   exportOpen: false,
   busyImageIds: [],
+  reveal: null,
   drawOptions: { closed: true, grid: 20 },
   drawPoints: [],
 
@@ -136,6 +141,8 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
       const rest = state.busyImageIds.filter((candidate) => candidate !== id);
       return { busyImageIds: busy ? [...rest, id] : rest };
     }),
+  startReveal: (reveal) => set({ reveal }),
+  endReveal: () => set({ reveal: null }),
   setDrawOptions: (patch) => set((state) => ({ drawOptions: { ...state.drawOptions, ...patch } })),
   setDrawPoints: (drawPoints) => set({ drawPoints }),
 }));

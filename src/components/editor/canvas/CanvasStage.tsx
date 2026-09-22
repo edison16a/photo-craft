@@ -11,6 +11,7 @@ import { screenToPage } from "@/store/viewport-actions";
 import { ContextMenu } from "./ContextMenu";
 import { DrawGrid, DrawPreview } from "./DrawPreview";
 import { ElementNode } from "./ElementNode";
+import { ImageEffectsOverlay } from "./ImageEffectsOverlay";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
 import { QuickToolbar } from "./QuickToolbar";
@@ -164,6 +165,7 @@ export function CanvasStage() {
           </Layer>
         </Stage>
       ) : null}
+      <ImageEffectsOverlay />
       <TextEditOverlay />
       <QuickToolbar />
       <ContextMenu />

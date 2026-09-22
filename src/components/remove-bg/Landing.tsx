@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { CompareView } from "./CompareView";
+import { CompareView } from "../ui/CompareView";
 import { Icon } from "../ui/Icon";
 
 interface LandingProps {

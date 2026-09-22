@@ -65,6 +65,7 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
         return;
       }
       store.updateElement(element.id, { src: result.src, naturalWidth: result.width, naturalHeight: result.height, originalSrc: element.src });
+      useEditorUiStore.getState().startReveal({ elementId: element.id, originalSrc: element.src, cutoutSrc: result.src });
       showToast("Background removed. Press the button again to put it back.");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Background removal failed", "error");

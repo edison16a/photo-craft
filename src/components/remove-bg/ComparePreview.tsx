@@ -2,8 +2,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { describeRemovalPhase, useRemovalProgressStore } from "@/store/removal-progress-store";
 import { useRemoveBgStore, type RemovalItem } from "@/store/remove-bg-store";
-import { CompareView } from "./CompareView";
-import { Sparkles } from "./Sparkles";
+import { CompareView } from "../ui/CompareView";
+import { Sparkles } from "../ui/Sparkles";
 
 interface ComparePreviewProps {
   item: RemovalItem | null;

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
-import { Icon } from "../ui/Icon";
+import { Icon } from "./Icon";
 
 interface CompareViewProps {
   originalUrl: string;
@@ -90,8 +90,9 @@ export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, reve
           <img className="compare__layer" src={cutoutUrl} alt="" draggable={false} />
         </div>
       ) : null}
-      {interactive ? (
+      {interactive || (cutoutUrl && revealing) ? (
         <div className="compare__line" style={{ left: `${split * 100}%` }}>
+          {interactive ? (
           <div
             className="compare__handle"
             role="slider"
@@ -105,6 +106,7 @@ export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, reve
             <Icon name="chevronLeft" size={14} />
             <Icon name="chevronRight" size={14} />
           </div>
+          ) : null}
         </div>
       ) : null}
       {children}
