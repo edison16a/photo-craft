@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { describeRemovalPhase, useRemovalProgressStore } from "@/store/removal-progress-store";
 import { useRemoveBgStore, type RemovalItem } from "@/store/remove-bg-store";
 import { CompareView } from "../ui/CompareView";
 import { Sparkles } from "../ui/Sparkles";
@@ -20,7 +19,8 @@ const REVEAL_MS = 1400;
 
 /**
  * The big view of the chosen picture. While it is being worked on, stars
- * twinkle over the original. When the cutout arrives it sweeps in from the
+ * twinkle over the original and nothing else gets in the way. When the
+ * cutout arrives it sweeps in from the
  * right, and from then on the line can be dragged to compare, or a brush
  * can paint on it. Render it with the item's id as its key so the state
  * resets when the picture changes.
@@ -31,9 +31,6 @@ export function ComparePreview({ item }: ComparePreviewProps) {
   const [split, setSplit] = useState(0);
   const [revealing, setRevealing] = useState(false);
   const previousStatus = useRef(item?.status);
-  const phase = useRemovalProgressStore((s) => s.phase);
-  const loaded = useRemovalProgressStore((s) => s.loaded);
-  const total = useRemovalProgressStore((s) => s.total);
   const touchUp = useRemoveBgStore((s) => s.touchUp);
   const width = item?.width ?? 0;
   const height = item?.height ?? 0;
@@ -83,8 +80,6 @@ export function ComparePreview({ item }: ComparePreviewProps) {
     );
   }
   const done = item.status === "done" && Boolean(item.resultUrl);
-  const busy = item.status === "working" || item.status === "queued";
-  const busyText = item.status === "working" ? (describeRemovalPhase({ phase, loaded, total }) ?? "Removing background") : "Waiting for its turn";
 
   const painting = done && touchUp.tool !== null;
   return (
@@ -112,11 +107,6 @@ export function ComparePreview({ item }: ComparePreviewProps) {
           className={item.status === "working" ? "compare--busy" : ""}
         >
           {item.status === "working" ? <Sparkles seed={item.id} /> : null}
-          {busy ? (
-            <div className="compare__status" role="status">
-              {busyText}
-            </div>
-          ) : null}
           {item.status === "failed" ? (
             <div className="compare__status compare__status--error" role="status">
               <span>{item.error ?? "Background removal failed."}</span>
