@@ -79,7 +79,7 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
     { id: "back", label: "Send to back", icon: "toBack", run: () => store().reorder(ids, "back") },
     MENU_DIVIDER,
     { id: "lock", label: allLocked ? "Unlock" : "Lock", icon: allLocked ? "unlock" : "lock", run: () => store().setLocked(ids, !allLocked) },
-    { id: "copy", label: "Copy", shortcut: "Ctrl+C", run: () => store().copy(ids) },
+    { id: "copy", label: "Copy", icon: "duplicate", shortcut: "Ctrl+C", run: () => store().copy(ids) },
     { id: "duplicate", label: "Duplicate", icon: "duplicate", shortcut: "Ctrl+D", run: () => store().duplicateElements(ids) },
     MENU_DIVIDER,
     { id: "delete", label: "Delete", icon: "trash", shortcut: "Del", danger: true, run: () => store().removeElements(ids) },
