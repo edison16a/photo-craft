@@ -10,18 +10,12 @@
 
 /** Everything the user can configure. Keep it flat and JSON friendly. */
 export interface AppSettings {
-  /** Google Custom Search API key. Empty when not set up. */
-  googleApiKey: string;
-  /** Google Programmable Search Engine id (the "cx" value). */
-  googleSearchEngineId: string;
   /** Save projects automatically while editing. */
   autosave: boolean;
 }
 
 /** What a fresh install starts with. */
 export const DEFAULT_SETTINGS: AppSettings = {
-  googleApiKey: "",
-  googleSearchEngineId: "",
   autosave: true,
 };
 
@@ -46,10 +40,6 @@ function coerceSettings(raw: unknown): AppSettings {
   const result: AppSettings = { ...DEFAULT_SETTINGS };
   if (typeof raw !== "object" || raw === null) return result;
   const source = raw as Record<string, unknown>;
-  if (typeof source.googleApiKey === "string") result.googleApiKey = source.googleApiKey;
-  if (typeof source.googleSearchEngineId === "string") {
-    result.googleSearchEngineId = source.googleSearchEngineId;
-  }
   if (typeof source.autosave === "boolean") result.autosave = source.autosave;
   return result;
 }

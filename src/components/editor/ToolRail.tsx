@@ -8,7 +8,6 @@ const TOOLS: { id: Tool; icon: IconName; label: string; hint: string }[] = [
   { id: "text", icon: "text", label: "Text", hint: "Add text (T)" },
   { id: "shapes", icon: "shapes", label: "Shapes", hint: "Add a shape" },
   { id: "upload", icon: "upload", label: "Upload", hint: "Import an image" },
-  { id: "elements", icon: "search", label: "Elements", hint: "Search Google Images for elements" },
 ];
 
 /** The vertical tool bar on the left. */

@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useEditorUiStore, type PanelKind } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
-import { ElementsSearchPanel } from "./ElementsSearchPanel";
 import { PagePanel } from "./PagePanel";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { ShapesPanel } from "./ShapesPanel";
@@ -15,7 +14,6 @@ const TITLES: Record<PanelKind, string> = {
   text: "Text",
   shapes: "Shapes",
   upload: "Upload",
-  elements: "Elements",
 };
 
 /**
@@ -61,7 +59,6 @@ export function RightPanel() {
         {shown === "text" ? <TextPanel /> : null}
         {shown === "shapes" ? <ShapesPanel /> : null}
         {shown === "upload" ? <UploadPanel /> : null}
-        {shown === "elements" ? <ElementsSearchPanel /> : null}
       </div>
     </aside>
   );

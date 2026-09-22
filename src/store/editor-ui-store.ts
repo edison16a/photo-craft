@@ -9,9 +9,9 @@ import type { Guide } from "../lib/snapping";
 import type { Point } from "../model/types";
 
 /** The tools in the left rail. */
-export type Tool = "select" | "text" | "shapes" | "upload" | "elements";
+export type Tool = "select" | "text" | "shapes" | "upload";
 /** The panels the right side can show. */
-export type PanelKind = "properties" | "page" | "text" | "shapes" | "upload" | "elements";
+export type PanelKind = "properties" | "page" | "text" | "shapes" | "upload";
 
 /** A short message shown at the bottom of the editor. */
 export interface Toast {
@@ -64,7 +64,6 @@ const PANEL_FOR_TOOL: Record<Tool, PanelKind> = {
   text: "text",
   shapes: "shapes",
   upload: "upload",
-  elements: "elements",
 };
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;

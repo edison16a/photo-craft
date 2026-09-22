@@ -1,7 +1,6 @@
 "use client";
 /**
- * React binding for the app settings stored in localStorage (Google API
- * credentials and the autosave switch).
+ * React binding for the app settings stored in localStorage.
  */
 import { useCallback, useEffect, useState } from "react";
 import {
