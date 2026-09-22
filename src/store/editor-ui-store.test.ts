@@ -5,7 +5,7 @@ const store = () => useEditorUiStore.getState();
 
 describe("editor ui store", () => {
   beforeEach(() => {
-    useEditorUiStore.setState({ tool: "select", panel: "page", interacting: false, contextMenu: null });
+    useEditorUiStore.setState({ tool: "select", panel: "page", interacting: false, contextMenu: null, busyImageIds: [] });
   });
 
   it("opens the panel that belongs to the chosen tool", () => {
@@ -29,5 +29,20 @@ describe("editor ui store", () => {
     expect(store().zoom).toBe(8);
     store().setViewport(0, { x: 0, y: 0 });
     expect(store().zoom).toBe(0.05);
+  });
+
+  it("marks an image busy once and clears it again", () => {
+    store().setImageBusy("img", true);
+    store().setImageBusy("img", true);
+    expect(store().busyImageIds).toEqual(["img"]);
+    store().setImageBusy("img", false);
+    expect(store().busyImageIds).toEqual([]);
+  });
+
+  it("keeps other busy images when one finishes", () => {
+    store().setImageBusy("a", true);
+    store().setImageBusy("b", true);
+    store().setImageBusy("a", false);
+    expect(store().busyImageIds).toEqual(["b"]);
   });
 });
