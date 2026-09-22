@@ -16,8 +16,9 @@ export function FontPicker({ value, onChange, compact }: FontPickerProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
-  const pick = async (family: string) => {
-    await ensureFontLoaded(family);
+  /** Applies the font at once; the text redraws itself when the font file arrives. */
+  const pick = (family: string) => {
+    void ensureFontLoaded(family);
     onChange(family);
     setOpen(false);
   };
@@ -48,7 +49,7 @@ export function FontPicker({ value, onChange, compact }: FontPickerProps) {
         </div>
       )}
       <Popover open={open} anchorRef={anchorRef} onClose={() => setOpen(false)} label="Fonts" width={280}>
-        <FontList value={value} onPick={(family) => void pick(family)} />
+        <FontList value={value} onPick={pick} />
       </Popover>
     </>
   );
