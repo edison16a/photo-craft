@@ -72,16 +72,6 @@
   transition: left 240ms ease, width 240ms ease, opacity 160ms ease;
 }
 
-/* The new project page keeps a plain bar: back link on the left, theme on the right. */
-.home__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--topbar-height);
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
 .home__name {
   font-size: 18px;
   font-weight: 700;

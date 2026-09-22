@@ -1,12 +1,9 @@
 "use client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PROJECT_SIZE_LIMITS, type SizePreset } from "@/data/presets";
 import { createProject } from "@/model/project-factories";
 import { saveProject } from "@/store/persistence";
-import { CubeLogo } from "../logo/CubeLogo";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { PresetGrid } from "./PresetGrid";
 
 const { min, max } = PROJECT_SIZE_LIMITS;
@@ -50,14 +47,7 @@ export function NewProjectScreen() {
   };
 
   return (
-    <main className="page-scroll new-project">
-      <header className="home__bar">
-        <Link href="/" className="row" style={{ gap: 10 }}>
-          <CubeLogo size={28} />
-          <span className="home__name">Photo Craft</span>
-        </Link>
-        <ThemeToggle />
-      </header>
+    <main className="new-project">
       <div className="new-project__body">
         <h1 className="new-project__title">Create a project</h1>
         <div className="new-project__form">

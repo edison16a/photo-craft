@@ -10,7 +10,7 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 /** The two sections of the site, in the order they appear. */
 const SECTIONS = [
   { href: "/", label: "Photo Editor" },
-  { href: "/remove-bg", label: "Remove background" },
+  { href: "/remove-bg", label: "Background Remover" },
 ] as const;
 
 /** Where the blue line sits, relative to the nav. */
@@ -20,10 +20,10 @@ interface Underline {
 }
 
 /**
- * Bar at the top of the photo editor home and the remove background page:
- * name, the two sections, GitHub and theme. It lives in the shared layout,
- * so it stays put while the page below changes and the blue line slides
- * from one section to the other.
+ * Bar at the top of the photo editor home, the new project page and the
+ * background remover: name, the two sections, GitHub and theme. It lives
+ * in the shared layout, so it stays put while the page below changes and
+ * the blue line slides from one section to the other.
  */
 export function SiteHeader() {
   const pathname = usePathname();
@@ -44,7 +44,8 @@ export function SiteHeader() {
       </Link>
       <nav ref={navRef} className="site-nav" aria-label="Sections">
         {SECTIONS.map((section) => {
-          const active = pathname === section.href;
+          // Creating a project belongs to the editor section.
+          const active = pathname === section.href || (section.href === "/" && pathname.startsWith("/new"));
           return (
             <Link
               key={section.href}
