@@ -2,6 +2,7 @@
  * Element actions on the current page: add, change, remove, duplicate,
  * reorder, align, lock, flip, copy and paste.
  */
+import { resizeKeepingCorner } from "../../lib/geometry";
 import { cloneElement } from "../../model/element-factories";
 import type { CanvasElement } from "../../model/types";
 import { alignElements, type Alignment } from "../alignment";
@@ -87,7 +88,10 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
           const width = size.width ?? element.width;
           const height = size.height ?? element.height;
           if (width === element.width && height === element.height) return element;
-          return { ...element, width, height };
+          // Keep the rotated top left corner still, so rotated text grows
+          // along its own axis instead of swinging around the centre.
+          const { x, y } = resizeKeepingCorner(element, element.rotation, width, height);
+          return { ...element, x, y, width, height };
         }),
       { quiet: true },
     );

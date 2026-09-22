@@ -93,6 +93,25 @@ export function rotatedBoundingBox(rect: Rect, rotationDeg: number): Rect {
 }
 
 /**
+ * Top left for a box that changes size but must keep its rotated top left
+ * corner where it is on the page. Elements rotate around their centre, so
+ * growing a rotated box while leaving x and y alone swings that corner
+ * away. Text uses this when its measured height changes, so a rotated
+ * text grows along its own down direction instead of jumping.
+ */
+export function resizeKeepingCorner(rect: Rect, rotationDeg: number, width: number, height: number): Point {
+  const { cos, sin } = cosSinDeg(rotationDeg);
+  const halfGrowthX = (width - rect.width) / 2;
+  const halfGrowthY = (height - rect.height) / 2;
+  // The centre moves by the half growth in page space, and the corner
+  // moves by the half growth rotated. The difference is the drift.
+  return {
+    x: rect.x - (halfGrowthX - (halfGrowthX * cos - halfGrowthY * sin)),
+    y: rect.y - (halfGrowthY - (halfGrowthX * sin + halfGrowthY * cos)),
+  };
+}
+
+/**
  * Smallest box that contains every box in the list. An empty list gives a
  * zero sized box at the origin so callers do not have to special case it.
  */

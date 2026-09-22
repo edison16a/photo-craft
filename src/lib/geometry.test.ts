@@ -9,6 +9,7 @@ import {
   radToDeg,
   rectContainsPoint,
   rectsIntersect,
+  resizeKeepingCorner,
   rotatedBoundingBox,
   roundTo,
   scaleToFit,
@@ -203,3 +204,42 @@ describe("roundTo", () => {
     expect(roundTo(Number.POSITIVE_INFINITY)).toBe(Number.POSITIVE_INFINITY);
   });
 });
+
+describe("resizeKeepingCorner", () => {
+  const box: Rect = { x: 100, y: 200, width: 300, height: 60 };
+
+  it("leaves an upright box where it is", () => {
+    expect(resizeKeepingCorner(box, 0, 300, 120)).toEqual({ x: 100, y: 200 });
+    expect(resizeKeepingCorner(box, 0, 500, 120)).toEqual({ x: 100, y: 200 });
+  });
+
+  it("keeps the rotated top left corner in place when the height grows", () => {
+    const grown = resizeKeepingCorner(box, 90, 300, 120);
+    // At 90 degrees the box hangs to the left, so growing it downwards in
+    // its own frame means growing it leftwards on the page.
+    expect(grown).toEqual({ x: 70, y: 170 });
+    const before = rotatedCorner(box, 90);
+    const after = rotatedCorner({ ...box, ...grown, height: 120 }, 90);
+    expect(after.x).toBeCloseTo(before.x, 6);
+    expect(after.y).toBeCloseTo(before.y, 6);
+  });
+
+  it("holds for any angle and for width changes too", () => {
+    for (const rotation of [30, 45, 135, 200, 315]) {
+      const moved = resizeKeepingCorner(box, rotation, 260, 130);
+      const before = rotatedCorner(box, rotation);
+      const after = rotatedCorner({ ...box, ...moved, width: 260, height: 130 }, rotation);
+      expect(after.x).toBeCloseTo(before.x, 6);
+      expect(after.y).toBeCloseTo(before.y, 6);
+    }
+  });
+});
+
+/** Page position of a box's top left corner after rotating it around its centre. */
+function rotatedCorner(rect: Rect, rotationDeg: number) {
+  const centre = centerOf(rect);
+  const rad = degToRad(rotationDeg);
+  const dx = -rect.width / 2;
+  const dy = -rect.height / 2;
+  return { x: centre.x + dx * Math.cos(rad) - dy * Math.sin(rad), y: centre.y + dx * Math.sin(rad) + dy * Math.cos(rad) };
+}
