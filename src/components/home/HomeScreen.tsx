@@ -3,13 +3,17 @@ import Link from "next/link";
 import { useState } from "react";
 import { useProjectList } from "@/hooks/use-project-list";
 import type { ProjectSummary } from "@/model/types";
+import { CubeLogo } from "../logo/CubeLogo";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { GitHubMark } from "../ui/GitHubMark";
+import { Icon } from "../ui/Icon";
 import { PromptDialog } from "../ui/PromptDialog";
 import { ThemeToggle } from "../ui/ThemeToggle";
-import { Hero } from "./Hero";
 import { ProjectCard } from "./ProjectCard";
 
-/** Home page: the pitch plus every project saved in this browser. */
+const REPO_URL = "https://github.com/edison16a/photo-craft";
+
+/** Home page: the name, your projects and a tile that starts a new one. */
 export function HomeScreen() {
   const { projects, loading, error, rename, duplicate, remove } = useProjectList();
   const [renaming, setRenaming] = useState<ProjectSummary | null>(null);
@@ -18,31 +22,36 @@ export function HomeScreen() {
   return (
     <main className="page-scroll home">
       <header className="home__bar">
-        <span className="small muted">Free, open source, runs in your browser</span>
-        <ThemeToggle />
-      </header>
-      <Hero />
-      <section className="home__projects">
-        <div className="row row--between" style={{ marginBottom: 12 }}>
-          <h2 className="home__heading">Your projects</h2>
-          <Link href="/new" className="btn btn--sm">
-            New project
-          </Link>
+        <div className="row" style={{ gap: 10 }}>
+          <CubeLogo size={28} />
+          <span className="home__name">Photo Craft</span>
         </div>
+        <div className="row">
+          <a className="btn btn--github" href={REPO_URL} target="_blank" rel="noreferrer">
+            <GitHubMark />
+            View on GitHub
+          </a>
+          <ThemeToggle />
+        </div>
+      </header>
+      <section className="home__projects">
         {error ? <p className="muted">{error}</p> : null}
-        {!loading && projects.length === 0 && !error ? (
-          <p className="muted">Nothing here yet. Create a project and it will show up once you save it.</p>
-        ) : null}
         <div className="project-grid">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onRename={() => setRenaming(project)}
-              onDuplicate={() => void duplicate(project.id)}
-              onDelete={() => setDeleting(project)}
-            />
-          ))}
+          <Link href="/new" className="project-card project-card--new" aria-label="New project">
+            <Icon name="plus" size={28} />
+            <span>New project</span>
+          </Link>
+          {loading
+            ? null
+            : projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onRename={() => setRenaming(project)}
+                  onDuplicate={() => void duplicate(project.id)}
+                  onDelete={() => setDeleting(project)}
+                />
+              ))}
         </div>
       </section>
 

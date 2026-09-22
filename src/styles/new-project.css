@@ -1,0 +1,75 @@
+/*
+  The new project page: the form and the preset grid.
+*/
+
+.new-project__body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 24px auto 0;
+}
+
+.new-project__title {
+  grid-column: 1 / -1;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.new-project__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-self: start;
+  position: sticky;
+  top: 16px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset:hover {
+  border-color: var(--border-strong);
+}
+
+.preset--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preset__shape {
+  display: block;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.preset__name {
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .new-project__body {
+    grid-template-columns: 1fr;
+  }
+
+  .new-project__form {
+    position: static;
+  }
+}

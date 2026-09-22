@@ -12,7 +12,7 @@ interface ProjectCardProps {
 }
 
 function formatDate(ms: number): string {
-  return new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  return new Date(ms).toLocaleDateString(undefined, { dateStyle: "medium" });
 }
 
 /** One saved project on the home grid. */
@@ -36,9 +36,8 @@ export function ProjectCard({ project, onRename, onDuplicate, onDelete }: Projec
             {project.name}
           </Link>
           <div className="small muted">
-            {project.width} x {project.height} px, {project.pageCount} {project.pageCount === 1 ? "page" : "pages"}
+            {project.width} x {project.height}, {project.pageCount} {project.pageCount === 1 ? "page" : "pages"}, {formatDate(project.updatedAt)}
           </div>
-          <div className="small muted">{formatDate(project.updatedAt)}</div>
         </div>
         <div className="project-card__menu">
           <IconButton icon="more" label="Project actions" onClick={() => setMenuOpen((v) => !v)} />

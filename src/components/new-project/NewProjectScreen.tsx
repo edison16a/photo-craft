@@ -52,9 +52,9 @@ export function NewProjectScreen() {
   return (
     <main className="page-scroll new-project">
       <header className="home__bar">
-        <Link href="/" className="row" style={{ gap: 8 }}>
-          <CubeLogo size={24} />
-          <span>Photo Craft</span>
+        <Link href="/" className="row" style={{ gap: 10 }}>
+          <CubeLogo size={28} />
+          <span className="home__name">Photo Craft</span>
         </Link>
         <ThemeToggle />
       </header>
