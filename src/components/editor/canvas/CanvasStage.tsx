@@ -1,6 +1,6 @@
 "use client";
 import type { KonvaEventObject } from "konva/lib/Node";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Group, Layer, Stage } from "react-konva";
 import { useAddElement } from "@/hooks/use-add-element";
 import { blurActiveField } from "@/lib/focus";
@@ -8,6 +8,7 @@ import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
+import { ContextMenu } from "./ContextMenu";
 import { ElementNode } from "./ElementNode";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
@@ -34,6 +35,14 @@ export function CanvasStage() {
   const marquee = useMarquee();
   const drop = useCanvasDrop(containerRef, screenToPage);
   const { addText } = useAddElement();
+  const pendingTextAt = useEditorUiStore((s) => s.pendingTextAt);
+
+  // "Add text here" from the right click menu.
+  useEffect(() => {
+    if (!pendingTextAt) return;
+    useEditorUiStore.getState().clearTextRequest();
+    void addText({ x: Math.round(pendingTextAt.x), y: Math.round(pendingTextAt.y) });
+  }, [pendingTextAt, addText]);
 
   if (!project || !page) return <div ref={containerRef} className="workspace" />;
 
@@ -64,6 +73,19 @@ export function CanvasStage() {
     marquee.begin(point, event.evt.shiftKey);
   };
 
+  /** Right click: select what is under the pointer (keeping a multi selection) and open the menu. */
+  const onContextMenu = (event: KonvaEventObject<PointerEvent>) => {
+    event.evt.preventDefault();
+    const point = pointerOnPage(event);
+    if (!point) return;
+    const group = event.target.findAncestor(".element", true);
+    const elementId = group?.id();
+    const store = useProjectStore.getState();
+    if (elementId && !store.selectedIds.includes(elementId)) store.setSelection([elementId]);
+    if (!elementId) store.clearSelection();
+    useEditorUiStore.getState().openContextMenu({ x: event.evt.clientX, y: event.evt.clientY, point, elementId });
+  };
+
   const onMouseMove = (event: KonvaEventObject<MouseEvent>) => {
     if (!marquee.marquee) return;
     const point = pointerOnPage(event);
@@ -90,6 +112,7 @@ export function CanvasStage() {
           onMouseMove={onMouseMove}
           onMouseUp={marquee.finish}
           onMouseLeave={marquee.finish}
+          onContextMenu={onContextMenu}
         >
           <Layer>
             <PageBackground width={project.width} height={project.height} background={page.background} />
@@ -111,6 +134,7 @@ export function CanvasStage() {
       ) : null}
       <TextEditOverlay />
       <QuickToolbar />
+      <ContextMenu />
     </div>
   );
 }

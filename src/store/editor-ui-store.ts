@@ -20,6 +20,17 @@ export interface Toast {
 }
 
 /** State and actions of the editor UI store. */
+/** An open right click menu: where it is on screen and what was clicked. */
+export interface ContextMenuState {
+  x: number;
+  y: number;
+  /** Page pixels under the pointer. */
+  point: Point;
+  /** The element that was clicked, or undefined for empty page area. */
+  elementId?: string;
+}
+
+/** State and actions of the editor UI store. */
 export interface EditorUiState {
   tool: Tool;
   panel: PanelKind;
@@ -30,6 +41,9 @@ export interface EditorUiState {
   editingTextId: string | null;
   /** True while an element is being dragged or resized on the canvas. */
   interacting: boolean;
+  contextMenu: ContextMenuState | null;
+  /** Set by the page menu's "Add text here"; the canvas picks it up and clears it. */
+  pendingTextAt: Point | null;
   guides: Guide[];
   toast: Toast | null;
   exportOpen: boolean;
@@ -46,6 +60,10 @@ export interface EditorUiState {
   setViewportSize: (size: { width: number; height: number }) => void;
   setEditingText: (id: string | null) => void;
   setInteracting: (on: boolean) => void;
+  openContextMenu: (menu: ContextMenuState) => void;
+  closeContextMenu: () => void;
+  requestTextAt: (point: Point) => void;
+  clearTextRequest: () => void;
   setGuides: (guides: Guide[]) => void;
   showToast: (message: string, kind?: Toast["kind"]) => void;
   hideToast: () => void;
@@ -77,6 +95,8 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   viewportSize: { width: 0, height: 0 },
   editingTextId: null,
   interacting: false,
+  contextMenu: null,
+  pendingTextAt: null,
   guides: [],
   toast: null,
   exportOpen: false,
@@ -89,6 +109,10 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   setViewportSize: (viewportSize) => set({ viewportSize }),
   setEditingText: (id) => set({ editingTextId: id }),
   setInteracting: (on) => set((state) => (state.interacting === on ? state : { interacting: on })),
+  openContextMenu: (contextMenu) => set({ contextMenu }),
+  closeContextMenu: () => set((state) => (state.contextMenu ? { contextMenu: null } : state)),
+  requestTextAt: (point) => set({ pendingTextAt: point }),
+  clearTextRequest: () => set({ pendingTextAt: null }),
   setGuides: (guides) => set({ guides }),
   showToast: (message, kind = "info") => {
     if (toastTimer) clearTimeout(toastTimer);

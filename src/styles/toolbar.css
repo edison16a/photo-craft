@@ -47,3 +47,53 @@
   height: 26px;
   padding: 0 4px;
 }
+
+.context-menu {
+  position: fixed;
+  z-index: 80;
+  min-width: 220px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-menu__item:hover:not(:disabled) {
+  background: var(--bg-muted);
+}
+
+.context-menu__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.context-menu__item--danger {
+  color: var(--danger);
+}
+
+.context-menu__icon {
+  display: inline-flex;
+  width: 16px;
+  justify-content: center;
+}
+
+.context-menu__divider {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
