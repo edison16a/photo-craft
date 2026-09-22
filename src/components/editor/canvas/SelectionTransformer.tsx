@@ -5,6 +5,7 @@ import { Transformer } from "react-konva";
 import { normalizeDegrees } from "@/lib/geometry";
 import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
+import { keepsRatio } from "@/lib/keeps-ratio";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
@@ -23,18 +24,19 @@ type ElementPatch = Partial<CanvasElement> & { fontSize?: number; letterSpacing?
  * rotated node along the selection box would skew it.
  */
 function transformRules(selected: CanvasElement[]) {
-  const onlyShapes = selected.length > 0 && selected.every((el) => el.type === "shape");
+  const freeForAll = selected.length > 0 && selected.every((el) => el.type !== "text" && !keepsRatio(el));
   const axisAligned = selected.every((el) => el.rotation % 180 === 0);
   const singleText = selected.length === 1 && selected[0].type === "text";
-  if (onlyShapes && (selected.length === 1 || axisAligned)) return { anchors: ALL_ANCHORS, keepRatio: false };
+  if (freeForAll && (selected.length === 1 || axisAligned)) return { anchors: ALL_ANCHORS, keepRatio: false };
   if (singleText) return { anchors: [...CORNERS, ...SIDES], keepRatio: true };
   return { anchors: CORNERS, keepRatio: true };
 }
 
 /**
- * Konva transformer bound to the selected, unlocked elements. Images keep
- * their proportions. When a transform ends the node's scale is folded into
- * width, height and font size and the scale reset to one.
+ * Konva transformer bound to the selected, unlocked elements. Elements that
+ * keep their proportions only get corner handles. When a transform ends the
+ * node's scale is folded into width, height and font size and the scale
+ * reset to one.
  */
 export function SelectionTransformer() {
   const ref = useRef<Konva.Transformer>(null);

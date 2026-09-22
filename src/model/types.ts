@@ -24,6 +24,11 @@ export interface ElementBase {
   locked: boolean;
   flipX: boolean;
   flipY: boolean;
+  /**
+   * Whether resizing keeps the proportions. Unset means the element's own
+   * default: images and drawn shapes keep them, other shapes do not.
+   */
+  lockRatio?: boolean;
 }
 
 /** Horizontal alignment of text inside its box. */

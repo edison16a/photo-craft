@@ -1,9 +1,11 @@
 "use client";
 import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
+import { keepsRatio } from "@/lib/keeps-ratio";
 import type { CanvasElement } from "@/model/types";
 import { NumberField } from "../../../ui/NumberField";
 import { OpacitySlider } from "../../../ui/OpacitySlider";
 import { ScaleSlider } from "../../../ui/ScaleSlider";
+import { Toggle } from "../../../ui/Toggle";
 
 interface TransformSectionProps {
   element: CanvasElement;
@@ -32,7 +34,8 @@ function heightKeepingRatio(element: CanvasElement, height: number): SizePatch {
 export function TransformSection({ element }: TransformSectionProps) {
   const { preview, commit } = useLiveElementUpdate([element.id]);
   const locked = element.locked;
-  const freeform = element.type === "shape";
+  // Text keeps its own rules: width reflows the words and height follows.
+  const freeform = element.type !== "text" && !keepsRatio(element);
   const scalePercent = element.type === "image" ? Math.round((element.width / element.naturalWidth) * 100) : null;
   const widthPatch = (w: number) => (freeform ? { width: w } : widthKeepingRatio(element, w));
   const heightPatch = (h: number) => (freeform ? { height: h } : heightKeepingRatio(element, h));
@@ -65,9 +68,10 @@ export function TransformSection({ element }: TransformSectionProps) {
       </div>
       <ScaleSlider element={element} onPreview={preview} onCommit={commit} />
       <OpacitySlider value={element.opacity} onPreview={(opacity) => preview({ opacity })} onCommit={(opacity) => commit({ opacity })} />
-      {element.type === "image" ? (
-        <p className="small muted">Original {element.naturalWidth} x {element.naturalHeight} px. Proportions are always kept.</p>
+      {element.type !== "text" ? (
+        <Toggle checked={keepsRatio(element)} onChange={(lockRatio) => commit({ lockRatio })} label="Proportional scaling" disabled={locked} />
       ) : null}
+      {element.type === "image" ? <p className="small muted">Original {element.naturalWidth} x {element.naturalHeight} px.</p> : null}
     </section>
   );
 }
