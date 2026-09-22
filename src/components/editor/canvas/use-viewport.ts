@@ -10,6 +10,7 @@ import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { panBy, zoomBy, zoomToFit } from "@/store/viewport-actions";
 
+/** Workspace size, zoom, pan and the wheel handler for the stage. */
 export function useViewport(containerRef: RefObject<HTMLDivElement | null>) {
   const size = useEditorUiStore((s) => s.viewportSize);
   const zoom = useEditorUiStore((s) => s.zoom);

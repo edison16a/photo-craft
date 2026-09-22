@@ -98,9 +98,9 @@ export function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 /**
- * Converts a data URL into raw bytes. The zip writer wants Uint8Arrays for
- * its entries, so a multi page export decodes each page with this before
- * bundling them. Throws a readable Error when the input cannot be decoded.
+ * Converts a data URL into raw bytes, for callers that want to bundle or
+ * inspect an image without going through a Blob. Throws a readable Error
+ * when the input cannot be decoded.
  */
 export function dataUrlToBytes(dataUrl: string): Uint8Array {
   return decodeDataUrl(dataUrl).bytes;

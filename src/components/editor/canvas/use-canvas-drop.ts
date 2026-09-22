@@ -16,6 +16,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
 }
 
+/** Drop handlers for the workspace element plus a window paste listener. */
 export function useCanvasDrop(containerRef: RefObject<HTMLDivElement | null>, toPagePoint: (screen: Point) => Point) {
   const { addImageFile, addImageUrl } = useAddElement();
 

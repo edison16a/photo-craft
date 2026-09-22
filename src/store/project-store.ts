@@ -13,6 +13,7 @@ import { createHistorySlice } from "./slices/history-slice";
 import { createPageSlice } from "./slices/page-slice";
 import { createSelectionSlice } from "./slices/selection-slice";
 
+/** The editor store hook. Pass a selector to subscribe to part of it. */
 export const useProjectStore = create<ProjectStore>()((...args) => ({
   ...initialProjectState(),
   ...createPageSlice(...args),
@@ -21,4 +22,5 @@ export const useProjectStore = create<ProjectStore>()((...args) => ({
   ...createHistorySlice(...args),
 }));
 
+/** Re-exported so callers can type the store without reaching into project-state. */
 export type { ProjectStore } from "./project-state";

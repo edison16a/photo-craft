@@ -16,6 +16,7 @@ interface ColorPickerProps {
   allowTransparent?: boolean;
 }
 
+/** Swatch button that opens the colour popover. */
 export function ColorPicker({ label, value, onChange, allowTransparent }: ColorPickerProps) {
   const [open, setOpen] = useState(false);
   const [hexDraft, setHexDraft] = useState(value);

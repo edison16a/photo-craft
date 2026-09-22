@@ -12,11 +12,6 @@ export function findPage(project: Project, pageId: string): Page | undefined {
   return project.pages.find((page) => page.id === pageId);
 }
 
-/** Finds an element on a page by ID. */
-export function findElement(page: Page, elementId: string): CanvasElement | undefined {
-  return page.elements.find((element) => element.id === elementId);
-}
-
 /**
  * Replaces one page using a transform function. Returns the same project
  * when the transform hands the page back unchanged, so callers can tell a
@@ -97,6 +92,7 @@ export function removeElementsFromPage(
   }));
 }
 
+/** How far to move elements in the stacking order. */
 export type StackDirection = "forward" | "backward" | "front" | "back";
 
 /**

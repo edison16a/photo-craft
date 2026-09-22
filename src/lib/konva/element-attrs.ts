@@ -88,6 +88,7 @@ function paintAttrs(element: ShapeElement) {
   };
 }
 
+/** Which Konva node draws a shape, with its attributes. */
 export type ShapeNodeSpec =
   | { node: "rect"; attrs: Record<string, unknown> }
   | { node: "ellipse"; attrs: Record<string, unknown> }

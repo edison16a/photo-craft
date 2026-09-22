@@ -7,14 +7,18 @@ import { create } from "zustand";
 import type { Guide } from "../lib/snapping";
 import type { Point } from "../model/types";
 
+/** The tools in the left rail. */
 export type Tool = "select" | "text" | "shapes" | "upload" | "elements";
+/** The panels the right side can show. */
 export type PanelKind = "properties" | "page" | "text" | "shapes" | "upload" | "elements";
 
+/** A short message shown at the bottom of the editor. */
 export interface Toast {
   message: string;
   kind: "info" | "error";
 }
 
+/** State and actions of the editor UI store. */
 export interface EditorUiState {
   tool: Tool;
   panel: PanelKind;
@@ -38,7 +42,9 @@ export interface EditorUiState {
   setExportOpen: (open: boolean) => void;
 }
 
+/** Smallest zoom the workspace allows. */
 export const MIN_ZOOM = 0.05;
+/** Largest zoom the workspace allows. */
 export const MAX_ZOOM = 8;
 
 /** Panel that belongs to each tool, so picking a tool opens the right one. */
@@ -52,6 +58,7 @@ const PANEL_FOR_TOOL: Record<Tool, PanelKind> = {
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Store for editor UI state that is not part of the project. */
 export const useEditorUiStore = create<EditorUiState>()((set) => ({
   tool: "select",
   panel: "page",

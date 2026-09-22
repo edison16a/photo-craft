@@ -6,6 +6,7 @@ import type { Project } from "../../model/types";
 import { applyProjectChange, type Slice } from "../project-state";
 import { movePage, withPage, withPages } from "../project-updates";
 
+/** Project and page level actions. */
 export interface PageActions {
   /** Replaces the open project and resets history and selection. */
   loadProject: (project: Project) => void;
@@ -24,6 +25,7 @@ export interface PageActions {
   setPageBackground: (pageId: string, background: string) => void;
 }
 
+/** Builds the project and page actions for the store. */
 export const createPageSlice: Slice<PageActions> = (set, get) => ({
   loadProject: (project) =>
     set({

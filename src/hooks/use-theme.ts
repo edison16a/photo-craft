@@ -6,7 +6,9 @@
  */
 import { useCallback, useEffect, useState } from "react";
 
+/** The two colour themes. */
 export type Theme = "light" | "dark";
+/** localStorage key that remembers the theme. The layout script reads the same key. */
 export const THEME_STORAGE_KEY = "photo-craft:theme";
 
 function readTheme(): Theme {

@@ -8,6 +8,7 @@
 import { rotatedBoundingBox, unionRects } from "../lib/geometry";
 import type { CanvasElement, Rect } from "../model/types";
 
+/** Edges and centres an element can be aligned to. */
 export type Alignment = "left" | "centerX" | "right" | "top" | "centerY" | "bottom";
 
 /** Axis aligned box an element covers on the page after rotation. */

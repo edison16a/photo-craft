@@ -13,6 +13,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable;
 }
 
+/** Actions the shortcut hook needs from the editor shell. */
 export interface ShortcutHandlers {
   save: () => void;
   zoomIn: () => void;
@@ -20,6 +21,7 @@ export interface ShortcutHandlers {
   zoomToFit: () => void;
 }
 
+/** Installs the editor keyboard shortcuts. Call once from the editor shell. */
 export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

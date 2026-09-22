@@ -7,6 +7,7 @@ import type { CanvasElement } from "../../model/types";
 import { findPage } from "../project-updates";
 import type { Slice } from "../project-state";
 
+/** Actions that change which elements are selected. */
 export interface SelectionActions {
   setSelection: (ids: string[]) => void;
   addToSelection: (ids: string[]) => void;
@@ -17,6 +18,7 @@ export interface SelectionActions {
   getSelectedElements: () => CanvasElement[];
 }
 
+/** Builds the selection actions for the store. */
 export const createSelectionSlice: Slice<SelectionActions> = (set, get) => ({
   setSelection: (ids) => {
     const { selectedIds } = get();

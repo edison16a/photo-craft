@@ -8,6 +8,7 @@ import { exportPdf } from "./export-pdf";
 import { formatOption, isScaleTooLarge, type ExportOptions } from "./export-options";
 import { renderPageToCanvas } from "./render-page";
 
+/** A finished export ready to download. */
 export interface ExportResult {
   blob: Blob;
   filename: string;

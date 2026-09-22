@@ -17,6 +17,7 @@ export interface EditorSnapshot {
   selectedIds: string[];
 }
 
+/** Editor state without the actions. The slices add those. */
 export interface ProjectState {
   project: Project | null;
   currentPageId: string;
@@ -29,14 +30,17 @@ export interface ProjectState {
   clipboard: CanvasElement[];
 }
 
+/** The full store: state plus every action slice. */
 export type ProjectStore = ProjectState &
   PageActions &
   ElementActions &
   SelectionActions &
   HistoryActions;
 
+/** Shape of a slice creator, with access to the whole store. */
 export type Slice<T> = StateCreator<ProjectStore, [], [], T>;
 
+/** State before any project is opened. */
 export function initialProjectState(): ProjectState {
   return {
     project: null,

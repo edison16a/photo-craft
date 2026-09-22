@@ -3,8 +3,10 @@
  */
 import type { Project } from "../../model/types";
 
+/** File formats the export dialog offers. */
 export type ExportFormat = "png" | "jpeg" | "webp" | "pdf";
 
+/** What the dialog needs to know about a format. */
 export interface ExportFormatOption {
   id: ExportFormat;
   label: string;
@@ -14,6 +16,7 @@ export interface ExportFormatOption {
   supportsQuality: boolean;
 }
 
+/** Every export format, in the order the dialog shows them. */
 export const EXPORT_FORMATS: ExportFormatOption[] = [
   { id: "png", label: "PNG", mimeType: "image/png", extension: "png", supportsTransparency: true, supportsQuality: false },
   { id: "jpeg", label: "JPG", mimeType: "image/jpeg", extension: "jpg", supportsTransparency: false, supportsQuality: true },
@@ -21,11 +24,13 @@ export const EXPORT_FORMATS: ExportFormatOption[] = [
   { id: "pdf", label: "PDF", mimeType: "application/pdf", extension: "pdf", supportsTransparency: false, supportsQuality: true },
 ];
 
+/** Quick size multipliers offered in the dialog. */
 export const SCALE_PRESETS = [0.5, 1, 2, 3, 4];
 
 /** Largest side we will render. Above this browsers start refusing canvases. */
 export const MAX_EXPORT_DIMENSION = 16384;
 
+/** Everything the export dialog collects. */
 export interface ExportOptions {
   format: ExportFormat;
   /** Multiplier of the project size. 1 means the project's own pixel size. */
@@ -37,6 +42,7 @@ export interface ExportOptions {
   pages: "current" | "all";
 }
 
+/** What the dialog starts with: one PNG of the current page at its own size. */
 export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   format: "png",
   scale: 1,

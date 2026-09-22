@@ -26,8 +26,10 @@ export interface ElementBase {
   flipY: boolean;
 }
 
+/** Horizontal alignment of text inside its box. */
 export type TextAlign = "left" | "center" | "right";
 
+/** A block of text with one font, size and colour. */
 export interface TextElement extends ElementBase {
   type: "text";
   text: string;
@@ -43,6 +45,7 @@ export interface TextElement extends ElementBase {
   letterSpacing: number;
 }
 
+/** The simple shapes the editor can draw. */
 export type ShapeKind =
   | "rectangle"
   | "ellipse"
@@ -54,6 +57,7 @@ export type ShapeKind =
   | "line"
   | "arrow";
 
+/** A filled or outlined shape. */
 export interface ShapeElement extends ElementBase {
   type: "shape";
   shape: ShapeKind;
@@ -64,6 +68,7 @@ export interface ShapeElement extends ElementBase {
   cornerRadius: number;
 }
 
+/** A bitmap stored as a data URL. */
 export interface ImageElement extends ElementBase {
   type: "image";
   /** Always a data URL so exports never hit cross origin limits. */
@@ -72,9 +77,10 @@ export interface ImageElement extends ElementBase {
   naturalHeight: number;
 }
 
+/** Anything that can sit on a page. */
 export type CanvasElement = TextElement | ShapeElement | ImageElement;
-export type ElementType = CanvasElement["type"];
 
+/** One page of a project. Elements draw in list order, so later ones sit on top. */
 export interface Page {
   id: string;
   name: string;
@@ -83,6 +89,7 @@ export interface Page {
   elements: CanvasElement[];
 }
 
+/** A design: a fixed pixel size and its pages. */
 export interface Project {
   id: string;
   name: string;
@@ -102,7 +109,7 @@ export interface ProjectSummary {
   height: number;
   pageCount: number;
   updatedAt: number;
-  /** Small PNG data URL of the first page, if one was generated. */
+  /** Small JPEG data URL of the first page, if one was generated. */
   thumbnail?: string;
 }
 
@@ -114,6 +121,7 @@ export interface Rect {
   height: number;
 }
 
+/** A position in page pixels. */
 export interface Point {
   x: number;
   y: number;

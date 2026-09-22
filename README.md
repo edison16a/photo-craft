@@ -8,7 +8,7 @@ Photo Craft runs entirely in your browser. Pick a canvas size, add text, shapes 
 
 - Projects with preset sizes (Instagram, YouTube, A4, logos, wallpapers and more) or any custom size from 16 to 10000 px.
 - Pages inside a project. Add, duplicate, rename, reorder and delete them.
-- Text with 150 fonts (system fonts plus Google Fonts), bold, italic, underline, alignment, line height, letter spacing and a colour picker with 300 swatches plus any custom colour.
+- Text with more than 250 fonts (system fonts plus Google Fonts), bold, italic, underline, alignment, line height, letter spacing and a colour picker with 300 swatches plus any custom colour.
 - Simple shapes: rectangle, ellipse, triangle, diamond, pentagon, hexagon, star, line and arrow, each with fill, outline and corner radius.
 - Images from your disk, from a link, from the clipboard, or dragged in from a Google Images tab. Optional inline Google image search with your own free API key.
 - Select one item or many. Drag them together, resize from the corners (images and text always keep their proportions), rotate, flip, lock, align and reorder.

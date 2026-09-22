@@ -1,5 +1,6 @@
 import { Editor } from "@/components/editor/Editor";
 
+/** Tab title for the editor route. */
 export const metadata = { title: "Editor, Photo Craft" };
 
 interface EditorPageProps {

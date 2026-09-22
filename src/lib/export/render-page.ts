@@ -11,6 +11,7 @@ import { ensureFontsLoaded } from "../font-loader";
 import { getCachedImage } from "../image-cache";
 import { flipAttrs, groupAttrs, imageAttrs, shapeNodeSpec, textAttrs } from "../konva/element-attrs";
 
+/** Size and background choices for one render. */
 export interface RenderPageOptions {
   /** Output pixels per page pixel. 2 doubles the size. */
   pixelRatio: number;

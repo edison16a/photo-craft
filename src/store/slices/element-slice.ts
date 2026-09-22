@@ -20,6 +20,7 @@ import {
 /** Partial patch keyed by element ID. Used when several elements move at once. */
 export type ElementPatches = Record<string, Partial<CanvasElement>>;
 
+/** Actions that change elements on the current page. */
 export interface ElementActions {
   addElement: (element: CanvasElement, select?: boolean) => void;
   addElements: (elements: CanvasElement[], select?: boolean) => void;
@@ -43,6 +44,7 @@ export interface ElementActions {
 
 const DUPLICATE_OFFSET = 24;
 
+/** Builds the element actions for the store. */
 export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   addElement: (element, select = true) => get().addElements([element], select),
 

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ProjectSummary } from "@/model/types";
 import { deleteProject, duplicateStoredProject, listProjects, renameStoredProject } from "@/store/persistence";
 
+/** The saved projects plus rename, duplicate and delete for the home screen. */
 export function useProjectList() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);

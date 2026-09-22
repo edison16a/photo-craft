@@ -17,6 +17,7 @@ function centred(page: { width: number; height: number }, width: number, height:
   return { x: Math.round((page.width - width) / 2), y: Math.round((page.height - height) / 2) };
 }
 
+/** Functions that add text, shapes and images to the current page. */
 export function useAddElement() {
   const addText = useCallback(async (partial: Partial<Omit<TextElement, "type">> = {}) => {
     const { project, addElement } = useProjectStore.getState();

@@ -5,6 +5,7 @@
 import { redoHistory, undoHistory } from "../history";
 import type { Slice } from "../project-state";
 
+/** Undo and redo actions. */
 export interface HistoryActions {
   undo: () => void;
   redo: () => void;
@@ -12,6 +13,7 @@ export interface HistoryActions {
   canRedo: () => boolean;
 }
 
+/** Builds the history actions for the store. */
 export const createHistorySlice: Slice<HistoryActions> = (set, get) => ({
   undo: () => {
     const { project, currentPageId, selectedIds, history } = get();

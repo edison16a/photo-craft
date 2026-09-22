@@ -10,6 +10,7 @@ import { loadSettings } from "../services/settings";
 import { loadProject, saveProject } from "../store/persistence";
 import { useProjectStore } from "../store/project-store";
 
+/** Where the editor is in opening its project. */
 export type LoadStatus = "loading" | "ready" | "missing" | "error";
 
 /** Every font family a project uses, so we can preload before first paint. */

@@ -8,6 +8,7 @@ import "@/styles/editor.css";
 import "@/styles/panels.css";
 import "@/styles/pickers.css";
 
+/** Site wide title and description. */
 export const metadata: Metadata = {
   title: "Photo Craft",
   description:

@@ -6,8 +6,10 @@
 import { useEffect } from "react";
 import { useProjectStore } from "../store/project-store";
 
+/** How long after the last change autosave waits before writing. */
 export const AUTOSAVE_DELAY_MS = 1500;
 
+/** Runs autosave while enabled and warns before the tab closes with unsaved work. */
 export function useAutosave(enabled: boolean, save: (quiet?: boolean) => Promise<boolean>): void {
   useEffect(() => {
     if (!enabled) return;

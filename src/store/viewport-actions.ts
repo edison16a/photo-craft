@@ -46,10 +46,12 @@ export function zoomTo(level: number): void {
   if (zoom > 0) zoomBy(level / zoom);
 }
 
+/** Zooms in one step around the centre of the workspace. */
 export function zoomIn(): void {
   zoomBy(ZOOM_STEP);
 }
 
+/** Zooms out one step around the centre of the workspace. */
 export function zoomOut(): void {
   zoomBy(1 / ZOOM_STEP);
 }
