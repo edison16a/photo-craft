@@ -1,7 +1,8 @@
 /**
  * Transient editor UI state: the active tool, which side panel is open,
- * zoom and pan, in place text editing, alignment guides and toasts.
- * None of this is saved with the project.
+ * zoom and pan, in place text editing, alignment guides, toasts and which
+ * images are still having their background removed. None of this is saved
+ * with the project.
  */
 import { create } from "zustand";
 import type { Guide } from "../lib/snapping";
@@ -30,6 +31,12 @@ export interface EditorUiState {
   guides: Guide[];
   toast: Toast | null;
   exportOpen: boolean;
+  /**
+   * Ids of images whose background removal is still running on the server.
+   * Kept here rather than in the section so the button stays disabled when
+   * the image is deselected and selected again mid run.
+   */
+  busyImageIds: string[];
 
   setTool: (tool: Tool) => void;
   openPanel: (panel: PanelKind) => void;
@@ -40,6 +47,7 @@ export interface EditorUiState {
   showToast: (message: string, kind?: Toast["kind"]) => void;
   hideToast: () => void;
   setExportOpen: (open: boolean) => void;
+  setImageBusy: (id: string, busy: boolean) => void;
 }
 
 /** Smallest zoom the workspace allows. */
@@ -69,6 +77,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   guides: [],
   toast: null,
   exportOpen: false,
+  busyImageIds: [],
 
   setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool] }),
   openPanel: (panel) => set({ panel }),
@@ -84,4 +93,9 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   },
   hideToast: () => set({ toast: null }),
   setExportOpen: (open) => set({ exportOpen: open }),
+  setImageBusy: (id, busy) =>
+    set((state) => {
+      const rest = state.busyImageIds.filter((candidate) => candidate !== id);
+      return { busyImageIds: busy ? [...rest, id] : rest };
+    }),
 }));

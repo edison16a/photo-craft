@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useBackgroundRemovalStatus } from "@/hooks/use-background-removal-status";
 import type { ImageElement } from "@/model/types";
 import { removeImageBackground } from "@/services/background-removal";
@@ -13,15 +12,18 @@ interface ImageSectionProps {
 /**
  * Image only tools. Background removal sends the picture to the server,
  * which runs the Python worker, and swaps in the cut out as one undo step.
+ * The in flight flag lives in the editor UI store, keyed by element id, so
+ * deselecting and reselecting the image mid run cannot start a second run.
  */
 export function ImageSection({ element }: ImageSectionProps) {
   const status = useBackgroundRemovalStatus();
-  const [busy, setBusy] = useState(false);
+  const busy = useEditorUiStore((s) => s.busyImageIds.includes(element.id));
 
   const run = async () => {
-    const { showToast } = useEditorUiStore.getState();
+    const { showToast, setImageBusy, busyImageIds } = useEditorUiStore.getState();
+    if (busyImageIds.includes(element.id)) return;
     const pageId = useProjectStore.getState().currentPageId;
-    setBusy(true);
+    setImageBusy(element.id, true);
     try {
       const result = await removeImageBackground(element.src);
       const store = useProjectStore.getState();
@@ -36,7 +38,7 @@ export function ImageSection({ element }: ImageSectionProps) {
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Background removal failed", "error");
     } finally {
-      setBusy(false);
+      setImageBusy(element.id, false);
     }
   };
 
