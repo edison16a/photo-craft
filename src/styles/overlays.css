@@ -118,38 +118,42 @@
   }
 }
 
-.model-list {
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.model-option {
+.model-card {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 2px;
+  padding: 16px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
 }
 
-.model-option--active {
+.model-card:disabled {
+  cursor: default;
+}
+
+.model-card--active {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-.model-option__pick {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  text-align: left;
-  cursor: pointer;
+.model-card__name {
+  font-weight: 600;
 }
 
-.model-option__name {
-  font-weight: 600;
+.model-card__check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: var(--accent);
 }

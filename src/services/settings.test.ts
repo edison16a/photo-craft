@@ -45,6 +45,13 @@ describe("settings", () => {
     expect(loadSettings()).toEqual(next);
   });
 
+  it("keeps an unpicked model as null", () => {
+    expect(saveSettings({ backgroundModel: null })).toEqual({ ...DEFAULT_SETTINGS, backgroundModel: null });
+    expect(loadSettings().backgroundModel).toBeNull();
+    window.localStorage.setItem(KEY, JSON.stringify({ backgroundModel: null }));
+    expect(loadSettings().backgroundModel).toBeNull();
+  });
+
   it("tolerates bad JSON", () => {
     window.localStorage.setItem(KEY, "{not json");
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);

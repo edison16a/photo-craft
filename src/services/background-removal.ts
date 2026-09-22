@@ -7,9 +7,11 @@
 import { fileToDataUrl, type LoadedImage } from "../lib/image-loading";
 import { dataUrlToBlob } from "../lib/download";
 import type { WorkerRequest, WorkerResponse } from "../lib/background/messages";
+import { DEFAULT_TIER, type ModelTier } from "../lib/background/model";
 import { useRemovalProgressStore } from "../store/removal-progress-store";
 import { useSettingsUiStore } from "../store/settings-ui-store";
-import { loadSettings } from "./settings";
+import { downloadInProgress } from "./model-download";
+import { loadSettings, saveSettings } from "./settings";
 
 /** A finished cutout: a PNG with transparency at the picture's own size. */
 export interface CutOut {
@@ -36,6 +38,17 @@ export function isBackgroundRemovalSupported(): boolean {
     typeof createImageBitmap === "function" &&
     typeof WebAssembly !== "undefined"
   );
+}
+
+/**
+ * The model to run. When none is picked, because the current one was
+ * deleted, the default becomes the picked one again.
+ */
+export function currentModelTier(): ModelTier {
+  const chosen = loadSettings().backgroundModel;
+  if (chosen) return chosen;
+  saveSettings({ backgroundModel: DEFAULT_TIER });
+  return DEFAULT_TIER;
 }
 
 /** Fails every waiting job, for when the worker itself dies. */
@@ -113,9 +126,12 @@ export async function removeBackground(source: Blob | ImageBitmap): Promise<CutO
   progress.addPending(id);
   // The first ever use points at the settings, where the model can be changed.
   useSettingsUiStore.getState().showModelHint();
+  const tier = currentModelTier();
+  // The settings may still be downloading this model. Wait rather than fetch it twice.
+  await downloadInProgress(tier)?.catch(() => undefined);
   return new Promise<CutOut>((resolve, reject) => {
     jobs.set(id, { resolve, reject });
-    const request: WorkerRequest = { type: "remove", id, bitmap, tier: loadSettings().backgroundModel };
+    const request: WorkerRequest = { type: "remove", id, bitmap, tier };
     getWorker().postMessage(request, [bitmap]);
   });
 }

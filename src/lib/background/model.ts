@@ -14,8 +14,6 @@ export interface ModelSpec {
   tier: ModelTier;
   /** What the settings page calls it. */
   label: string;
-  /** One line on what to expect from it. */
-  blurb: string;
   /** File name without the part suffix, also the cache key. */
   name: string;
   /** Files that make up the model, in order. Fetched together and joined. */
@@ -43,7 +41,6 @@ export const MODELS: Record<ModelTier, ModelSpec> = {
   light: {
     tier: "light",
     label: "Light",
-    blurb: "5 MB. Quick on any computer. Rough around hair and fine edges.",
     name: "u2netp",
     parts: ["/models/u2netp.onnx"],
     bytes: 4574861,
@@ -54,7 +51,6 @@ export const MODELS: Record<ModelTier, ModelSpec> = {
   effective: {
     tier: "effective",
     label: "Effective",
-    blurb: "44 MB. Good cutouts in a few seconds.",
     name: "silueta",
     parts: ["/models/silueta.onnx"],
     bytes: 44173029,
@@ -65,7 +61,6 @@ export const MODELS: Record<ModelTier, ModelSpec> = {
   best: {
     tier: "best",
     label: "Best",
-    blurb: "179 MB. The cleanest edges. Quick with a graphics card, slower without.",
     name: "isnet-general-use",
     parts: [0, 1, 2, 3].map((index) => `/models/isnet-general-use.onnx.${index}`),
     bytes: 178648008,
@@ -74,6 +69,11 @@ export const MODELS: Record<ModelTier, ModelSpec> = {
     std: [1, 1, 1],
   },
 };
+
+/** The size as people read it, such as "179 MB". */
+export function modelSizeLabel(spec: ModelSpec): string {
+  return `${Math.round(spec.bytes / 1000000)} MB`;
+}
 
 /** True for a string that names one of the tiers. */
 export function isModelTier(value: unknown): value is ModelTier {
