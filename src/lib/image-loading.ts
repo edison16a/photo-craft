@@ -146,7 +146,9 @@ async function finishImport(dataUrl: string, type: string | undefined): Promise<
   const isSvg = type === SVG_TYPE || /^data:image\/svg\+xml/i.test(dataUrl);
   const tooBig = Math.max(width, height) > MAX_IMPORT_DIMENSION;
   if (!isSvg && !tooBig && width > 0 && height > 0) return { src: dataUrl, width, height };
-  return imageToDataUrl(image);
+  const drawn = imageToDataUrl(image);
+  if (drawn.width === 0 || drawn.height === 0) throw new Error("That image has no size, so it cannot be placed.");
+  return drawn;
 }
 
 /**
@@ -164,19 +166,17 @@ export async function importImageFile(file: File): Promise<LoadedImage> {
 }
 
 /**
- * Imports an image from a URL. Data URLs are kept as they are and only
- * measured. Anything else is first downloaded with a CORS fetch and read as
- * a data URL. If the host refuses, we fall back to loading the URL straight
- * into an image element and drawing it to a canvas. If that fails too the
- * host does not want us to have the pixels, and the error tells the user to
+ * Imports an image from a URL. Data URLs go through the same checks as
+ * files, so SVG is rasterised and oversized pictures are drawn down.
+ * Anything else is first downloaded with a CORS fetch and read as a data
+ * URL. If the host refuses, we fall back to loading the URL straight into
+ * an image element and drawing it to a canvas. If that fails too the host
+ * does not want us to have the pixels, and the error tells the user to
  * save the picture and upload it instead.
  */
 export async function importImageFromUrl(url: string): Promise<LoadedImage> {
   const source = url.trim();
-  if (isDataUrl(source)) {
-    const image = await loadHtmlImage(source);
-    return { src: source, width: image.naturalWidth, height: image.naturalHeight };
-  }
+  if (isDataUrl(source)) return finishImport(source, undefined);
   try {
     const response = await fetch(source, { mode: "cors" });
     if (!response.ok) throw new Error(`Download failed with status ${response.status}.`);
