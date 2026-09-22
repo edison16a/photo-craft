@@ -16,7 +16,7 @@ export function TransformSection({ element }: TransformSectionProps) {
   const setWidthKeepRatio = (width: number) => {
     const ratio = element.height / element.width;
     const patch: Partial<CanvasElement> & { fontSize?: number } = { width, height: Math.round(width * ratio * 100) / 100 };
-    if (element.type === "text") patch.fontSize = Math.round((element.fontSize * width) / element.width);
+    if (element.type === "text") patch.fontSize = Math.max(1, Math.round((element.fontSize * width) / element.width));
     update(patch);
   };
 
@@ -43,7 +43,7 @@ export function TransformSection({ element }: TransformSectionProps) {
       </div>
       <div className="row">
         <NumberField label="Rotation" value={element.rotation} min={-360} max={360} suffix="deg" disabled={locked}
-          onCommit={(r) => update({ rotation: ((r % 360) + 360) % 360 })} />
+          normalize={(r) => ((r % 360) + 360) % 360} onCommit={(rotation) => update({ rotation })} />
         {scalePercent !== null ? (
           <NumberField label="Scale" value={scalePercent} min={1} max={2000} suffix="%" disabled={locked}
             onCommit={(p) => element.type === "image" && setWidthKeepRatio(Math.round((element.naturalWidth * p) / 100))} />
