@@ -52,6 +52,9 @@ export function CanvasStage() {
     if (!onEmpty || !point) return;
     blurActiveField();
     if (tool === "text") {
+      // Stop the browser moving focus on this mousedown, or it would blur the
+      // text editor that opens for the new element.
+      event.evt.preventDefault();
       void addText({ x: Math.round(point.x), y: Math.round(point.y) });
       return;
     }
