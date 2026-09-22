@@ -38,8 +38,23 @@ export function Popover({ open, anchorRef, onClose, label, width, children }: Po
     if (ref.current) observer.observe(ref.current);
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
+    // The anchor can move without any scroll event, for example a toolbar
+    // button when the canvas zooms or pans. Watch its position each frame.
+    let frame = 0;
+    let last = "";
+    const follow = () => {
+      const rect = anchorRef.current?.getBoundingClientRect();
+      const key = rect ? `${rect.top},${rect.left}` : "";
+      if (key !== last) {
+        last = key;
+        update();
+      }
+      frame = requestAnimationFrame(follow);
+    };
+    frame = requestAnimationFrame(follow);
     return () => {
       observer.disconnect();
+      cancelAnimationFrame(frame);
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
