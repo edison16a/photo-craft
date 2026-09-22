@@ -11,6 +11,7 @@ import { useProjectStore } from "../store/project-store";
 import type { BackgroundRemovalStatus } from "../services/background-removal";
 import { useBackgroundRemovalStatus } from "./use-background-removal-status";
 
+/** What a button needs to offer background removal for one image. */
 export interface RemoveBackgroundControls {
   /** Server status, or undefined while the first check is running. */
   status: BackgroundRemovalStatus | undefined;

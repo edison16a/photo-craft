@@ -15,11 +15,13 @@ export interface AnchorRect {
   bottom: number;
 }
 
+/** Width and height in pixels. */
 export interface Size {
   width: number;
   height: number;
 }
 
+/** Where the popover goes and which side of the anchor it ended up on. */
 export interface Placement {
   top: number;
   left: number;
