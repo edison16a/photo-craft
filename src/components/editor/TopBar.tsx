@@ -76,7 +76,6 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
         >
           <Icon name="save" size={16} />
           {saving ? "Saving" : "Save"}
-          {dirty ? <span className="save-dot" aria-label="Unsaved changes" /> : null}
         </button>
         <button type="button" className="btn btn--primary" onClick={() => useEditorUiStore.getState().setExportOpen(true)}>
           <Icon name="export" size={16} />

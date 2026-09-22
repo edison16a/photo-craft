@@ -36,13 +36,6 @@
   cursor: default;
 }
 
-.save-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
 .topbar__name {
   width: 220px;
   height: 32px;
