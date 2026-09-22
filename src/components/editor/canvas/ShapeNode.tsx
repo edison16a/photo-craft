@@ -7,7 +7,13 @@ interface ShapeNodeProps {
   element: ShapeElement;
 }
 
-/** One of the simple shapes, picked from the shared attribute builder. */
+/**
+ * One of the simple shapes, picked from the shared attribute builder.
+ *
+ * Lines and arrows are flat, so on their own the group would measure zero
+ * height and the transformer could not resize them. An invisible box the
+ * size of the element sits underneath them to give the group its bounds.
+ */
 export function ShapeNode({ element }: ShapeNodeProps) {
   const spec = shapeNodeSpec(element);
   switch (spec.node) {
@@ -16,8 +22,21 @@ export function ShapeNode({ element }: ShapeNodeProps) {
     case "ellipse":
       return <Ellipse {...(spec.attrs as { radiusX: number; radiusY: number })} />;
     case "arrow":
-      return <Arrow {...(spec.attrs as { points: number[] })} />;
+      return (
+        <>
+          <Rect width={element.width} height={element.height} listening={false} />
+          <Arrow {...(spec.attrs as { points: number[] })} hitStrokeWidth={HIT_STROKE_WIDTH} />
+        </>
+      );
     default:
-      return <Line {...(spec.attrs as { points: number[] })} />;
+      return (
+        <>
+          {element.shape === "line" ? <Rect width={element.width} height={element.height} listening={false} /> : null}
+          <Line {...(spec.attrs as { points: number[] })} hitStrokeWidth={element.shape === "line" ? HIT_STROKE_WIDTH : undefined} />
+        </>
+      );
   }
 }
+
+/** Thin lines get a wider hit area so they are easy to grab. */
+const HIT_STROKE_WIDTH = 24;

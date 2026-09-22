@@ -84,6 +84,8 @@ export function SelectionTransformer() {
         patch.height = height;
       }
       node.scale({ x: 1, y: 1 });
+      // A degenerate transform can produce NaN. Never let that reach the store.
+      if (!Object.values(patch).every((value) => Number.isFinite(value))) continue;
       patches[element.id] = patch;
     }
     useProjectStore.getState().patchElements(patches);
