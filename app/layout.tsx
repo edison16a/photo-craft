@@ -10,6 +10,7 @@ import "@/styles/editor.css";
 import "@/styles/panels.css";
 import "@/styles/pickers.css";
 import "@/styles/toolbar.css";
+import "@/styles/remove-bg.css";
 
 const DESCRIPTION = "A free, open source alternative to Canva for simple image editing, creation and iteration.";
 

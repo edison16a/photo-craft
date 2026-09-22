@@ -1,0 +1,233 @@
+/*
+  The remove background page: drop zone, thumbnail strip, preview and the
+  download panel. The checkerboard is shared with anything that shows
+  transparency.
+*/
+
+.remove-bg {
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 24px;
+}
+
+.drop-zone {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 420px;
+  margin-top: 16px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.drop-zone__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.drop-zone__note {
+  max-width: 420px;
+}
+
+.remove-bg__work {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 168px minmax(0, 1fr) 280px;
+  gap: 16px;
+  min-height: 0;
+  margin-top: 16px;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.strip__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 2px 4px 2px 2px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.strip__item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.strip__pick {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.strip__pick img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.strip__item--active .strip__pick {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.strip__item--failed .strip__pick {
+  border-color: var(--danger);
+}
+
+.strip__status {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(17, 18, 20, 0.75);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.strip__status--working {
+  background: var(--accent-strong);
+}
+
+.strip__status--failed {
+  background: var(--danger);
+}
+
+.strip__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(17, 18, 20, 0.75);
+  color: #ffffff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.strip__item:hover .strip__remove,
+.strip__remove:focus-visible {
+  opacity: 1;
+}
+
+.strip__add {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.strip__add:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.preview--empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.preview__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview__error {
+  color: var(--danger);
+}
+
+.preview__stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.preview__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.preview__img--busy {
+  opacity: 0.5;
+}
+
+.download {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: start;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+.checker {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(45deg, #dadde2 25%, transparent 25%),
+    linear-gradient(-45deg, #dadde2 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #dadde2 75%),
+    linear-gradient(-45deg, transparent 75%, #dadde2 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+[data-theme="dark"] .checker {
+  background-color: #2a2f3a;
+  background-image:
+    linear-gradient(45deg, #1c2028 25%, transparent 25%),
+    linear-gradient(-45deg, #1c2028 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1c2028 75%),
+    linear-gradient(-45deg, transparent 75%, #1c2028 75%);
+}
