@@ -1,30 +1,18 @@
 /**
- * What the draw tool does with corners: add one, add a whole freehand
- * stroke, take the last one back, start over, or turn them into a shape
- * on the page. The corners live in the editor UI store; the finished
- * shape goes into the project.
+ * What the draw tool does with corners: add one, take the last one back,
+ * start over, or turn them into a shape on the page. The corners live in
+ * the editor UI store; the finished shape goes into the project.
  */
 import { cornersNeeded, shapeFromPoints } from "../lib/drawing";
-import { simplifyPoints } from "../lib/simplify";
 import { createShapeElement } from "../model/element-factories";
 import type { Point } from "../model/types";
 import { useEditorUiStore } from "./editor-ui-store";
 import { useProjectStore } from "./project-store";
 
-/** Places one corner. */
+/** Places one corner. Snap it to the grid before calling. */
 export function addDrawPoint(point: Point): void {
   const ui = useEditorUiStore.getState();
   ui.setDrawPoints([...ui.drawPoints, point.x, point.y]);
-}
-
-/**
- * Adds a freehand stroke as a run of corners, thinned so only the bends
- * that matter at the given tolerance (in page pixels) are kept.
- */
-export function addDrawStroke(stroke: number[], tolerance: number): void {
-  const ui = useEditorUiStore.getState();
-  ui.setDrawPoints([...ui.drawPoints, ...simplifyPoints(stroke, tolerance)]);
-  ui.setDrawStroke([]);
 }
 
 /** Takes the last corner back. */
@@ -35,9 +23,7 @@ export function undoDrawPoint(): void {
 
 /** Drops every corner placed so far. */
 export function cancelDrawing(): void {
-  const ui = useEditorUiStore.getState();
-  ui.setDrawPoints([]);
-  ui.setDrawStroke([]);
+  useEditorUiStore.getState().setDrawPoints([]);
 }
 
 /** True when enough corners are down to make a shape. */
@@ -57,7 +43,6 @@ export function finishDrawing(): boolean {
   if (!shape) return false;
   useProjectStore.getState().addElement(createShapeElement("custom", shape));
   ui.setDrawPoints([]);
-  ui.setDrawStroke([]);
   ui.setTool("select");
   ui.openPanel("properties");
   return true;

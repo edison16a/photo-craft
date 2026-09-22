@@ -13,7 +13,7 @@ I built it because I was tired of using Canva and being limited on features that
 ## What you get
 
 - Text, images and thirty shapes on as many pages as you like, with undo and redo.
-- A draw tool for shapes of your own: click corners or drag freehand, straight or curved sides, open or closed.
+- A draw tool for shapes of your own: corners snap to a grid so every side comes out straight and lined up, open or closed, and any shape's corners can be rounded with a slider.
 - More than 250 fonts, a colour picker with the colours your project already uses at the top, and a floating toolbar next to whatever you select.
 - Resize from the corners, rotate, flip, lock, align and reorder. Alignment guides snap to the page and to other items.
 - Export at any size as PNG, JPG, WebP or PDF, with a transparent background where the format allows it.
@@ -70,7 +70,7 @@ Next.js 15 with the App Router. Four routes: `/` (your projects), `/remove-bg` (
 
 - `src/model`: the project, page and element types, plus factories.
 - `src/data`: presets, fonts, colours and shape geometry, including the point lists and paths behind every shape.
-- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, stroke simplification for the draw tool, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the background remover.
+- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, grid snapping and rounded corner paths for shapes, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the background remover.
 - `src/store`: the zustand stores. `project-store` holds the open project, selection, live previews and undo history and is split into slices. `editor-ui-store` holds tool, panel, zoom, pan and the open menus.
 - `src/services/background-removal.ts`: the main thread side of the remover. It starts the worker and hands it pictures one at a time.
 - `src/hooks`: React hooks for saving, autosave, shortcuts, theme, settings, live updates and the removal queue.

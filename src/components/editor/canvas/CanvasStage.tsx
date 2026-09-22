@@ -9,7 +9,7 @@ import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
 import { ContextMenu } from "./ContextMenu";
-import { DrawPreview } from "./DrawPreview";
+import { DrawGrid, DrawPreview } from "./DrawPreview";
 import { ElementNode } from "./ElementNode";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
@@ -38,7 +38,6 @@ export function CanvasStage() {
   const drawing = useShapeDrawing();
   const drawOptions = useEditorUiStore((s) => s.drawOptions);
   const drawPoints = useEditorUiStore((s) => s.drawPoints);
-  const drawStroke = useEditorUiStore((s) => s.drawStroke);
   const drop = useCanvasDrop(containerRef, screenToPage);
   const { addText } = useAddElement();
   const pendingTextAt = useEditorUiStore((s) => s.pendingTextAt);
@@ -157,7 +156,8 @@ export function CanvasStage() {
             <GuideLines guides={guides} pageWidth={project.width} pageHeight={project.height} zoom={zoom} />
             <LockedOutlines elements={lockedSelected} zoom={zoom} />
             <MarqueeRect rect={marquee.rect} zoom={zoom} />
-            {tool === "draw" ? <DrawPreview points={drawPoints} stroke={drawStroke} hover={drawing.hover} options={drawOptions} zoom={zoom} /> : null}
+            {tool === "draw" ? <DrawGrid pageWidth={project.width} pageHeight={project.height} grid={drawOptions.grid} zoom={zoom} /> : null}
+            {tool === "draw" ? <DrawPreview points={drawPoints} hover={drawing.hover} options={drawOptions} zoom={zoom} /> : null}
           </Layer>
           <Layer listening={tool !== "draw"}>
             <SelectionTransformer />

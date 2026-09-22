@@ -53,12 +53,10 @@ export interface EditorUiState {
    * the image is deselected and selected again mid run.
    */
   busyImageIds: string[];
-  /** What the draw tool makes: curved or straight sides, closed or open. */
+  /** What the draw tool makes: closed or open, and the grid its corners snap to. */
   drawOptions: DrawOptions;
   /** Corners placed so far with the draw tool, as page coordinates in x, y pairs. */
   drawPoints: number[];
-  /** The freehand stroke being dragged right now, before it is simplified. */
-  drawStroke: number[];
 
   setTool: (tool: Tool) => void;
   openPanel: (panel: PanelKind) => void;
@@ -77,7 +75,6 @@ export interface EditorUiState {
   setImageBusy: (id: string, busy: boolean) => void;
   setDrawOptions: (patch: Partial<DrawOptions>) => void;
   setDrawPoints: (points: number[]) => void;
-  setDrawStroke: (points: number[]) => void;
 }
 
 /** Smallest zoom the workspace allows. */
@@ -111,12 +108,11 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   toast: null,
   exportOpen: false,
   busyImageIds: [],
-  drawOptions: { curved: false, closed: true },
+  drawOptions: { closed: true, grid: 20 },
   drawPoints: [],
-  drawStroke: [],
 
   // Leaving the draw tool drops any half drawn shape.
-  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool], drawPoints: [], drawStroke: [] }),
+  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool], drawPoints: [] }),
   openPanel: (panel) => set({ panel }),
   setViewport: (zoom, pan) =>
     set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom)), pan }),
@@ -142,5 +138,4 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
     }),
   setDrawOptions: (patch) => set((state) => ({ drawOptions: { ...state.drawOptions, ...patch } })),
   setDrawPoints: (drawPoints) => set({ drawPoints }),
-  setDrawStroke: (drawStroke) => set({ drawStroke }),
 }));
