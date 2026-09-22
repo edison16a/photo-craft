@@ -6,11 +6,11 @@ I built it because I was tired of using Canva and being limited on features that
 
 ## Screenshots
 
-<img width="1512" height="696" alt="image" src="https://github.com/user-attachments/assets/7611d833-3f4f-4eca-a32a-55c30b9f3373" />
+<img width="1510" height="857" alt="image" src="https://github.com/user-attachments/assets/60f2e79a-4dc0-4473-b224-f3ee90faec28" />
 
 <img width="1509" height="858" alt="image" src="https://github.com/user-attachments/assets/e54a09ef-2874-4019-9081-4967a9ca0e3a" />
 
-<img width="1440" height="900" alt="The remove background page with three cutouts" src="docs/screenshots/remove-bg.png" />
+
 
 ## What you get
 
