@@ -13,11 +13,11 @@ I built it because I was tired of using Canva and being limited on features that
 ## What you get
 
 - Text, images and thirty shapes on as many pages as you like, with undo and redo.
-- A draw tool for shapes of your own: corners snap to a grid so every side comes out straight and lined up, open or closed, and any shape's corners can be rounded with a slider.
+- A draw tool for shapes of your own: click corners or drag along a grid, so every side comes out straight and lined up. Drawing back to the start closes the shape, smooth corners rounds it as you go, and a slider rounds the corners of drawn shapes, polygons and rectangles.
 - More than 250 fonts, a colour picker with the colours your project already uses at the top, and a floating toolbar next to whatever you select.
-- Resize from the corners, rotate, flip, lock, align and reorder. Alignment guides snap to the page and to other items.
+- Resize, rotate, flip, lock, align and reorder. Images and drawn shapes keep their proportions unless you switch that off. Alignment guides snap to the page and to other items.
 - Export at any size as PNG, JPG, WebP or PDF, with a transparent background where the format allows it.
-- One click background removal, in the editor or on its own page where you can drop in a batch of pictures, flick through the cutouts and download any size. It runs in your browser, so nothing is uploaded.
+- One click background removal, in the editor or on its own page where you can drop in a batch of pictures, compare each cutout with its original, touch it up with restore and erase brushes, and download any size. It runs in your browser, so nothing is uploaded.
 - Preset sizes for social posts, thumbnails, logos, wallpapers and print, or any custom size.
 - Light and dark mode. Projects live in your browser's storage, saved on demand or with autosave.
 
@@ -42,9 +42,9 @@ npm run lint       # eslint
 
 ## Background removal
 
-Two places offer it. In the editor, select an image and press "Remove background" in the toolbar, the side panel or the right click menu. The cutout replaces the image as one undo step. On the Remove background page, drop, paste or pick as many pictures as you like. They are cut out one after another, the strip on the left switches between them (or use the left and right arrow keys), and the panel on the right downloads the one you are looking at as PNG or WebP at any size, or all of them at once as a ZIP.
+Two places offer it. In the editor, select an image and press "Remove background" in the toolbar, the side panel or the right click menu. The cutout replaces the image as one undo step, and the same button puts the background back. On the Background Remover page, drop, paste or pick as many pictures as you like. They are cut out one after another, the strip on the left switches between them (or use the left and right arrow keys), a line over the picture compares the cutout with the original, restore and erase brushes fix what the model got wrong, and the panel on the right downloads the one you are looking at as PNG or WebP at any size, or all of them at once as a ZIP.
 
-It runs entirely in the browser with the ISNet model (isnet-general-use from the open source [rembg](https://github.com/danielgatis/rembg) project), the best of the cutout models that fit in a browser. With graphics card access it runs on WebGPU and takes a second or two per picture. Without it, it runs on WebAssembly and takes several seconds. The first use downloads the model (179 MB) and keeps it in the browser's cache, so later uses start straight away. There is no server side to it, so the hosted version has it too, and nothing you add is kept once you leave the page.
+It runs entirely in the browser, on WebGPU where the browser allows it and on WebAssembly otherwise. Three models from the open source [rembg](https://github.com/danielgatis/rembg) project ship with the site, and the gear in the top right picks one: Light (u2netp, 5 MB, quick but rough), Effective (silueta, 44 MB) and Best (isnet-general-use, 179 MB, the cleanest edges). Best is the default. The first use downloads the chosen model and keeps it in the browser's cache; picking another one removes the previous one from the computer, and a button in the settings deletes a model outright. There is no server side to it, so the hosted version has it too, and nothing you add to the remover page is kept once you leave.
 
 ## Shortcuts
 
