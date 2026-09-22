@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProjectSummary } from "@/model/types";
 import { IconButton } from "../ui/IconButton";
 
@@ -18,7 +18,25 @@ function formatDate(ms: number): string {
 /** One saved project on the home grid. */
 export function ProjectCard({ project, onRename, onDuplicate, onDelete }: ProjectCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const href = `/editor/${project.id}`;
+
+  // Close on an outside click or Escape, not only when the pointer leaves.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   return (
     <article className="project-card">
@@ -39,10 +57,10 @@ export function ProjectCard({ project, onRename, onDuplicate, onDelete }: Projec
             {project.width} x {project.height}, {project.pageCount} {project.pageCount === 1 ? "page" : "pages"}, {formatDate(project.updatedAt)}
           </div>
         </div>
-        <div className="project-card__menu">
-          <IconButton icon="more" label="Project actions" onClick={() => setMenuOpen((v) => !v)} />
+        <div className="project-card__menu" ref={menuRef}>
+          <IconButton icon="more" label="Project actions" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)} />
           {menuOpen ? (
-            <div className="menu" onMouseLeave={() => setMenuOpen(false)}>
+            <div className="menu" role="menu">
               <Link href={href} className="menu__item">
                 Open
               </Link>
