@@ -25,7 +25,7 @@ const TITLES: Record<PanelKind, string> = {
  */
 export function RightPanel() {
   const panel = useEditorUiStore((s) => s.panel);
-  const openPanel = useEditorUiStore((s) => s.openPanel);
+  const tool = useEditorUiStore((s) => s.tool);
   const hasSelection = useProjectStore((s) => s.selectedIds.length > 0);
 
   useEffect(() => {
@@ -34,14 +34,23 @@ export function RightPanel() {
     if (!hasSelection && ui.panel === "properties") ui.openPanel("page");
   }, [hasSelection]);
 
-  const shown: PanelKind = panel === "properties" && !hasSelection ? "page" : panel;
+  // With the pointer tool, a selection always wins over the page panel.
+  const pointerWithSelection = hasSelection && tool === "select" && (panel === "page" || panel === "properties");
+  const shown: PanelKind = pointerWithSelection ? "properties" : panel === "properties" && !hasSelection ? "page" : panel;
+
+  /** Done returns to the pointer tool and the panel that fits the selection. */
+  const done = () => {
+    const ui = useEditorUiStore.getState();
+    ui.setTool("select");
+    ui.openPanel(hasSelection ? "properties" : "page");
+  };
 
   return (
     <aside className="panel" aria-label={TITLES[shown]}>
       <div className="panel__header">
         <h2 className="panel__title">{TITLES[shown]}</h2>
         {shown !== "page" && shown !== "properties" ? (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => openPanel(hasSelection ? "properties" : "page")}>
+          <button type="button" className="btn btn--ghost btn--sm" onClick={done}>
             Done
           </button>
         ) : null}
