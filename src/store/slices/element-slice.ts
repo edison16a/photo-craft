@@ -153,7 +153,9 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
     const page = project ? findPage(project, currentPageId) : undefined;
     if (!page) return;
     const wanted = new Set(ids);
-    set({ clipboard: page.elements.filter((element) => wanted.has(element.id)).map((e) => structuredClone(e)) });
+    const copied = page.elements.filter((element) => wanted.has(element.id)).map((e) => structuredClone(e));
+    // Copying nothing keeps whatever was copied before.
+    if (copied.length > 0) set({ clipboard: copied });
   },
 
   paste: () => {

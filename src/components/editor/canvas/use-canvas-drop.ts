@@ -1,13 +1,15 @@
 "use client";
 /**
  * Drops and pastes onto the workspace. Handles files from the desktop,
- * images dragged from a Google Images tab, dragged search results and
- * images or image links in the clipboard.
+ * images dragged from a Google Images tab, dragged search results, images
+ * or image links in the clipboard, and Ctrl+V of elements copied inside
+ * the editor.
  */
 import { useCallback, useEffect, type DragEvent, type RefObject } from "react";
 import { useAddElement } from "@/hooks/use-add-element";
 import { extractDropPayload, looksLikeImageUrl } from "@/lib/drop-payload";
 import type { Point } from "@/model/types";
+import { useProjectStore } from "@/store/project-store";
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -51,6 +53,13 @@ export function useCanvasDrop(containerRef: RefObject<HTMLDivElement | null>, to
       if (url) {
         event.preventDefault();
         void addImageUrl(url);
+        return;
+      }
+      // Nothing from outside, so paste elements copied inside the editor.
+      const store = useProjectStore.getState();
+      if (store.clipboard.length > 0) {
+        event.preventDefault();
+        store.paste();
       }
     };
     window.addEventListener("paste", onPaste);

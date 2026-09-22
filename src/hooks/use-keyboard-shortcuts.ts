@@ -37,8 +37,9 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
       if (mod && key === "s") return stop(event, handlers.save);
       if (mod && key === "a") return stop(event, store.selectAll);
       if (mod && key === "d") return stop(event, () => store.duplicateElements(ids));
-      if (mod && key === "c") return stop(event, () => store.copy(ids));
-      if (mod && key === "v") return stop(event, store.paste);
+      if (mod && key === "c") return ids.length > 0 ? stop(event, () => store.copy(ids)) : undefined;
+      // Ctrl+V is left to the browser so the paste event fires. use-canvas-drop
+      // handles both clipboard images and the internal element clipboard.
       if (mod && (key === "=" || key === "+")) return stop(event, handlers.zoomIn);
       if (mod && key === "-") return stop(event, handlers.zoomOut);
       if (mod && key === "0") return stop(event, handlers.zoomToFit);
@@ -48,6 +49,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         return stop(event, () => store.removeElements(ids));
       }
 
+      if (ids.length === 0) return;
       const step = event.shiftKey ? 10 : 1;
       if (key === "arrowleft") return stop(event, () => store.nudge(ids, -step, 0));
       if (key === "arrowright") return stop(event, () => store.nudge(ids, step, 0));
