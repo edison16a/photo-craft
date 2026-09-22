@@ -9,6 +9,7 @@ import { applyProjectChange, type Slice } from "../project-state";
 import {
   addElementsToPage,
   findPage,
+  patchElement,
   removeElementsFromPage,
   reorderElements,
   withElements,
@@ -61,7 +62,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   updateElements: (ids, patch) => {
     const { currentPageId } = get();
     applyProjectChange(set, get, (project) =>
-      withElements(project, currentPageId, ids, (element) => ({ ...element, ...patch }) as CanvasElement),
+      withElements(project, currentPageId, ids, (element) => patchElement(element, patch)),
     );
   },
 
@@ -70,7 +71,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
     if (ids.length === 0) return;
     const { currentPageId } = get();
     applyProjectChange(set, get, (project) =>
-      withElements(project, currentPageId, ids, (element) => ({ ...element, ...patches[element.id] }) as CanvasElement),
+      withElements(project, currentPageId, ids, (element) => patchElement(element, patches[element.id])),
     );
   },
 
@@ -140,6 +141,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   },
 
   nudge: (ids, dx, dy) => {
+    if (ids.length === 0 || (dx === 0 && dy === 0)) return;
     const { currentPageId } = get();
     applyProjectChange(set, get, (project) =>
       withElements(project, currentPageId, ids, (element) =>

@@ -17,19 +17,31 @@ export function findElement(page: Page, elementId: string): CanvasElement | unde
   return page.elements.find((element) => element.id === elementId);
 }
 
-/** Replaces one page using a transform function. */
+/**
+ * Replaces one page using a transform function. Returns the same project
+ * when the transform hands the page back unchanged, so callers can tell a
+ * real change from a no-op.
+ */
 export function withPage(
   project: Project,
   pageId: string,
   transform: (page: Page) => Page,
 ): Project {
-  return {
-    ...project,
-    pages: project.pages.map((page) => (page.id === pageId ? transform(page) : page)),
-  };
+  let changed = false;
+  const pages = project.pages.map((page) => {
+    if (page.id !== pageId) return page;
+    const next = transform(page);
+    if (next !== page) changed = true;
+    return next;
+  });
+  return changed ? { ...project, pages } : project;
 }
 
-/** Applies a transform to every element on a page whose ID is in the set. */
+/**
+ * Applies a transform to every element on a page whose ID is in the set.
+ * Elements the transform returns unchanged are kept as they are, and when
+ * nothing changed the same project comes back.
+ */
 export function withElements(
   project: Project,
   pageId: string,
@@ -37,12 +49,27 @@ export function withElements(
   transform: (element: CanvasElement) => CanvasElement,
 ): Project {
   const wanted = new Set(ids);
-  return withPage(project, pageId, (page) => ({
-    ...page,
-    elements: page.elements.map((element) =>
-      wanted.has(element.id) ? transform(element) : element,
-    ),
-  }));
+  return withPage(project, pageId, (page) => {
+    let changed = false;
+    const elements = page.elements.map((element) => {
+      if (!wanted.has(element.id)) return element;
+      const next = transform(element);
+      if (next !== element) changed = true;
+      return next;
+    });
+    return changed ? { ...page, elements } : page;
+  });
+}
+
+/**
+ * Merges a patch into an element, or returns the element itself when every
+ * patched field already has that value.
+ */
+export function patchElement(element: CanvasElement, patch: Partial<CanvasElement>): CanvasElement {
+  const record = element as unknown as Record<string, unknown>;
+  const entries = Object.entries(patch);
+  if (entries.every(([key, value]) => record[key] === value)) return element;
+  return { ...element, ...patch } as CanvasElement;
 }
 
 /** Appends elements to the top of a page's stacking order. */
@@ -106,7 +133,8 @@ export function reorderElements(
         }
       }
     }
-    return { ...page, elements };
+    const moved = elements.some((element, index) => element !== page.elements[index]);
+    return moved ? { ...page, elements } : page;
   });
 }
 

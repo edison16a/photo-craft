@@ -37,8 +37,9 @@ function alignmentDelta(box: Rect, target: Rect, alignment: Alignment): { dx: nu
 }
 
 /**
- * Returns a new element list with the selected elements aligned. Locked
- * elements stay where they are but still count towards the selection box.
+ * Returns a new element list with the selected elements aligned, or the
+ * same list when nothing needed to move. Locked elements stay where they
+ * are but still count towards the selection box.
  */
 export function alignElements(
   elements: CanvasElement[],
@@ -55,10 +56,13 @@ export function alignElements(
       ? { x: 0, y: 0, width: page.width, height: page.height }
       : unionRects(chosen.map(elementBounds));
 
-  return elements.map((element) => {
+  let changed = false;
+  const aligned = elements.map((element) => {
     if (!selected.has(element.id) || element.locked) return element;
     const { dx, dy } = alignmentDelta(elementBounds(element), target, alignment);
-    if (dx === 0 && dy === 0) return element;
+    if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return element;
+    changed = true;
     return { ...element, x: element.x + dx, y: element.y + dy };
   });
+  return changed ? aligned : elements;
 }

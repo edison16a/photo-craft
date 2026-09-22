@@ -33,8 +33,15 @@ export function ColorPicker({ label, value, onChange, allowTransparent }: ColorP
 
   const isTransparent = value === "transparent";
   const commitHex = () => {
-    if (isValidHex(hexDraft)) onChange(normalizeHex(hexDraft));
-    else setHexDraft(value);
+    const raw = hexDraft.trim();
+    const candidate = raw.startsWith("#") ? raw : `#${raw}`;
+    if (!isValidHex(candidate)) {
+      setHexDraft(value);
+      return;
+    }
+    const hex = normalizeHex(candidate);
+    if (hex !== value) onChange(hex);
+    setHexDraft(hex);
   };
 
   return (

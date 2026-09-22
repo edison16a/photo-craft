@@ -33,7 +33,11 @@ export function PagePanel() {
           className="input"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          onBlur={() => name.trim() && store().renamePage(page.id, name)}
+          onBlur={() => {
+            const trimmed = name.trim();
+            if (trimmed && trimmed !== page.name) store().renamePage(page.id, trimmed);
+            else setName(page.name);
+          }}
           onKeyDown={(event) => event.key === "Enter" && (event.target as HTMLInputElement).blur()}
         />
       </label>
