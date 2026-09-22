@@ -1,5 +1,5 @@
 /*
-  Home page, the shared site bar with its two sections, and page level layout.
+  Home page, the shared site shell with its two sections, and page level layout.
 */
 
 .centered {
@@ -13,17 +13,63 @@
   padding: 0 24px 64px;
 }
 
+.site {
+  display: flex;
+  flex-direction: column;
+}
+
 .site-bar {
   display: grid;
+  flex-shrink: 0;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   height: var(--topbar-height);
-  max-width: 1100px;
-  margin: 0 auto;
+  padding: 0 24px;
 }
 
-.site-bar--wide {
-  max-width: none;
+.site-bar__name {
+  gap: 10px;
+  justify-self: start;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-bar__name:hover {
+  text-decoration: none;
+}
+
+.site-bar__end {
+  justify-content: flex-end;
+}
+
+.site-nav {
+  position: relative;
+  display: flex;
+  gap: 28px;
+}
+
+.site-nav__item {
+  padding: 8px 2px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 120ms ease;
+}
+
+.site-nav__item:hover {
+  opacity: 0.8;
+  text-decoration: none;
+}
+
+/* One line for both sections. It slides when the section changes. */
+.site-nav__underline {
+  position: absolute;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: left 240ms ease, width 240ms ease, opacity 160ms ease;
 }
 
 /* The new project page keeps a plain bar: back link on the left, theme on the right. */
@@ -34,39 +80,6 @@
   height: var(--topbar-height);
   max-width: 1100px;
   margin: 0 auto;
-}
-
-.site-bar__end {
-  justify-content: flex-end;
-}
-
-.site-nav {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg-elevated);
-}
-
-.site-nav__item {
-  padding: 6px 14px;
-  border-radius: 999px;
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.site-nav__item:hover {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.site-nav__item--active {
-  background: var(--bg);
-  color: var(--text);
-  box-shadow: var(--shadow);
 }
 
 .home__name {

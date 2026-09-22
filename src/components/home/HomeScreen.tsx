@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useProjectList } from "@/hooks/use-project-list";
 import type { ProjectSummary } from "@/model/types";
-import { SiteHeader } from "../site/SiteHeader";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { Icon } from "../ui/Icon";
 import { PromptDialog } from "../ui/PromptDialog";
@@ -16,8 +15,7 @@ export function HomeScreen() {
   const [deleting, setDeleting] = useState<ProjectSummary | null>(null);
 
   return (
-    <main className="page-scroll home">
-      <SiteHeader />
+    <main className="home">
       <section className="home__projects">
         {error ? <p className="muted">{error}</p> : null}
         <div className="project-grid">
