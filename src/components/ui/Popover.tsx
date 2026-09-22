@@ -80,7 +80,6 @@ export function Popover({ open, anchorRef, onClose, label, width, children }: Po
         width,
         visibility: placement ? "visible" : "hidden",
       }}
-      onMouseDown={(event) => event.stopPropagation()}
     >
       {children}
     </div>,

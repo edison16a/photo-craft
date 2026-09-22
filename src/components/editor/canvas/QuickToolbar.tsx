@@ -16,6 +16,7 @@ import { TextQuickActions } from "./quick/TextQuickActions";
  * Floating toolbar below the selection with the options people reach for
  * most, so the side panel is only needed for the rest. Hidden while the
  * selection is being dragged or resized and while text is being edited.
+ * It sits above the Konva canvas, so its clicks never reach the stage.
  */
 export function QuickToolbar() {
   const selectedIds = useProjectStore((s) => s.selectedIds);
@@ -62,7 +63,6 @@ export function QuickToolbar() {
       role="toolbar"
       aria-label="Quick actions"
       style={{ top: placement.top, left: placement.left, visibility: size.width > 0 ? "visible" : "hidden" }}
-      onMouseDown={(event) => event.stopPropagation()}
     >
       {single?.type === "text" ? <TextQuickActions element={single} /> : null}
       {single?.type === "shape" ? <ShapeQuickActions element={single} /> : null}
