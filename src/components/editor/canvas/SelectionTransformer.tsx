@@ -1,6 +1,6 @@
 "use client";
 import type Konva from "konva";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Transformer } from "react-konva";
 import { normalizeDegrees } from "@/lib/geometry";
 import { topLeftFromCentre } from "@/lib/konva/element-attrs";
@@ -43,10 +43,15 @@ export function SelectionTransformer() {
   const tool = useEditorUiStore((s) => s.tool);
   const editing = useEditorUiStore((s) => s.editingTextId);
 
-  const selected = elements.filter((el) => selectedIds.includes(el.id) && !el.locked);
+  const selected = useMemo(
+    () => elements.filter((el) => selectedIds.includes(el.id) && !el.locked),
+    [elements, selectedIds],
+  );
   const rules = transformRules(selected);
   const visible = tool === "select" && selected.length > 0 && !editing;
 
+  // Re-attach whenever the selection or the elements change, since a
+  // re-render of the nodes can replace the Konva objects underneath.
   useEffect(() => {
     const transformer = ref.current;
     const stage = transformer?.getStage();
@@ -56,9 +61,7 @@ export function SelectionTransformer() {
       : [];
     transformer.nodes(nodes);
     transformer.getLayer()?.batchDraw();
-    // The dependency is the list of ids plus element identity, so a re-render of the nodes re-attaches.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected.map((el) => el.id).join(","), elements, visible]);
+  }, [selected, visible]);
 
   const commit = () => {
     const transformer = ref.current;
