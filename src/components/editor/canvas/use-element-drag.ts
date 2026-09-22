@@ -35,6 +35,8 @@ interface DragSession {
 export const SNAP_THRESHOLD_PX = 6;
 
 let session: DragSession | null = null;
+/** Where the pointer went down on an element, in page pixels. */
+let pressPointer: Point | null = null;
 
 function sameGuides(a: Guide[], b: Guide[]): boolean {
   return a.length === b.length && a.every((g, i) => g.orientation === b[i].orientation && g.position === b[i].position);
@@ -43,6 +45,15 @@ function sameGuides(a: Guide[], b: Guide[]): boolean {
 function pagePointer(node: Konva.Node): Point | null {
   const pointer = node.getStage()?.getPointerPosition();
   return pointer ? screenToPage(pointer) : null;
+}
+
+/**
+ * Records the mousedown position on an element. Konva only fires dragstart
+ * after the pointer has moved a few pixels, so this is the true origin of
+ * the drag and keeps elements from lagging behind the pointer.
+ */
+export function rememberPressPointer(node: Konva.Node): void {
+  pressPointer = pagePointer(node);
 }
 
 /** Drag handlers for element groups. Share one instance across all elements. */
@@ -67,7 +78,7 @@ export function useElementDrag() {
       for (const el of moving) start.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });
 
       session = {
-        pointerStart: pointer,
+        pointerStart: pressPointer ?? pointer,
         start,
         startBounds: unionRects(moving.map(elementBounds)),
         targets: elements.filter((el) => !movingIds.has(el.id)).map(elementBounds),
@@ -109,6 +120,7 @@ export function useElementDrag() {
         patches[id] = { x: Math.round(topLeft.x * 100) / 100, y: Math.round(topLeft.y * 100) / 100 };
       }
       session = null;
+      pressPointer = null;
       useEditorUiStore.getState().setGuides([]);
       useProjectStore.getState().patchElements(patches);
     };

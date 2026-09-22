@@ -9,7 +9,7 @@ import { useProjectStore } from "@/store/project-store";
 import { ImageNode } from "./ImageNode";
 import { ShapeNode } from "./ShapeNode";
 import { TextNode } from "./TextNode";
-import { useElementDrag } from "./use-element-drag";
+import { rememberPressPointer, useElementDrag } from "./use-element-drag";
 
 interface ElementNodeProps {
   element: CanvasElement;
@@ -29,6 +29,7 @@ export function ElementNode({ element }: ElementNodeProps) {
     if (tool !== "select") return;
     event.cancelBubble = true;
     blurActiveField();
+    rememberPressPointer(event.target);
     const store = useProjectStore.getState();
     if (event.evt.shiftKey) {
       store.toggleSelected(element.id);
