@@ -16,7 +16,7 @@ describe("settings", () => {
 
   it("returns the defaults when nothing is stored", () => {
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
-    expect(DEFAULT_SETTINGS).toEqual({ autosave: true, backgroundModel: "best", modelHintShown: false });
+    expect(DEFAULT_SETTINGS).toEqual({ autosave: true, backgroundModel: "best" });
   });
 
   it("does not hand out the shared defaults object", () => {
@@ -61,7 +61,7 @@ describe("settings", () => {
     window.localStorage.setItem(KEY, JSON.stringify({ unknown: "k", autosave: "yes", backgroundModel: "huge" }));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     window.localStorage.setItem(KEY, JSON.stringify({ backgroundModel: "light", modelHintShown: true }));
-    expect(loadSettings()).toEqual({ autosave: true, backgroundModel: "light", modelHintShown: true });
+    expect(loadSettings()).toEqual({ autosave: true, backgroundModel: "light" });
     window.localStorage.setItem(KEY, JSON.stringify(null));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     window.localStorage.setItem(KEY, JSON.stringify([1, 2]));

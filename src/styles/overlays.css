@@ -103,21 +103,6 @@
   padding: 0;
 }
 
-/* The settings gear, and the pulse that draws the eye to it the first time. */
-.settings-btn--hint {
-  color: var(--accent-text);
-  animation: settings-pulse 1.6s ease-out infinite;
-}
-
-@keyframes settings-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(77, 163, 255, 0.7);
-  }
-  100% {
-    box-shadow: 0 0 0 12px rgba(77, 163, 255, 0);
-  }
-}
-
 .model-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

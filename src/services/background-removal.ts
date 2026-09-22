@@ -9,7 +9,6 @@ import { dataUrlToBlob } from "../lib/download";
 import type { WorkerRequest, WorkerResponse } from "../lib/background/messages";
 import { DEFAULT_TIER, type ModelTier } from "../lib/background/model";
 import { useRemovalProgressStore } from "../store/removal-progress-store";
-import { useSettingsUiStore } from "../store/settings-ui-store";
 import { downloadInProgress } from "./model-download";
 import { loadSettings, saveSettings } from "./settings";
 
@@ -124,8 +123,6 @@ export async function removeBackground(source: Blob | ImageBitmap): Promise<CutO
   const id = nextId++;
   const progress = useRemovalProgressStore.getState();
   progress.addPending(id);
-  // The first ever use points at the settings, where the model can be changed.
-  useSettingsUiStore.getState().showModelHint();
   const tier = currentModelTier();
   // The settings may still be downloading this model. Wait rather than fetch it twice.
   await downloadInProgress(tier)?.catch(() => undefined);
