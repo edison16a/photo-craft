@@ -14,7 +14,8 @@ I built it because I was tired of using Canva and being limited on features that
 
 ## What you get
 
-- Text, shapes and images on as many pages as you like, with undo and redo.
+- Text, images and thirty shapes on as many pages as you like, with undo and redo.
+- A draw tool for shapes of your own: click corners or drag freehand, straight or curved sides, open or closed.
 - More than 250 fonts, a colour picker with the colours your project already uses at the top, and a floating toolbar next to whatever you select.
 - Resize from the corners, rotate, flip, lock, align and reorder. Alignment guides snap to the page and to other items.
 - Export at any size as PNG, JPG, WebP or PDF, with a transparent background where the format allows it.
@@ -45,7 +46,7 @@ npm run lint       # eslint
 
 Two places offer it. In the editor, select an image and press "Remove background" in the toolbar, the side panel or the right click menu. The cutout replaces the image as one undo step. On the Remove background page, drop, paste or pick as many pictures as you like. They are cut out one after another, the strip on the left switches between them (or use the left and right arrow keys), and the panel on the right downloads the one you are looking at as PNG or WebP at any size, or all of them at once as a ZIP.
 
-It runs entirely in the browser with the silueta model from the open source [rembg](https://github.com/danielgatis/rembg) project, on WebAssembly in a web worker. The first use downloads the model (44 MB) and keeps it in the browser's cache, so later uses start straight away. Each picture takes from under a second to several seconds depending on the computer. There is no server side to it, so the hosted version has it too.
+It runs entirely in the browser with the ISNet model (isnet-general-use from the open source [rembg](https://github.com/danielgatis/rembg) project), the best of the cutout models that fit in a browser. With graphics card access it runs on WebGPU and takes a second or two per picture. Without it, it runs on WebAssembly and takes several seconds. The first use downloads the model (179 MB) and keeps it in the browser's cache, so later uses start straight away. There is no server side to it, so the hosted version has it too, and nothing you add is kept once you leave the page.
 
 ## Shortcuts
 
@@ -58,7 +59,8 @@ It runs entirely in the browser with the silueta model from the open source [rem
 | Ctrl+D | Duplicate |
 | Delete | Remove selection |
 | Arrows, Shift+Arrows | Nudge by 1 px or 10 px |
-| V, T | Pointer tool, text tool |
+| V, T, P | Pointer tool, text tool, draw tool |
+| Enter, Backspace, Escape | While drawing: finish the shape, take a corner back, start over |
 | Ctrl+Plus, Ctrl+Minus, Ctrl+0 | Zoom in, zoom out, fit |
 | Escape | Deselect or finish editing text |
 | Ctrl+Wheel | Zoom around the pointer |
@@ -69,8 +71,8 @@ It runs entirely in the browser with the silueta model from the open source [rem
 Next.js 15 with the App Router. Four routes: `/` (your projects), `/remove-bg` (batch background removal), `/new` (pick a size) and `/editor/[projectId]`.
 
 - `src/model`: the project, page and element types, plus factories.
-- `src/data`: presets, fonts, colours and shape geometry.
-- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the remove background page.
+- `src/data`: presets, fonts, colours and shape geometry, including the point lists and paths behind every shape.
+- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, stroke simplification for the draw tool, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the background remover.
 - `src/store`: the zustand stores. `project-store` holds the open project, selection, live previews and undo history and is split into slices. `editor-ui-store` holds tool, panel, zoom, pan and the open menus.
 - `src/services/background-removal.ts`: the main thread side of the remover. It starts the worker and hands it pictures one at a time.
 - `src/hooks`: React hooks for saving, autosave, shortcuts, theme, settings, live updates and the removal queue.
