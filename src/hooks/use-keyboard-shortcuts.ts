@@ -4,7 +4,7 @@
  * editing text on the canvas.
  */
 import { useEffect } from "react";
-import { isTypingTarget } from "../lib/typing-target";
+import { isSliderTarget, isTypingTarget } from "../lib/typing-target";
 import { cancelDrawing, finishDrawing, undoDrawPoint } from "../store/drawing-actions";
 import { useEditorUiStore } from "../store/editor-ui-store";
 import { useProjectStore } from "../store/project-store";
@@ -65,6 +65,8 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
       }
 
       if (ids.length === 0) return;
+      // A focused slider moves with the arrow keys; the selection does not.
+      if (isSliderTarget(event.target)) return;
       const step = event.shiftKey ? 10 : 1;
       if (key === "arrowleft") return stop(event, () => store.nudge(ids, -step, 0));
       if (key === "arrowright") return stop(event, () => store.nudge(ids, step, 0));

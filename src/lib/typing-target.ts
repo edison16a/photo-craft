@@ -13,3 +13,8 @@ export function isTypingTarget(target: EventTarget | null): boolean {
   if (tag === "INPUT") return TEXT_INPUT_TYPES.has((target as HTMLInputElement).type.toLowerCase());
   return false;
 }
+
+/** Tells whether the event belongs to a slider, which owns the arrow keys while it has focus. */
+export function isSliderTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLInputElement && target.type.toLowerCase() === "range";
+}
