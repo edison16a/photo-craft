@@ -26,29 +26,23 @@ export function useProjectList() {
     void refresh();
   }, [refresh]);
 
-  const rename = useCallback(
-    async (id: string, name: string) => {
-      await renameStoredProject(id, name);
-      await refresh();
+  /** Runs a storage action, reports a failure through `error` and refreshes either way. */
+  const perform = useCallback(
+    async (action: () => Promise<unknown>) => {
+      try {
+        await action();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not update the project");
+      } finally {
+        await refresh();
+      }
     },
     [refresh],
   );
 
-  const duplicate = useCallback(
-    async (id: string) => {
-      await duplicateStoredProject(id);
-      await refresh();
-    },
-    [refresh],
-  );
-
-  const remove = useCallback(
-    async (id: string) => {
-      await deleteProject(id);
-      await refresh();
-    },
-    [refresh],
-  );
+  const rename = useCallback((id: string, name: string) => perform(() => renameStoredProject(id, name)), [perform]);
+  const duplicate = useCallback((id: string) => perform(() => duplicateStoredProject(id)), [perform]);
+  const remove = useCallback((id: string) => perform(() => deleteProject(id)), [perform]);
 
   return { projects, loading, error, refresh, rename, duplicate, remove };
 }
