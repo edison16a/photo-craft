@@ -2,20 +2,39 @@ import { describe, it, expect } from "vitest";
 import type { ShapeKind } from "../model/types";
 import {
   SHAPE_CATALOG,
+  customPoints,
   linePoints,
   pointsToSvgPath,
   polygonPoints,
+  shapeGeometry,
+  shapePathData,
 } from "./shapes";
 
 const POLYGON_KINDS: ShapeKind[] = [
   "triangle",
+  "rightTriangle",
   "diamond",
   "pentagon",
   "hexagon",
+  "octagon",
   "star",
+  "star4",
+  "star6",
+  "star8",
+  "parallelogram",
+  "trapezoid",
+  "chevron",
+  "blockArrow",
+  "doubleArrow",
+  "cross",
+  "lightning",
+  "house",
+  "kite",
 ];
 
-const NON_POLYGON_KINDS: ShapeKind[] = ["rectangle", "ellipse", "line", "arrow"];
+const PATH_KINDS: ShapeKind[] = ["heart", "cloud", "moon", "semicircle", "ring", "droplet", "speechBubble"];
+
+const NON_POLYGON_KINDS: ShapeKind[] = ["rectangle", "ellipse", "line", "arrow", "custom", ...PATH_KINDS];
 
 /** Splits a flat list into [x, y] pairs so assertions read naturally. */
 function toPairs(points: number[]): [number, number][] {
@@ -44,26 +63,16 @@ function expectTouchesEverySide(points: number[], width: number, height: number)
 }
 
 describe("SHAPE_CATALOG", () => {
-  it("lists all nine shape kinds in picker order", () => {
-    expect(SHAPE_CATALOG.map((option) => option.kind)).toEqual([
-      "rectangle",
-      "ellipse",
-      "triangle",
-      "diamond",
-      "pentagon",
-      "hexagon",
-      "star",
-      "line",
-      "arrow",
-    ]);
-  });
-
-  it("has unique kinds and a label for each", () => {
+  it("lists every drawable kind once, without the custom kind", () => {
     const kinds = SHAPE_CATALOG.map((option) => option.kind);
     expect(new Set(kinds).size).toBe(kinds.length);
-    for (const option of SHAPE_CATALOG) {
-      expect(option.label.trim().length).toBeGreaterThan(0);
-    }
+    expect(kinds).not.toContain("custom");
+    for (const kind of [...POLYGON_KINDS, ...PATH_KINDS, "rectangle", "ellipse", "line", "arrow"]) expect(kinds).toContain(kind);
+    expect(kinds[0]).toBe("rectangle");
+  });
+
+  it("gives every entry a label", () => {
+    for (const option of SHAPE_CATALOG) expect(option.label.length).toBeGreaterThan(0);
   });
 });
 
@@ -181,5 +190,40 @@ describe("pointsToSvgPath", () => {
   it("matches the polygon output for a triangle", () => {
     const points = polygonPoints("triangle", 100, 80) ?? [];
     expect(pointsToSvgPath(points)).toBe("M 50 0 L 100 80 L 0 80 Z");
+  });
+});
+
+describe("shapeGeometry", () => {
+  it("names how every catalogued kind is drawn", () => {
+    for (const option of SHAPE_CATALOG) {
+      const geometry = shapeGeometry(option.kind);
+      if (PATH_KINDS.includes(option.kind)) expect(geometry).toBe("path");
+      else if (POLYGON_KINDS.includes(option.kind)) expect(geometry).toBe("polygon");
+      else expect(["rect", "ellipse", "line", "arrow"]).toContain(geometry);
+    }
+    expect(shapeGeometry("custom")).toBe("custom");
+  });
+});
+
+describe("shapePathData", () => {
+  it("has a closed path for every curved kind and nothing for the rest", () => {
+    for (const kind of PATH_KINDS) {
+      const data = shapePathData(kind);
+      expect(data).toMatch(/^M/);
+      expect(data).toMatch(/Z$/);
+    }
+    expect(shapePathData("rectangle")).toBeNull();
+    expect(shapePathData("star")).toBeNull();
+  });
+});
+
+describe("customPoints", () => {
+  it("scales fractions to the box", () => {
+    expect(customPoints({ points: [0, 0, 1, 0, 0.5, 1] }, 200, 100)).toEqual([0, 0, 200, 0, 100, 100]);
+  });
+
+  it("ignores a missing list and a trailing odd value", () => {
+    expect(customPoints({}, 10, 10)).toEqual([]);
+    expect(customPoints({ points: [0.5, 0.5, 1] }, 10, 10)).toEqual([5, 5]);
   });
 });

@@ -70,6 +70,7 @@ function buildElementNode(
     if (spec.node === "rect") inner.add(new K.Rect(spec.attrs));
     else if (spec.node === "ellipse") inner.add(new K.Ellipse(spec.attrs as Konva.EllipseConfig));
     else if (spec.node === "arrow") inner.add(new K.Arrow(spec.attrs as Konva.ArrowConfig));
+    else if (spec.node === "path") inner.add(new K.Path(spec.attrs as Konva.PathConfig));
     else inner.add(new K.Line(spec.attrs as Konva.LineConfig));
   }
   return outer;

@@ -1,22 +1,34 @@
 "use client";
-import { linePoints, pointsToSvgPath, polygonPoints } from "@/data/shapes";
-import type { CanvasElement, ShapeKind } from "@/model/types";
+import { customPoints, linePoints, PATH_BOX, pointsToSvgPath, polygonPoints, shapeGeometry, shapePathData } from "@/data/shapes";
+import { smoothPath } from "@/lib/curves";
+import type { CanvasElement, ShapeElement, ShapeKind } from "@/model/types";
 
 interface ShapePreviewProps {
   kind: ShapeKind;
   fill: string;
   stroke: string;
   size?: number;
+  /** The element itself, needed to draw a custom shape's own corners. */
+  element?: Pick<ShapeElement, "points" | "closed" | "tension">;
 }
 
 /** Small SVG drawing of a shape, used in the shapes panel and the selection preview. */
-export function ShapePreview({ kind, fill, stroke, size = 48 }: ShapePreviewProps) {
+export function ShapePreview({ kind, fill, stroke, size = 48, element }: ShapePreviewProps) {
   const pad = 4;
   const box = size - pad * 2;
   const paint = { fill: fill === "transparent" ? "none" : fill, stroke: stroke === "transparent" ? "none" : stroke, strokeWidth: 2 };
   const lineColor = stroke === "transparent" ? fill : stroke;
+  const geometry = shapeGeometry(kind);
 
   const inner = (() => {
+    if (geometry === "path") {
+      return <path d={shapePathData(kind) ?? ""} transform={`scale(${box / PATH_BOX})`} vectorEffect="non-scaling-stroke" {...paint} />;
+    }
+    if (geometry === "custom") {
+      const closed = element?.closed ?? true;
+      const d = smoothPath(customPoints(element ?? {}, box, box), closed, element?.tension ?? 0);
+      return <path d={d} {...paint} fill={closed ? paint.fill : "none"} stroke={closed ? paint.stroke : lineColor} strokeLinejoin="round" strokeLinecap="round" />;
+    }
     switch (kind) {
       case "rectangle":
         return <rect x={0} y={0} width={box} height={box} rx={2} {...paint} />;
@@ -60,7 +72,7 @@ export function ElementPreview({ element }: ElementPreviewProps) {
       ) : null}
       {element.type === "shape" ? (
         <div style={{ transform: flip }}>
-          <ShapePreview kind={element.shape} fill={element.fill} stroke={element.stroke} size={72} />
+          <ShapePreview kind={element.shape} fill={element.fill} stroke={element.stroke} size={72} element={element} />
         </div>
       ) : null}
       {element.type === "text" ? (

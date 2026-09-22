@@ -50,12 +50,34 @@ export type ShapeKind =
   | "rectangle"
   | "ellipse"
   | "triangle"
+  | "rightTriangle"
   | "diamond"
   | "pentagon"
   | "hexagon"
+  | "octagon"
   | "star"
+  | "star4"
+  | "star6"
+  | "star8"
+  | "parallelogram"
+  | "trapezoid"
+  | "chevron"
+  | "blockArrow"
+  | "doubleArrow"
+  | "cross"
+  | "lightning"
+  | "house"
+  | "kite"
+  | "heart"
+  | "cloud"
+  | "moon"
+  | "semicircle"
+  | "ring"
+  | "droplet"
+  | "speechBubble"
   | "line"
-  | "arrow";
+  | "arrow"
+  | "custom";
 
 /** A filled or outlined shape. */
 export interface ShapeElement extends ElementBase {
@@ -66,6 +88,12 @@ export interface ShapeElement extends ElementBase {
   strokeWidth: number;
   /** Only used by rectangles. */
   cornerRadius: number;
+  /** Custom shapes only: the corners as fractions of the box, in x, y pairs. */
+  points?: number[];
+  /** Custom shapes only: whether the outline joins back to its start. */
+  closed?: boolean;
+  /** Custom shapes only: 0 for straight sides, up to 1 for the roundest curves. */
+  tension?: number;
 }
 
 /** A bitmap stored as a data URL. */

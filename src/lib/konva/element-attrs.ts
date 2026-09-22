@@ -6,7 +6,7 @@
  * exactly what gets exported.
  */
 import type { ImageElement, ShapeElement, TextElement } from "../../model/types";
-import { linePoints, polygonPoints } from "../../data/shapes";
+import { customPoints, linePoints, PATH_BOX, polygonPoints, shapeGeometry, shapePathData } from "../../data/shapes";
 
 /** The fields the outer group needs: the unrotated box plus rotation and opacity. */
 export interface GroupSource {
@@ -93,15 +93,45 @@ export type ShapeNodeSpec =
   | { node: "rect"; attrs: Record<string, unknown> }
   | { node: "ellipse"; attrs: Record<string, unknown> }
   | { node: "line"; attrs: Record<string, unknown> }
-  | { node: "arrow"; attrs: Record<string, unknown> };
+  | { node: "arrow"; attrs: Record<string, unknown> }
+  | { node: "path"; attrs: Record<string, unknown> };
 
 /**
  * Picks the Konva node type and attributes for a shape. Polygons and stars
- * are closed Konva.Line nodes built from shared point geometry.
+ * are closed Konva.Line nodes built from shared point geometry, curved
+ * shapes are Konva.Path nodes scaled from their 100 by 100 drawing, and
+ * custom shapes are Konva.Line nodes with the tension the draw tool chose.
  */
 export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
   const paint = paintAttrs(element);
   const { width, height } = element;
+  const geometry = shapeGeometry(element.shape);
+
+  if (geometry === "path") {
+    return {
+      node: "path",
+      attrs: { data: shapePathData(element.shape) ?? "", scaleX: width / PATH_BOX, scaleY: height / PATH_BOX, strokeScaleEnabled: false, ...paint },
+    };
+  }
+  if (geometry === "custom") {
+    const closed = element.closed ?? true;
+    // An open outline with no stroke would be invisible, so it borrows the fill.
+    const stroke = !closed && paint.stroke === undefined ? element.fill : paint.stroke;
+    return {
+      node: "line",
+      attrs: {
+        points: customPoints(element, width, height),
+        closed,
+        tension: element.tension ?? 0,
+        lineJoin: "round",
+        lineCap: "round",
+        ...paint,
+        stroke,
+        strokeWidth: !closed ? Math.max(1, element.strokeWidth) : element.strokeWidth,
+        fill: closed ? paint.fill : undefined,
+      },
+    };
+  }
 
   switch (element.shape) {
     case "rectangle":

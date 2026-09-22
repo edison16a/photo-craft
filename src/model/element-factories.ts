@@ -53,9 +53,10 @@ export function createShapeElement(
   shape: ShapeKind,
   partial: Partial<Omit<ShapeElement, "type" | "shape">> = {},
 ): ShapeElement {
-  const isStrokeOnly = shape === "line" || shape === "arrow";
+  // Lines, arrows and open custom outlines are drawn with a stroke, the rest with a fill.
+  const isStrokeOnly = shape === "line" || shape === "arrow" || (shape === "custom" && partial.closed === false);
   return {
-    ...baseElement(isStrokeOnly ? { width: 300, height: 40 } : {}),
+    ...baseElement(isStrokeOnly && shape !== "custom" ? { width: 300, height: 40 } : {}),
     type: "shape",
     shape,
     fill: isStrokeOnly ? "transparent" : "#4da3ff",

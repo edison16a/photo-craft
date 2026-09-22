@@ -1,5 +1,5 @@
 "use client";
-import { Arrow, Ellipse, Line, Rect } from "react-konva";
+import { Arrow, Ellipse, Line, Path, Rect } from "react-konva";
 import { shapeNodeSpec } from "@/lib/konva/element-attrs";
 import type { ShapeElement } from "@/model/types";
 
@@ -21,6 +21,8 @@ export function ShapeNode({ element }: ShapeNodeProps) {
       return <Rect {...spec.attrs} />;
     case "ellipse":
       return <Ellipse {...(spec.attrs as { radiusX: number; radiusY: number })} />;
+    case "path":
+      return <Path {...(spec.attrs as { data: string })} />;
     case "arrow":
       return (
         <>
