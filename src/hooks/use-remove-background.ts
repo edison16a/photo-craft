@@ -10,22 +10,17 @@ import type { ImageElement } from "../model/types";
 import { isBackgroundRemovalSupported, removeBackgroundFromDataUrl } from "../services/background-removal";
 import { useEditorUiStore } from "../store/editor-ui-store";
 import { useProjectStore } from "../store/project-store";
-import { describeRemovalPhase, useRemovalProgressStore } from "../store/removal-progress-store";
 
 /** What a button needs to offer background removal for one image. */
 export interface RemoveBackgroundControls {
   /** Whether this browser can run the remover. False on the server, so buttons start disabled. */
   supported: boolean;
-  /** True once the model is loaded, so the next run needs no download. */
-  ready: boolean;
   /** True while this element's cutout is queued or running. */
   busy: boolean;
   /** True when the background was removed and the original is still around. */
   removed: boolean;
   /** What the button should say. */
   label: string;
-  /** What the remover is doing right now, for a busy label. */
-  progress: string | null;
   run: () => Promise<void>;
 }
 
@@ -38,10 +33,6 @@ const subscribeNever = () => () => undefined;
 export function useRemoveBackground(element: ImageElement): RemoveBackgroundControls {
   const supported = useSyncExternalStore(subscribeNever, isBackgroundRemovalSupported, () => false);
   const busy = useEditorUiStore((s) => s.busyImageIds.includes(element.id));
-  const ready = useRemovalProgressStore((s) => s.ready);
-  const phase = useRemovalProgressStore((s) => s.phase);
-  const loaded = useRemovalProgressStore((s) => s.loaded);
-  const total = useRemovalProgressStore((s) => s.total);
 
   const removed = Boolean(element.originalSrc);
 
@@ -74,6 +65,6 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
     }
   }, [element.id, element.src, element.originalSrc]);
 
-  const label = removed ? "Restore background" : "Remove background";
-  return { supported, ready, busy, removed, label, progress: busy ? describeRemovalPhase({ phase, loaded, total }) : null, run };
+  const label = busy ? "Removing background" : removed ? "Restore background" : "Remove background";
+  return { supported, busy, removed, label, run };
 }

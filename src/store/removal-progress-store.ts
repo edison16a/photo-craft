@@ -43,15 +43,3 @@ export const useRemovalProgressStore = create<RemovalProgressState>()((set) => (
   addPending: (id) => set((state) => ({ pending: [...state.pending, id] })),
   removePending: (id) => set((state) => ({ pending: state.pending.filter((candidate) => candidate !== id) })),
 }));
-
-/** A short line describing the current phase, for buttons and panels. */
-export function describeRemovalPhase(state: Pick<RemovalProgressState, "phase" | "loaded" | "total">): string | null {
-  if (state.phase === "download") {
-    const percent = state.total > 0 ? Math.round((state.loaded / state.total) * 100) : null;
-    const size = state.total > 0 ? ` of ${Math.round(state.total / 1000000)} MB` : "";
-    return percent === null ? "Downloading the model" : `Downloading the model ${percent}%${size}`;
-  }
-  if (state.phase === "load") return "Loading the model";
-  if (state.phase === "run") return "Removing background";
-  return null;
-}
