@@ -22,7 +22,6 @@ export function PagesStrip() {
           <PageCard
             key={page.id}
             page={page}
-            index={index}
             active={page.id === currentPageId}
             canDelete={pages.length > 1}
             canMoveLeft={index > 0}

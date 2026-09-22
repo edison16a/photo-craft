@@ -5,7 +5,6 @@ import { IconButton } from "../ui/IconButton";
 
 interface PageCardProps {
   page: Page;
-  index: number;
   active: boolean;
   canDelete: boolean;
   canMoveLeft: boolean;
@@ -19,7 +18,7 @@ interface PageCardProps {
 
 /** One page in the strip along the bottom. Double click the name to rename. */
 export function PageCard(props: PageCardProps) {
-  const { page, index, active, canDelete, canMoveLeft, canMoveRight } = props;
+  const { page, active, canDelete, canMoveLeft, canMoveRight } = props;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(page.name);
 
@@ -32,7 +31,6 @@ export function PageCard(props: PageCardProps) {
   return (
     <div className={`page-card ${active ? "page-card--active" : ""}`} onClick={props.onOpen} role="button" tabIndex={0}
       onKeyDown={(event) => event.key === "Enter" && props.onOpen()}>
-      <span className="page-card__index">{index + 1}</span>
       {editing ? (
         <input
           className="input input--sm page-card__input"
