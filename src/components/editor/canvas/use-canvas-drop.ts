@@ -8,13 +8,10 @@
 import { useCallback, useEffect, type DragEvent, type RefObject } from "react";
 import { useAddElement } from "@/hooks/use-add-element";
 import { extractDropPayload, looksLikeImageUrl } from "@/lib/drop-payload";
+import { isTypingTarget } from "@/lib/typing-target";
 import type { Point } from "@/model/types";
 import { useProjectStore } from "@/store/project-store";
 
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-}
 
 /** Drop handlers for the workspace element plus a window paste listener. */
 export function useCanvasDrop(containerRef: RefObject<HTMLDivElement | null>, toPagePoint: (screen: Point) => Point) {

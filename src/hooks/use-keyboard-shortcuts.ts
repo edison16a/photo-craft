@@ -4,14 +4,10 @@
  * editing text on the canvas.
  */
 import { useEffect } from "react";
+import { isTypingTarget } from "../lib/typing-target";
 import { useEditorUiStore } from "../store/editor-ui-store";
 import { useProjectStore } from "../store/project-store";
 
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable;
-}
 
 /** Actions the shortcut hook needs from the editor shell. */
 export interface ShortcutHandlers {
