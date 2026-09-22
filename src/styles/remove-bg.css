@@ -21,17 +21,11 @@
 }
 
 .landing__title {
-  margin: 0 0 12px;
+  margin: 0 0 40px;
   font-size: 56px;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.1;
-}
-
-.landing__subtitle {
-  margin: 0 0 40px;
-  font-size: 18px;
-  color: var(--text-muted);
 }
 
 .landing__columns {

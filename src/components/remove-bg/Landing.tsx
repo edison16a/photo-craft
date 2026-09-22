@@ -14,14 +14,14 @@ const DEMO = { original: "/demo/before.jpg", cutout: "/demo/after.webp" };
 
 /**
  * What the page shows before any picture is added: the name of the tool,
- * a sample you can compare, and the box to drop or pick pictures.
+ * a sample you can compare, and the box to drop or pick pictures. Pasting
+ * works too, it just is not spelled out.
  */
 export function Landing({ onPick, dragActive }: LandingProps) {
   const [split, setSplit] = useState(0.5);
   return (
     <section className="landing">
       <h1 className="landing__title">Background Remover</h1>
-      <p className="landing__subtitle">Remove the background from any image in seconds.</p>
       <div className="landing__columns">
         <div className="landing__demo">
           <CompareView originalUrl={DEMO.original} cutoutUrl={DEMO.cutout} split={split} onSplitChange={setSplit} alt="A tiger, with and without its background" />
@@ -32,7 +32,6 @@ export function Landing({ onPick, dragActive }: LandingProps) {
             <Icon name="upload" size={18} />
             Upload Photo
           </button>
-          <p className="small">Paste works too. Nothing is uploaded and nothing is kept once you leave.</p>
         </div>
       </div>
     </section>
