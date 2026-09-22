@@ -7,10 +7,9 @@
  */
 import { useCallback, useSyncExternalStore } from "react";
 import type { ImageElement } from "../model/types";
-import { getCachedImage } from "../lib/image-cache";
-import { isBackgroundRemovalSupported, removeBackgroundFromDataUrl } from "../services/background-removal";
+import { isBackgroundRemovalSupported } from "../services/background-removal";
+import { toggleBackground } from "../store/background-actions";
 import { useEditorUiStore } from "../store/editor-ui-store";
-import { useProjectStore } from "../store/project-store";
 
 /** What a button needs to offer background removal for one image. */
 export interface RemoveBackgroundControls {
@@ -37,36 +36,7 @@ export function useRemoveBackground(element: ImageElement): RemoveBackgroundCont
 
   const removed = Boolean(element.originalSrc);
 
-  const run = useCallback(async () => {
-    const { showToast, setImageBusy, busyImageIds } = useEditorUiStore.getState();
-    if (busyImageIds.includes(element.id)) return;
-    if (element.originalSrc) {
-      useProjectStore.getState().updateElement(element.id, { src: element.originalSrc, originalSrc: undefined });
-      showToast("Background put back.");
-      return;
-    }
-    const pageId = useProjectStore.getState().currentPageId;
-    setImageBusy(element.id, true);
-    try {
-      const result = await removeBackgroundFromDataUrl(element.src);
-      // Decode the cutout into the shared cache first, so the canvas shows it before the sweep starts.
-      await getCachedImage(result.src).catch(() => undefined);
-      const store = useProjectStore.getState();
-      const page = store.project?.pages.find((candidate) => candidate.id === pageId);
-      const stillHere = store.currentPageId === pageId && page?.elements.some((el) => el.id === element.id);
-      if (!stillHere) {
-        showToast("The image is no longer on this page, so the cut out was not applied.", "error");
-        return;
-      }
-      store.updateElement(element.id, { src: result.src, naturalWidth: result.width, naturalHeight: result.height, originalSrc: element.src });
-      useEditorUiStore.getState().startReveal({ elementId: element.id, originalSrc: element.src, cutoutSrc: result.src });
-      showToast("Background removed. Press the button again to put it back.");
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Background removal failed", "error");
-    } finally {
-      setImageBusy(element.id, false);
-    }
-  }, [element.id, element.src, element.originalSrc]);
+  const run = useCallback(() => toggleBackground(element), [element]);
 
   const label = busy ? "Removing background" : removed ? "Restore background" : "Remove background";
   return { supported, busy, removed, label, run };
