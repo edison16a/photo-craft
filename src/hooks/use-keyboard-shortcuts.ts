@@ -5,6 +5,7 @@
  */
 import { useEffect } from "react";
 import { isTypingTarget } from "../lib/typing-target";
+import { cancelDrawing, finishDrawing, undoDrawPoint } from "../store/drawing-actions";
 import { useEditorUiStore } from "../store/editor-ui-store";
 import { useProjectStore } from "../store/project-store";
 
@@ -36,6 +37,14 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
 
       if (!mod && !event.altKey && key === "v") return stop(event, () => useEditorUiStore.getState().setTool("select"));
       if (!mod && !event.altKey && key === "t") return stop(event, () => useEditorUiStore.getState().setTool("text"));
+      if (!mod && !event.altKey && key === "p") return stop(event, () => useEditorUiStore.getState().setTool("draw"));
+
+      // The draw tool owns Enter, Escape and Backspace while corners are down.
+      if (ui.tool === "draw") {
+        if (key === "enter") return stop(event, () => finishDrawing());
+        if (key === "escape") return stop(event, () => (ui.drawPoints.length > 0 ? cancelDrawing() : ui.setTool("select")));
+        if ((key === "backspace" || key === "delete") && ui.drawPoints.length > 0) return stop(event, undoDrawPoint);
+      }
 
       if (mod && key === "z" && event.shiftKey) return stop(event, store.redo);
       if (mod && key === "z") return stop(event, store.undo);

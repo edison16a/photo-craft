@@ -129,6 +129,10 @@
   cursor: text;
 }
 
+.workspace--draw {
+  cursor: crosshair;
+}
+
 .workspace canvas {
   display: block;
 }

@@ -1,17 +1,18 @@
 /**
  * Transient editor UI state: the active tool, which side panel is open,
- * zoom and pan, in place text editing, alignment guides, toasts and which
- * images are still having their background removed. None of this is saved
- * with the project.
+ * zoom and pan, in place text editing, alignment guides, toasts, which
+ * images are still having their background removed and the shape being
+ * drawn. None of this is saved with the project.
  */
 import { create } from "zustand";
+import type { DrawOptions } from "../lib/drawing";
 import type { Guide } from "../lib/snapping";
 import type { Point } from "../model/types";
 
 /** The tools in the left rail. */
-export type Tool = "select" | "text" | "shapes" | "upload";
+export type Tool = "select" | "text" | "shapes" | "draw" | "upload";
 /** The panels the right side can show. */
-export type PanelKind = "properties" | "page" | "text" | "shapes" | "upload";
+export type PanelKind = "properties" | "page" | "text" | "shapes" | "draw" | "upload";
 
 /** A short message shown at the bottom of the editor. */
 export interface Toast {
@@ -52,6 +53,12 @@ export interface EditorUiState {
    * the image is deselected and selected again mid run.
    */
   busyImageIds: string[];
+  /** What the draw tool makes: curved or straight sides, closed or open. */
+  drawOptions: DrawOptions;
+  /** Corners placed so far with the draw tool, as page coordinates in x, y pairs. */
+  drawPoints: number[];
+  /** The freehand stroke being dragged right now, before it is simplified. */
+  drawStroke: number[];
 
   setTool: (tool: Tool) => void;
   openPanel: (panel: PanelKind) => void;
@@ -68,6 +75,9 @@ export interface EditorUiState {
   hideToast: () => void;
   setExportOpen: (open: boolean) => void;
   setImageBusy: (id: string, busy: boolean) => void;
+  setDrawOptions: (patch: Partial<DrawOptions>) => void;
+  setDrawPoints: (points: number[]) => void;
+  setDrawStroke: (points: number[]) => void;
 }
 
 /** Smallest zoom the workspace allows. */
@@ -80,6 +90,7 @@ const PANEL_FOR_TOOL: Record<Tool, PanelKind> = {
   select: "page",
   text: "text",
   shapes: "shapes",
+  draw: "draw",
   upload: "upload",
 };
 
@@ -100,8 +111,12 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   toast: null,
   exportOpen: false,
   busyImageIds: [],
+  drawOptions: { curved: false, closed: true },
+  drawPoints: [],
+  drawStroke: [],
 
-  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool] }),
+  // Leaving the draw tool drops any half drawn shape.
+  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool], drawPoints: [], drawStroke: [] }),
   openPanel: (panel) => set({ panel }),
   setViewport: (zoom, pan) =>
     set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom)), pan }),
@@ -125,4 +140,7 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
       const rest = state.busyImageIds.filter((candidate) => candidate !== id);
       return { busyImageIds: busy ? [...rest, id] : rest };
     }),
+  setDrawOptions: (patch) => set((state) => ({ drawOptions: { ...state.drawOptions, ...patch } })),
+  setDrawPoints: (drawPoints) => set({ drawPoints }),
+  setDrawStroke: (drawStroke) => set({ drawStroke }),
 }));

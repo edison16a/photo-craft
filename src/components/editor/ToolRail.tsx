@@ -7,6 +7,7 @@ const TOOLS: { id: Tool; icon: IconName; label: string; hint: string }[] = [
   { id: "select", icon: "pointer", label: "Select", hint: "Select, move, resize and rotate (V)" },
   { id: "text", icon: "text", label: "Text", hint: "Add text (T)" },
   { id: "shapes", icon: "shapes", label: "Shapes", hint: "Add a shape" },
+  { id: "draw", icon: "pen", label: "Draw", hint: "Draw your own shape (P)" },
   { id: "upload", icon: "upload", label: "Upload", hint: "Import an image" },
 ];
 

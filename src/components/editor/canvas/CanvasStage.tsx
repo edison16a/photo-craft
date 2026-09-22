@@ -9,6 +9,7 @@ import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
 import { ContextMenu } from "./ContextMenu";
+import { DrawPreview } from "./DrawPreview";
 import { ElementNode } from "./ElementNode";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
@@ -17,6 +18,7 @@ import { SelectionTransformer } from "./SelectionTransformer";
 import { TextEditOverlay } from "./TextEditOverlay";
 import { useCanvasDrop } from "./use-canvas-drop";
 import { useMarquee } from "./use-marquee";
+import { useShapeDrawing } from "./use-shape-drawing";
 import { useViewport } from "./use-viewport";
 
 /**
@@ -33,6 +35,10 @@ export function CanvasStage() {
   const tool = useEditorUiStore((s) => s.tool);
   const guides = useEditorUiStore((s) => s.guides);
   const marquee = useMarquee();
+  const drawing = useShapeDrawing();
+  const drawOptions = useEditorUiStore((s) => s.drawOptions);
+  const drawPoints = useEditorUiStore((s) => s.drawPoints);
+  const drawStroke = useEditorUiStore((s) => s.drawStroke);
   const drop = useCanvasDrop(containerRef, screenToPage);
   const { addText } = useAddElement();
   const pendingTextAt = useEditorUiStore((s) => s.pendingTextAt);
@@ -59,7 +65,15 @@ export function CanvasStage() {
     const stage = event.target.getStage();
     const onEmpty = event.target === stage || event.target.name() === PAGE_BACKGROUND_NAME;
     const point = pointerOnPage(event);
-    if (!onEmpty || !point) return;
+    if (!point) return;
+    if (tool === "draw") {
+      // Drawing works over elements too, so it does not wait for empty space.
+      if (event.evt.button !== 0) return;
+      blurActiveField();
+      drawing.onMouseDown(point);
+      return;
+    }
+    if (!onEmpty) return;
     blurActiveField();
     if (tool === "text") {
       // Stop the browser moving focus on this mousedown, or it would blur the
@@ -87,9 +101,24 @@ export function CanvasStage() {
   };
 
   const onMouseMove = (event: KonvaEventObject<MouseEvent>) => {
+    if (tool === "draw") {
+      const point = pointerOnPage(event);
+      if (point) drawing.onMouseMove(point);
+      return;
+    }
     if (!marquee.marquee) return;
     const point = pointerOnPage(event);
     if (point) marquee.move(point);
+  };
+
+  const onMouseUp = () => {
+    if (tool === "draw") drawing.onMouseUp();
+    else marquee.finish();
+  };
+
+  const onMouseLeave = () => {
+    if (tool === "draw") drawing.onMouseLeave();
+    else marquee.finish();
   };
 
   return (
@@ -110,13 +139,15 @@ export function CanvasStage() {
           onWheel={onWheel}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
-          onMouseUp={marquee.finish}
-          onMouseLeave={marquee.finish}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
+          onDblClick={tool === "draw" ? drawing.onDoubleClick : undefined}
           onContextMenu={onContextMenu}
         >
           <Layer>
             <PageBackground width={project.width} height={project.height} background={page.background} />
-            <Group clipX={0} clipY={0} clipWidth={project.width} clipHeight={project.height}>
+            {/* While drawing, clicks must reach the page even over elements. */}
+            <Group clipX={0} clipY={0} clipWidth={project.width} clipHeight={project.height} listening={tool !== "draw"}>
               {elements.map((element) => (
                 <ElementNode key={element.id} element={element} />
               ))}
@@ -126,8 +157,9 @@ export function CanvasStage() {
             <GuideLines guides={guides} pageWidth={project.width} pageHeight={project.height} zoom={zoom} />
             <LockedOutlines elements={lockedSelected} zoom={zoom} />
             <MarqueeRect rect={marquee.rect} zoom={zoom} />
+            {tool === "draw" ? <DrawPreview points={drawPoints} stroke={drawStroke} hover={drawing.hover} options={drawOptions} zoom={zoom} /> : null}
           </Layer>
-          <Layer>
+          <Layer listening={tool !== "draw"}>
             <SelectionTransformer />
           </Layer>
         </Stage>
