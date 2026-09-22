@@ -15,13 +15,18 @@ const ALL_ANCHORS = [...CORNERS, "top-center", "bottom-center", ...SIDES];
 const MIN_SIZE = 4;
 
 /** Fields a transform can change. Font size only applies to text. */
-type ElementPatch = Partial<CanvasElement> & { fontSize?: number };
+type ElementPatch = Partial<CanvasElement> & { fontSize?: number; letterSpacing?: number };
 
-/** Anchors and ratio lock depend on what is selected. */
+/**
+ * Anchors and ratio lock depend on what is selected. Free stretching is
+ * only offered when every selected shape is axis aligned; stretching a
+ * rotated node along the selection box would skew it.
+ */
 function transformRules(selected: CanvasElement[]) {
   const onlyShapes = selected.length > 0 && selected.every((el) => el.type === "shape");
+  const axisAligned = selected.every((el) => el.rotation % 180 === 0);
   const singleText = selected.length === 1 && selected[0].type === "text";
-  if (onlyShapes) return { anchors: ALL_ANCHORS, keepRatio: false };
+  if (onlyShapes && (selected.length === 1 || axisAligned)) return { anchors: ALL_ANCHORS, keepRatio: false };
   if (singleText) return { anchors: [...CORNERS, ...SIDES], keepRatio: true };
   return { anchors: CORNERS, keepRatio: true };
 }
@@ -79,11 +84,12 @@ export function SelectionTransformer() {
         // Corner anchors scale the font, side anchors only change the wrap width.
         if (Math.abs(scaleX - scaleY) < 0.001) {
           patch.fontSize = Math.max(1, round(element.fontSize * scaleX));
+          patch.letterSpacing = round(element.letterSpacing * scaleX);
         }
       } else {
         patch.height = height;
       }
-      node.scale({ x: 1, y: 1 });
+      node.setAttrs({ scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 });
       // A degenerate transform can produce NaN. Never let that reach the store.
       if (!Object.values(patch).every((value) => Number.isFinite(value))) continue;
       patches[element.id] = patch;
