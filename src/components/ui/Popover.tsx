@@ -60,6 +60,13 @@ export function Popover({ open, anchorRef, onClose, label, width, children }: Po
     };
   }, [open, anchorRef]);
 
+  // Focus the field marked data-autofocus once the popover is visible.
+  // A React autoFocus would fire while the popover is still hidden.
+  useEffect(() => {
+    if (!placement) return;
+    ref.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+  }, [placement === null]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!open) return;
     const onDown = (event: MouseEvent) => {

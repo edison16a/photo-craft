@@ -34,7 +34,7 @@ export function FontList({ value, onPick }: FontListProps) {
       <input
         className="input input--sm"
         placeholder="Search fonts"
-        autoFocus
+        data-autofocus="true"
         value={query}
         aria-label="Search fonts"
         onChange={(event) => {
