@@ -9,6 +9,7 @@
  */
 
 import { DEFAULT_TIER, isModelTier, type ModelTier } from "../lib/background/model";
+import { coerceKeybinds, DEFAULT_KEYBINDS, type Keybinds } from "../lib/keybinds";
 
 /** Everything the user can configure. Keep it flat and JSON friendly. */
 export interface AppSettings {
@@ -16,13 +17,21 @@ export interface AppSettings {
   autosave: boolean;
   /** Which cutout model the background remover uses. Null after the current one was deleted. */
   backgroundModel: ModelTier | null;
+  /** The key for each editor action that can have one. */
+  keybinds: Keybinds;
 }
 
 /** What a fresh install starts with. */
 export const DEFAULT_SETTINGS: AppSettings = {
   autosave: true,
   backgroundModel: DEFAULT_TIER,
+  keybinds: DEFAULT_KEYBINDS,
 };
+
+/** A copy of the defaults that callers may change without touching the shared object. */
+function freshDefaults(): AppSettings {
+  return { ...DEFAULT_SETTINGS, keybinds: { ...DEFAULT_KEYBINDS } };
+}
 
 const STORAGE_KEY = "photo-craft:settings";
 
@@ -42,11 +51,12 @@ function getStorage(): Storage | null {
 
 /** Picks only the fields we know, with the right types, out of whatever was stored. */
 function coerceSettings(raw: unknown): AppSettings {
-  const result: AppSettings = { ...DEFAULT_SETTINGS };
+  const result = freshDefaults();
   if (typeof raw !== "object" || raw === null) return result;
   const source = raw as Record<string, unknown>;
   if (typeof source.autosave === "boolean") result.autosave = source.autosave;
   if (isModelTier(source.backgroundModel) || source.backgroundModel === null) result.backgroundModel = source.backgroundModel;
+  result.keybinds = coerceKeybinds(source.keybinds);
   return result;
 }
 
@@ -57,13 +67,13 @@ function coerceSettings(raw: unknown): AppSettings {
  */
 export function loadSettings(): AppSettings {
   const storage = getStorage();
-  if (!storage) return { ...DEFAULT_SETTINGS };
+  if (!storage) return freshDefaults();
   try {
     const text = storage.getItem(STORAGE_KEY);
-    if (!text) return { ...DEFAULT_SETTINGS };
+    if (!text) return freshDefaults();
     return coerceSettings(JSON.parse(text));
   } catch {
-    return { ...DEFAULT_SETTINGS };
+    return freshDefaults();
   }
 }
 

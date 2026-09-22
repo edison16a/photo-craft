@@ -50,6 +50,8 @@ It runs entirely in the browser, on WebGPU where the browser allows it and on We
 
 ## Shortcuts
 
+The single letter keys can be changed or cleared under Keybinds in the settings. They never fire while you type.
+
 | Keys | Action |
 | --- | --- |
 | Ctrl+Z, Ctrl+Shift+Z | Undo, redo |
@@ -59,7 +61,8 @@ It runs entirely in the browser, on WebGPU where the browser allows it and on We
 | Ctrl+D | Duplicate |
 | Delete | Remove selection |
 | Arrows, Shift+Arrows | Nudge by 1 px or 10 px |
-| V, T, P | Pointer tool, text tool, draw tool |
+| S, T, H, D, U | Select, text, shapes, draw, upload |
+| R | Remove or restore the background of the selected image |
 | Enter, Backspace, Escape | While drawing: finish the shape, take a corner back, start over |
 | Ctrl+Plus, Ctrl+Minus, Ctrl+0 | Zoom in, zoom out, fit |
 | Escape | Deselect or finish editing text |

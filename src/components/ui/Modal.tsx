@@ -11,7 +11,8 @@ interface ModalProps {
 }
 
 /**
- * Centred dialog with a backdrop. Escape and the backdrop close it. The
+ * Centred dialog with a backdrop. Escape and the backdrop close it, except
+ * that an element marked data-escape="own" keeps Escape for itself. The
  * dialog takes focus when it opens, and editor shortcuts stay quiet while
  * an element with aria-modal is on the page.
  */
@@ -22,10 +23,10 @@ export function Modal({ open, title, onClose, children, width }: ModalProps) {
     if (!open) return;
     dialogRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.stopPropagation();
-        onClose();
-      }
+      if (event.key !== "Escape") return;
+      if (event.target instanceof HTMLElement && event.target.closest('[data-escape="own"]')) return;
+      event.stopPropagation();
+      onClose();
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);

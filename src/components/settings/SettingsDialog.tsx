@@ -1,65 +1,42 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useModelStorage } from "@/hooks/use-model-storage";
-import { MODEL_TIERS, MODELS, modelSizeLabel } from "@/lib/background/model";
 import { useSettingsUiStore } from "@/store/settings-ui-store";
-import { Icon } from "../ui/Icon";
 import { Modal } from "../ui/Modal";
+import { Tabs } from "../ui/Tabs";
+import { KeybindsPage } from "./KeybindsPage";
+import { ModelPage } from "./ModelPage";
+
+type SettingsPage = "model" | "keybinds";
+
+const PAGES: { id: SettingsPage; label: string }[] = [
+  { id: "model", label: "Model" },
+  { id: "keybinds", label: "Keybinds" },
+];
 
 /**
- * The settings dialog: the three cutout models side by side with the
- * picked one highlighted, and a button that deletes the picked one from
- * this computer. Picking a model downloads it straight away, and a tick
- * marks the one that is on this computer.
+ * The settings dialog, with two pages behind a row of tabs: the cutout
+ * model and the keybinds. The model storage lives here rather than in its
+ * page, so a download keeps reporting while the other page is showing.
  */
 export function SettingsDialog() {
   const open = useSettingsUiStore((s) => s.settingsOpen);
   const close = useSettingsUiStore((s) => s.closeSettings);
-  const { chosen, cached, download, error, busy, choose, removeCurrent, refresh } = useModelStorage();
+  const [page, setPage] = useState<SettingsPage>("model");
+  const storage = useModelStorage();
+  const refresh = storage.refresh;
 
-  // A model may have been downloaded or deleted since the page loaded.
+  // Start on the model page, and re-check what is downloaded, each time it opens.
   useEffect(() => {
-    if (open) void refresh();
+    if (!open) return;
+    setPage("model");
+    void refresh();
   }, [open, refresh]);
-
-  const canDelete = chosen !== null && cached[chosen] && !busy;
 
   return (
     <Modal open={open} title="Settings" onClose={close} width={520}>
-      <div className="stack" style={{ gap: 12 }}>
-        <span className="label">Background remover model</span>
-        <div className="model-grid" role="radiogroup" aria-label="Background remover model">
-          {MODEL_TIERS.map((tier) => {
-            const active = tier === chosen;
-            const downloading = download?.tier === tier;
-            return (
-              <button
-                key={tier}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                className={`model-card ${active ? "model-card--active" : ""}`}
-                disabled={busy}
-                onClick={() => void choose(tier)}
-              >
-                {cached[tier] && !downloading ? <Icon name="check" size={14} className="model-card__check" /> : null}
-                <span className="model-card__name">{MODELS[tier].label}</span>
-                <span className="small muted">{downloading ? `${Math.round(download.fraction * 100)}%` : modelSizeLabel(MODELS[tier])}</span>
-              </button>
-            );
-          })}
-        </div>
-        {error ? (
-          <p className="small" style={{ color: "var(--danger)" }} role="alert">
-            {error}
-          </p>
-        ) : null}
-        <div>
-          <button type="button" className="btn" disabled={!canDelete} onClick={() => void removeCurrent()}>
-            Delete current model
-          </button>
-        </div>
-      </div>
+      <Tabs items={PAGES} value={page} onChange={setPage} label="Settings pages" />
+      {page === "model" ? <ModelPage {...storage} /> : <KeybindsPage />}
     </Modal>
   );
 }

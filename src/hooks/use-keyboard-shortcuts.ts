@@ -1,14 +1,17 @@
 "use client";
 /**
  * Editor keyboard shortcuts. Ignored while typing in a form field or while
- * editing text on the canvas.
+ * editing text on the canvas. The single letter keys come from the
+ * keybinds in the settings; the rest are fixed.
  */
 import { useEffect } from "react";
+import { actionForKey } from "../lib/keybinds";
 import { isSliderTarget, isTypingTarget } from "../lib/typing-target";
+import { loadSettings } from "../services/settings";
 import { cancelDrawing, finishDrawing, undoDrawPoint } from "../store/drawing-actions";
 import { useEditorUiStore } from "../store/editor-ui-store";
+import { runKeybindAction } from "../store/keybind-actions";
 import { useProjectStore } from "../store/project-store";
-
 
 /** Actions the shortcut hook needs from the editor shell. */
 export interface ShortcutHandlers {
@@ -35,9 +38,10 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
       const mod = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
 
-      if (!mod && !event.altKey && key === "v") return stop(event, () => useEditorUiStore.getState().setTool("select"));
-      if (!mod && !event.altKey && key === "t") return stop(event, () => useEditorUiStore.getState().setTool("text"));
-      if (!mod && !event.altKey && key === "p") return stop(event, () => useEditorUiStore.getState().setTool("draw"));
+      if (!mod && !event.altKey) {
+        const action = actionForKey(loadSettings().keybinds, key);
+        if (action) return stop(event, () => runKeybindAction(action));
+      }
 
       // The draw tool owns Enter, Escape and Backspace while corners are down.
       if (ui.tool === "draw") {

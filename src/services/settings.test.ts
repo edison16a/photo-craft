@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { DEFAULT_KEYBINDS } from "../lib/keybinds";
 import {
   DEFAULT_SETTINGS,
   loadSettings,
@@ -16,13 +17,15 @@ describe("settings", () => {
 
   it("returns the defaults when nothing is stored", () => {
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
-    expect(DEFAULT_SETTINGS).toEqual({ autosave: true, backgroundModel: "best" });
+    expect(DEFAULT_SETTINGS).toEqual({ autosave: true, backgroundModel: "best", keybinds: DEFAULT_KEYBINDS });
   });
 
   it("does not hand out the shared defaults object", () => {
     const loaded = loadSettings();
     loaded.autosave = false;
+    loaded.keybinds.select = null;
     expect(DEFAULT_SETTINGS.autosave).toBe(true);
+    expect(DEFAULT_KEYBINDS.select).toBe("s");
   });
 
   it("round trips through localStorage", () => {
@@ -60,8 +63,8 @@ describe("settings", () => {
   it("fills missing fields and ignores wrongly typed ones", () => {
     window.localStorage.setItem(KEY, JSON.stringify({ unknown: "k", autosave: "yes", backgroundModel: "huge" }));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
-    window.localStorage.setItem(KEY, JSON.stringify({ backgroundModel: "light", modelHintShown: true }));
-    expect(loadSettings()).toEqual({ autosave: true, backgroundModel: "light" });
+    window.localStorage.setItem(KEY, JSON.stringify({ backgroundModel: "light", modelHintShown: true, keybinds: { draw: "p", select: null } }));
+    expect(loadSettings()).toEqual({ autosave: true, backgroundModel: "light", keybinds: { ...DEFAULT_KEYBINDS, draw: "p", select: null } });
     window.localStorage.setItem(KEY, JSON.stringify(null));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     window.localStorage.setItem(KEY, JSON.stringify([1, 2]));
