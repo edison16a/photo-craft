@@ -22,7 +22,10 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
-      if (useEditorUiStore.getState().editingTextId) return;
+      const ui = useEditorUiStore.getState();
+      if (ui.editingTextId) return;
+      // A drag or resize in progress owns the selection until it ends.
+      if (ui.interacting) return;
       // A dialog or popover owns the keyboard while it is open.
       if (document.querySelector('[aria-modal="true"], [data-popover="true"]')) return;
 
