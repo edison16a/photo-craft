@@ -63,6 +63,26 @@ export function SelectionTransformer() {
     transformer.getLayer()?.batchDraw();
   }, [selected, visible]);
 
+  /**
+   * While a side anchor widens a text box, only the wrap width may change.
+   * The group is being scaled by Konva, so the text node is counter scaled
+   * and given the new width, which reflows the words without stretching.
+   */
+  const onTransform = () => {
+    const transformer = ref.current;
+    if (!transformer || selected.length !== 1 || selected[0].type !== "text") return;
+    const node = transformer.nodes()[0];
+    const text = (node as Konva.Group | undefined)?.findOne("Text") as Konva.Text | undefined;
+    if (!node || !text) return;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    if (Math.abs(scaleX - scaleY) < 0.001) {
+      text.setAttrs({ scaleX: 1, width: selected[0].width });
+      return;
+    }
+    text.setAttrs({ scaleX: 1 / scaleX, width: selected[0].width * scaleX });
+  };
+
   const commit = () => {
     const transformer = ref.current;
     if (!transformer) return;
@@ -93,11 +113,14 @@ export function SelectionTransformer() {
         patch.height = height;
       }
       node.setAttrs({ scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 });
+      // Undo the live counter scale from onTransform. React owns the width from here.
+      ((node as Konva.Group).findOne("Text") as Konva.Text | undefined)?.setAttrs({ scaleX: 1 });
       // A degenerate transform can produce NaN. Never let that reach the store.
       if (!Object.values(patch).every((value) => Number.isFinite(value))) continue;
       patches[element.id] = patch;
     }
     useProjectStore.getState().patchElements(patches);
+    useEditorUiStore.getState().setInteracting(false);
   };
 
   return (
@@ -121,6 +144,8 @@ export function SelectionTransformer() {
       boundBoxFunc={(oldBox, newBox) =>
         Math.abs(newBox.width) < MIN_SIZE || Math.abs(newBox.height) < MIN_SIZE ? oldBox : newBox
       }
+      onTransformStart={() => useEditorUiStore.getState().setInteracting(true)}
+      onTransform={onTransform}
       onTransformEnd={commit}
     />
   );
