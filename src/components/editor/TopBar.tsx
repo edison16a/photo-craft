@@ -59,9 +59,8 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
       </div>
 
       <div className="row topbar__centre">
-        <IconButton icon="undo" label="Undo (Ctrl+Z)" disabled={!canUndo} onClick={() => useProjectStore.getState().undo()} />
-        <IconButton icon="redo" label="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => useProjectStore.getState().redo()} />
-        <span className="panel__divider" />
+        <IconButton className="topbar__history" icon="undo" label="Undo (Ctrl+Z)" disabled={!canUndo} onClick={() => useProjectStore.getState().undo()} />
+        <IconButton className="topbar__history" icon="redo" label="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => useProjectStore.getState().redo()} />
         <ZoomControls />
       </div>
 

@@ -29,6 +29,13 @@
   justify-content: center;
 }
 
+/* Undo and redo keep their full colour with nothing to undo, so the
+   centre of the bar does not flicker between dim and bright. */
+.topbar__history:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
 .save-dot {
   width: 7px;
   height: 7px;
