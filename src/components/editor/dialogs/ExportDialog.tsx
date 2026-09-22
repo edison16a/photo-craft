@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { downloadBlob } from "@/lib/download";
 import {
   DEFAULT_EXPORT_OPTIONS,
@@ -29,6 +29,12 @@ export function ExportDialog({ open, onClose }: ExportDialogProps) {
   const [options, setOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const pageTransparent = project?.pages.find((p) => p.id === currentPageId)?.background === "transparent";
+
+  // Start from what the page says each time the dialog opens.
+  useEffect(() => {
+    if (open) setOptions((current) => ({ ...current, transparent: pageTransparent }));
+  }, [open, pageTransparent]);
 
   if (!project) return null;
   const format = formatOption(options.format);
@@ -40,7 +46,6 @@ export function ExportDialog({ open, onClose }: ExportDialogProps) {
     setBusy(true);
     setError(undefined);
     try {
-      useProjectStore.getState().clearSelection();
       const pages = options.pages === "all" ? project.pages : project.pages.filter((p) => p.id === currentPageId);
       const result = await exportPages(project, pages, options);
       downloadBlob(result.blob, result.filename);

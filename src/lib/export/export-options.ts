@@ -52,7 +52,7 @@ export function formatOption(format: ExportFormat): ExportFormatOption {
 
 /** Output size in pixels for a project at a scale. */
 export function outputSize(project: Pick<Project, "width" | "height">, scale: number) {
-  return { width: Math.round(project.width * scale), height: Math.round(project.height * scale) };
+  return { width: Math.max(1, Math.round(project.width * scale)), height: Math.max(1, Math.round(project.height * scale)) };
 }
 
 /** Scale that produces exactly the given output width. */

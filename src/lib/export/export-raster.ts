@@ -27,11 +27,15 @@ export function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, qualit
 /** Renders one page to an image blob using the export options. */
 export async function renderPageBlob(project: Project, page: Page, options: ExportOptions): Promise<Blob> {
   const format = formatOption(options.format);
-  const canvas = await renderPageToCanvas(project, page, {
-    pixelRatio: options.scale,
-    transparent: options.transparent && format.supportsTransparency,
-  });
-  return canvasToBlob(canvas, format.mimeType, format.supportsQuality ? options.quality : undefined);
+  // A page set to transparent stays transparent wherever the format allows it.
+  const transparent = format.supportsTransparency && (options.transparent || page.background === "transparent");
+  const canvas = await renderPageToCanvas(project, page, { pixelRatio: options.scale, transparent });
+  const blob = await canvasToBlob(canvas, format.mimeType, format.supportsQuality ? options.quality : undefined);
+  // Browsers that cannot encode a format quietly hand back PNG instead.
+  if (blob.type !== format.mimeType) {
+    throw new Error(`This browser cannot export ${format.label}. Choose PNG or JPG instead.`);
+  }
+  return blob;
 }
 
 /**

@@ -83,8 +83,10 @@ export async function renderPageToCanvas(
   const K = await loadKonva();
   const [images] = await Promise.all([imagesIn(page), ensureFontsLoaded(fontFamiliesIn(page))]);
 
+  // The stage stays tiny. toCanvas allocates only the output canvas, so a
+  // large project does not also cost a full size scene and hit canvas.
   const container = document.createElement("div");
-  const stage = new K.Stage({ container, width: project.width, height: project.height });
+  const stage = new K.Stage({ container, width: 1, height: 1 });
   const layer = new K.Layer({ listening: false });
   stage.add(layer);
 
@@ -95,13 +97,41 @@ export async function renderPageToCanvas(
   for (const element of page.elements) {
     layer.add(buildElementNode(K, element, images));
   }
-  layer.draw();
 
   try {
-    return stage.toCanvas({ pixelRatio: options.pixelRatio });
+    const rendered = stage.toCanvas({
+      x: 0,
+      y: 0,
+      width: project.width,
+      height: project.height,
+      pixelRatio: options.pixelRatio,
+    });
+    return snapToSize(rendered, outputSize(project, options.pixelRatio));
   } finally {
     stage.destroy();
   }
+}
+
+/** Output size in whole pixels for a page rendered at a ratio. */
+export function outputSize(project: Pick<Project, "width" | "height">, pixelRatio: number) {
+  return {
+    width: Math.max(1, Math.round(project.width * pixelRatio)),
+    height: Math.max(1, Math.round(project.height * pixelRatio)),
+  };
+}
+
+/**
+ * Konva truncates the canvas size, so a fractional ratio can come out one
+ * pixel short of the size the export dialog promised. Copy onto a canvas of
+ * exactly that size when they differ.
+ */
+function snapToSize(canvas: HTMLCanvasElement, size: { width: number; height: number }): HTMLCanvasElement {
+  if (canvas.width === size.width && canvas.height === size.height) return canvas;
+  const exact = document.createElement("canvas");
+  exact.width = size.width;
+  exact.height = size.height;
+  exact.getContext("2d")?.drawImage(canvas, 0, 0, size.width, size.height);
+  return exact;
 }
 
 /** Renders a page straight to a data URL. */
