@@ -27,8 +27,8 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
       if (useEditorUiStore.getState().editingTextId) return;
-      // A dialog owns the keyboard while it is open.
-      if (document.querySelector('[aria-modal="true"]')) return;
+      // A dialog or popover owns the keyboard while it is open.
+      if (document.querySelector('[aria-modal="true"], [data-popover="true"]')) return;
 
       const store = useProjectStore.getState();
       const ids = store.selectedIds;
