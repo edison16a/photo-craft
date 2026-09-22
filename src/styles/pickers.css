@@ -1,22 +1,10 @@
 /*
-  Colour and font pickers inside the side panel.
+  Popovers plus the colour and font pickers that live inside them.
 */
 
-.color-field {
-  position: relative;
-}
-
-.color-preview--none {
-  background:
-    linear-gradient(45deg, transparent 45%, var(--danger) 45%, var(--danger) 55%, transparent 55%);
-}
-
-.color-popover {
-  position: absolute;
-  left: 0;
-  top: 54px;
-  z-index: 20;
-  width: 252px;
+.popover {
+  position: fixed;
+  z-index: 70;
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -24,8 +12,18 @@
   box-shadow: var(--shadow);
 }
 
+.color-preview--none {
+  background:
+    linear-gradient(45deg, transparent 45%, var(--danger) 45%, var(--danger) 55%, transparent 55%);
+}
+
+.color-preview--compact {
+  width: 24px;
+  height: 24px;
+}
+
 .color-grid--scroll {
-  max-height: 210px;
+  max-height: 180px;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -40,25 +38,17 @@
   cursor: pointer;
 }
 
-.font-picker {
-  position: relative;
-}
-
 .font-picker__value {
   justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.font-picker__list {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 58px;
-  z-index: 20;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  box-shadow: var(--shadow);
+.font-picker__value--compact {
+  max-width: 140px;
+  display: block;
+  line-height: 26px;
 }
 
 .font-picker__scroll {
