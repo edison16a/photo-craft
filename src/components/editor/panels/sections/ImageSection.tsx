@@ -20,14 +20,18 @@ export function ImageSection({ element }: ImageSectionProps) {
 
   const run = async () => {
     const { showToast } = useEditorUiStore.getState();
+    const pageId = useProjectStore.getState().currentPageId;
     setBusy(true);
     try {
       const result = await removeImageBackground(element.src);
-      useProjectStore.getState().updateElement(element.id, {
-        src: result.src,
-        naturalWidth: result.width,
-        naturalHeight: result.height,
-      });
+      const store = useProjectStore.getState();
+      const page = store.project?.pages.find((candidate) => candidate.id === pageId);
+      const stillHere = store.currentPageId === pageId && page?.elements.some((el) => el.id === element.id);
+      if (!stillHere) {
+        showToast("The image is no longer on this page, so the cut out was not applied.", "error");
+        return;
+      }
+      store.updateElement(element.id, { src: result.src, naturalWidth: result.width, naturalHeight: result.height });
       showToast("Background removed. Undo with Ctrl+Z to bring it back.");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Background removal failed", "error");

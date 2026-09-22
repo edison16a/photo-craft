@@ -14,7 +14,11 @@ export function useBackgroundRemovalStatus(): BackgroundRemovalStatus | undefine
 
   useEffect(() => {
     let cancelled = false;
-    cached ??= fetchBackgroundRemovalStatus();
+    cached ??= fetchBackgroundRemovalStatus().then((value) => {
+      // A server that could not be reached may be back next time. Ask again then.
+      if (!value.available && value.reason === "Could not reach the server.") cached = null;
+      return value;
+    });
     cached.then((value) => {
       if (!cancelled) setStatus(value);
     });
