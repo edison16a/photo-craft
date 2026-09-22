@@ -9,16 +9,16 @@ import { releaseItem } from "@/lib/remove-bg/files";
 import { isTypingTarget } from "@/lib/typing-target";
 import { useRemoveBgStore } from "@/store/remove-bg-store";
 import { Toast } from "../ui/Toast";
-import { CutoutPreview } from "./CutoutPreview";
+import { ComparePreview } from "./ComparePreview";
 import { DownloadPanel } from "./DownloadPanel";
-import { DropZone } from "./DropZone";
 import { ImageStrip } from "./ImageStrip";
+import { Landing } from "./Landing";
 
 /**
- * The remove background page. Drop, paste or pick pictures, watch them
- * get cut out one after another, flick between them with the strip or
- * the arrow keys, and download any of them at any size. Everything runs
- * in the browser and nothing is kept after leaving the page.
+ * The background remover. Drop, paste or pick pictures, watch them get cut
+ * out one after another, compare each with its original, flick between
+ * them with the strip or the arrow keys, and download any of them at any
+ * size. Everything runs in the browser and nothing is kept after leaving.
  */
 export function RemoveBackgroundScreen() {
   useRemovalQueue();
@@ -27,7 +27,7 @@ export function RemoveBackgroundScreen() {
   const selected = items.find((item) => item.id === selectedId) ?? null;
   const [format, setFormat] = useState<CutoutFormat>("png");
   const { addFiles, addUrls } = useAddPictures();
-  const { onDragOver, onDrop } = usePictureDrop({ addFiles, addUrls });
+  const { onDragOver, onDragLeave, onDrop, dragActive } = usePictureDrop({ addFiles, addUrls });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const openPicker = useCallback(() => inputRef.current?.click(), []);
@@ -54,6 +54,8 @@ export function RemoveBackgroundScreen() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
+      // The compare line takes the arrow keys while it has focus.
+      if ((event.target as HTMLElement | null)?.getAttribute?.("role") === "slider") return;
       const store = useRemoveBgStore.getState();
       if (event.key === "ArrowRight") store.selectNeighbour(1);
       else if (event.key === "ArrowLeft") store.selectNeighbour(-1);
@@ -69,14 +71,14 @@ export function RemoveBackgroundScreen() {
   useEffect(() => clearAll, [clearAll]);
 
   return (
-    <main className="remove-bg" onDragOver={onDragOver} onDrop={onDrop}>
+    <main className="remove-bg" onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
       <input ref={inputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(",")} multiple hidden onChange={onPick} aria-label="Choose pictures" />
       {items.length === 0 ? (
-        <DropZone onPick={openPicker} />
+        <Landing onPick={openPicker} dragActive={dragActive} />
       ) : (
         <section className="remove-bg__work">
           <ImageStrip items={items} selectedId={selectedId} onSelect={(id) => useRemoveBgStore.getState().select(id)} onRemove={removeItem} onAdd={openPicker} />
-          <CutoutPreview key={selected?.id ?? "none"} item={selected} />
+          <ComparePreview key={selected?.id ?? "none"} item={selected} />
           <DownloadPanel key={`download-${selected?.id ?? "none"}`} item={selected} items={items} format={format} onFormatChange={setFormat} onClear={clearAll} />
         </section>
       )}

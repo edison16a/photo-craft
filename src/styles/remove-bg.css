@@ -1,7 +1,7 @@
 /*
-  The remove background page: drop zone, thumbnail strip, preview and the
-  download panel. The checkerboard is shared with anything that shows
-  transparency.
+  The background remover: the landing with the sample and the drop box,
+  the thumbnail strip, the compare view with its sparkles and the download
+  panel. The checkerboard is shared with anything that shows transparency.
 */
 
 .remove-bg {
@@ -12,25 +12,66 @@
   padding: 0 24px 24px;
 }
 
-.drop-zone {
+.landing {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 420px;
-  margin-top: 16px;
-  border: 2px dashed var(--border-strong);
-  border-radius: var(--radius);
-  color: var(--text-muted);
+  padding: 40px 0 24px;
   text-align: center;
 }
 
-.drop-zone__title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
+.landing__title {
+  margin: 0 0 12px;
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.landing__subtitle {
+  margin: 0 0 40px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.landing__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.landing__demo .compare {
+  width: 100%;
+  aspect-ratio: 1000 / 667;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.landing__drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 320px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.landing__drop--over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.btn--lg {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 16px;
 }
 
 .remove-bg__work {
@@ -156,47 +197,140 @@
 
 .preview {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+  justify-content: center;
   min-width: 0;
   min-height: 0;
 }
 
 .preview--empty {
   align-items: center;
-  justify-content: center;
 }
 
-.preview__bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.preview__error {
-  color: var(--danger);
-}
-
-.preview__stage {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  border: 1px solid var(--border);
+.compare {
+  position: relative;
   border-radius: var(--radius);
-  background: var(--bg-elevated);
+  user-select: none;
+  touch-action: none;
+}
+
+.compare--interactive {
+  cursor: ew-resize;
+}
+
+.compare__layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: filter 300ms ease;
+}
+
+.compare--busy .compare__layer {
+  filter: brightness(0.7);
+}
+
+.compare__reveal {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.compare--revealing .compare__reveal {
+  transition: clip-path 1400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compare__line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.compare--revealing .compare__line {
+  transition: left 1400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compare__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #111214;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+}
+
+.compare__handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.compare__status {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(17, 18, 20, 0.8);
+  color: #ffffff;
+  font-size: 13px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.compare__status--error {
+  background: var(--danger);
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.preview__img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.sparkle {
+  position: absolute;
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent));
+  opacity: 0;
+  transform-origin: center;
+  animation-name: twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
 }
 
-.preview__img--busy {
-  opacity: 0.5;
+@keyframes twinkle {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(180deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(360deg) scale(0.3);
+  }
 }
 
 .download {

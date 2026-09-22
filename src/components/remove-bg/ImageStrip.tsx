@@ -48,8 +48,8 @@ export function ImageStrip({ items, selectedId, onSelect, onRemove, onAdd }: Ima
         })}
       </ul>
       <button type="button" className="strip__add" onClick={onAdd}>
-        <Icon name="plus" size={18} />
-        Add pictures
+        <Icon name="upload" size={18} />
+        Upload Photo
       </button>
     </aside>
   );
