@@ -8,6 +8,7 @@ import { emptyHistory, pushHistory, type History } from "./history";
 import type { ElementActions } from "./slices/element-slice";
 import type { HistoryActions } from "./slices/history-slice";
 import type { PageActions } from "./slices/page-slice";
+import type { PreviewActions } from "./slices/preview-slice";
 import type { SelectionActions } from "./slices/selection-slice";
 
 /** What an undo step restores: the project plus where the user was. */
@@ -28,6 +29,8 @@ export interface ProjectState {
   /** Time of the last successful save, or null. */
   savedAt: number | null;
   clipboard: CanvasElement[];
+  /** Where the project was when a live preview started, or null. */
+  previewBase: EditorSnapshot | null;
 }
 
 /** The full store: state plus every action slice. */
@@ -35,7 +38,8 @@ export type ProjectStore = ProjectState &
   PageActions &
   ElementActions &
   SelectionActions &
-  HistoryActions;
+  HistoryActions &
+  PreviewActions;
 
 /** Shape of a slice creator, with access to the whole store. */
 export type Slice<T> = StateCreator<ProjectStore, [], [], T>;
@@ -50,6 +54,7 @@ export function initialProjectState(): ProjectState {
     dirty: false,
     savedAt: null,
     clipboard: [],
+    previewBase: null,
   };
 }
 

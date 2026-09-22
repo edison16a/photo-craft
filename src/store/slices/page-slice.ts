@@ -35,6 +35,7 @@ export const createPageSlice: Slice<PageActions> = (set, get) => ({
       history: { past: [], future: [] },
       dirty: false,
       savedAt: null,
+      previewBase: null,
     }),
 
   closeProject: () =>
@@ -46,6 +47,7 @@ export const createPageSlice: Slice<PageActions> = (set, get) => ({
       dirty: false,
       savedAt: null,
       clipboard: [],
+      previewBase: null,
     }),
 
   renameProject: (name) =>
