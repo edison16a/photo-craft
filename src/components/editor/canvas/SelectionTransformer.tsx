@@ -59,6 +59,9 @@ export function SelectionTransformer() {
     const nodes = visible
       ? selected.map((el) => stage.findOne(`#${el.id}`)).filter((n): n is Konva.Node => Boolean(n))
       : [];
+    // Swapping nodes under a live drag would strand their scale on the
+    // canvas. Ending the transform first commits it to the store.
+    if (transformer.isTransforming()) transformer.stopTransform();
     transformer.nodes(nodes);
     transformer.getLayer()?.batchDraw();
   }, [selected, visible]);
