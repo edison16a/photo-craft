@@ -26,6 +26,7 @@ export interface ResponseFrame {
 /**
  * Tries to read one complete response from the front of a buffer. Returns
  * the frame and how many bytes it used, or null while more bytes are needed.
+ * The payload is a view into the buffer, not a copy.
  */
 export function decodeResponse(buffer: Uint8Array): { frame: ResponseFrame; consumed: number } | null {
   if (buffer.length < 5) return null;
@@ -33,7 +34,7 @@ export function decodeResponse(buffer: Uint8Array): { frame: ResponseFrame; cons
   const status = view.getUint8(0);
   const length = view.getUint32(1, false);
   if (buffer.length < 5 + length) return null;
-  return { frame: { status, payload: buffer.slice(5, 5 + length) }, consumed: 5 + length };
+  return { frame: { status, payload: buffer.subarray(5, 5 + length) }, consumed: 5 + length };
 }
 
 /** Joins two byte arrays. */

@@ -6,7 +6,8 @@
  * when to start and stop a worker.
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { decodeResponse, encodeRequest, STATUS_OK } from "./frame-protocol";
+import { encodeRequest, STATUS_OK } from "./frame-protocol";
+import { FrameReader } from "./frame-reader";
 
 /** The worker could not read the image it was given. Not a server fault. */
 export class ImageError extends Error {}
@@ -42,8 +43,9 @@ export function startWorker(options: WorkerOptions): BackgroundWorker {
     env: { ...process.env, PYTHONUNBUFFERED: "1" },
   });
   const queue: Pending[] = [];
-  const chunks: Buffer[] = [];
-  let buffered = 0;
+  /** Stdout before the ready line: chatter from libraries, then the announcement. */
+  let banner: Buffer[] = [];
+  const replies = new FrameReader();
   let announced = false;
   let stopped = false;
   let settleReady: { resolve: () => void; reject: (error: Error) => void } | null = null;
@@ -69,14 +71,12 @@ export function startWorker(options: WorkerOptions): BackgroundWorker {
 
   /** Reads the one line JSON announcement. Skips chatter other libraries print first. */
   const readAnnouncement = (): void => {
-    const all = Buffer.concat(chunks);
+    const all = Buffer.concat(banner);
     const newline = all.indexOf(10);
     if (newline < 0) return;
     const line = all.subarray(0, newline).toString("utf8").trim();
-    chunks.length = 0;
     const rest = all.subarray(newline + 1);
-    if (rest.length > 0) chunks.push(Buffer.from(rest));
-    buffered = rest.length;
+    banner = [rest];
     let info: { ready?: boolean; error?: string } | null = null;
     try {
       info = JSON.parse(line) as { ready?: boolean; error?: string };
@@ -86,6 +86,9 @@ export function startWorker(options: WorkerOptions): BackgroundWorker {
     }
     if (info.ready) {
       announced = true;
+      banner = [];
+      // Anything after the ready line is already the start of the first reply.
+      replies.push(rest);
       clearTimeout(startupTimer);
       settleReady?.resolve();
     } else {
@@ -95,28 +98,22 @@ export function startWorker(options: WorkerOptions): BackgroundWorker {
 
   /** Hands complete reply frames to the requests waiting for them. */
   const drain = (): void => {
-    while (buffered >= 5) {
-      const head = chunks.length === 1 ? chunks[0] : Buffer.concat(chunks);
-      const length = head.readUInt32BE(1);
-      if (buffered < 5 + length) return;
-      const decoded = decodeResponse(head);
-      if (!decoded) return;
-      chunks.length = 0;
-      const rest = head.subarray(decoded.consumed);
-      if (rest.length > 0) chunks.push(Buffer.from(rest));
-      buffered = rest.length;
+    for (let frame = replies.next(); frame; frame = replies.next()) {
       const pending = queue.shift();
       if (!pending) continue;
       clearTimeout(pending.timer);
-      if (decoded.frame.status === STATUS_OK) pending.resolve(decoded.frame.payload);
-      else pending.reject(new ImageError(Buffer.from(decoded.frame.payload).toString("utf8")));
+      if (frame.status === STATUS_OK) pending.resolve(frame.payload);
+      else pending.reject(new ImageError(Buffer.from(frame.payload).toString("utf8")));
     }
   };
 
   child.stdout?.on("data", (chunk: Buffer) => {
-    chunks.push(chunk);
-    buffered += chunk.length;
-    if (!announced) readAnnouncement();
+    if (announced) {
+      replies.push(chunk);
+    } else {
+      banner.push(chunk);
+      readAnnouncement();
+    }
     if (announced) drain();
   });
   child.stderr?.on("data", (chunk: Buffer) => {
