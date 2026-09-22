@@ -233,7 +233,8 @@
   border-radius: inherit;
 }
 
-.compare--revealing .compare__reveal {
+.compare--revealing .compare__reveal,
+.compare--revealing .compare__original {
   transition: clip-path 1400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 

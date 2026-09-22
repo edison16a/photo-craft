@@ -12,7 +12,11 @@ interface CompareViewProps {
   onSplitChange?: (split: number) => void;
   /** Animate changes to the split instead of jumping. */
   revealing?: boolean;
-  /** Draw a checkerboard behind the cutout. Off, whatever is behind the box shows through. */
+  /**
+   * Draw a checkerboard behind the cutout. Off, the original is clipped to
+   * the left of the line and whatever is behind the box shows through the
+   * cutout on the right.
+   */
   checker?: boolean;
   /** Exact box in pixels. Leave out to let the stylesheet size it. */
   width?: number;
@@ -86,7 +90,13 @@ export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, reve
     >
       {/* Object URLs cannot go through next/image. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="compare__layer" src={originalUrl} alt={alt} draggable={false} />
+      <img
+        className="compare__layer compare__original"
+        src={originalUrl}
+        alt={alt}
+        draggable={false}
+        style={checker || !cutoutUrl ? undefined : { clipPath: `inset(0 ${(1 - split) * 100}% 0 0)` }}
+      />
       {cutoutUrl ? (
         <div className={checker ? "compare__reveal checker" : "compare__reveal"} style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
