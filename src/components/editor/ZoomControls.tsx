@@ -1,33 +1,59 @@
 "use client";
+import { useRef, useState } from "react";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { zoomIn, zoomOut, zoomTo, zoomToFit } from "@/store/viewport-actions";
+import { Icon } from "../ui/Icon";
 import { IconButton } from "../ui/IconButton";
+import { Popover } from "../ui/Popover";
 
 const LEVELS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-/** Zoom out, a percentage picker, zoom in and fit to screen. */
+/** Zoom in, zoom out and a dropdown with preset levels and fit to screen. */
 export function ZoomControls() {
   const zoom = useEditorUiStore((s) => s.zoom);
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
   const percent = Math.round(zoom * 100);
-  const options = LEVELS.includes(zoom) ? LEVELS : [...LEVELS, zoom].sort((a, b) => a - b);
+
+  const pick = (action: () => void) => {
+    action();
+    setOpen(false);
+  };
 
   return (
     <div className="row" style={{ gap: 2 }}>
-      <IconButton icon="zoomOut" label="Zoom out" onClick={zoomOut} />
-      <select
-        className="select zoom-select"
-        aria-label="Zoom level"
-        value={zoom}
-        onChange={(event) => zoomTo(Number(event.target.value))}
+      <IconButton icon="zoomIn" label="Zoom in (Ctrl+Plus)" onClick={zoomIn} />
+      <IconButton icon="zoomOut" label="Zoom out (Ctrl+Minus)" onClick={zoomOut} />
+      <button
+        ref={anchorRef}
+        type="button"
+        className="btn btn--sm zoom-value"
+        aria-label={`Zoom level ${percent}%`}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
       >
-        {options.map((level) => (
-          <option key={level} value={level}>
-            {level === zoom ? `${percent}%` : `${Math.round(level * 100)}%`}
-          </option>
-        ))}
-      </select>
-      <IconButton icon="zoomIn" label="Zoom in" onClick={zoomIn} />
-      <IconButton icon="fit" label="Fit to screen" onClick={zoomToFit} />
+        {percent}%
+        <Icon name="chevronDown" size={14} />
+      </button>
+      <Popover open={open} anchorRef={anchorRef} onClose={() => setOpen(false)} label="Zoom levels" width={150}>
+        <div className="stack" style={{ gap: 2 }}>
+          {LEVELS.map((level) => (
+            <button
+              key={level}
+              type="button"
+              className={`zoom-menu__item ${Math.abs(level - zoom) < 0.001 ? "zoom-menu__item--active" : ""}`}
+              onClick={() => pick(() => zoomTo(level))}
+            >
+              {Math.round(level * 100)}%
+            </button>
+          ))}
+          <hr className="context-menu__divider" />
+          <button type="button" className="zoom-menu__item" onClick={() => pick(zoomToFit)}>
+            Fit to screen
+            <span className="small muted">Ctrl+0</span>
+          </button>
+        </div>
+      </Popover>
     </div>
   );
 }

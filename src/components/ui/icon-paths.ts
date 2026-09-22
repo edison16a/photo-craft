@@ -14,6 +14,7 @@ export const ICON_PATHS = {
   moon: "M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z",
   save: "M5 3h11l3 3v15H5zM8 3v6h8V3M8 21v-7h8v7",
   download: "M12 4v12M6 10l6 6 6-6M4 20h16",
+  export: "M12 16V4M6 10l6-6 6 6M4 20h16",
   lock: "M6 11h12v10H6zM9 11V7a3 3 0 016 0v4",
   unlock: "M6 11h12v10H6zM9 11V7a3 3 0 015.8-1",
   flipH: "M12 3v18M4 7l5 5-5 5zM20 7l-5 5 5 5z",

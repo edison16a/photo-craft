@@ -16,13 +16,24 @@
 
 .topbar {
   grid-area: top;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+}
+
+.topbar__centre {
+  justify-content: center;
+}
+
+.save-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .topbar__name {
@@ -44,11 +55,33 @@
   outline: none;
 }
 
-.zoom-select {
-  width: 84px;
-  height: 30px;
-  padding: 0 6px;
-  font-size: 12px;
+.zoom-value {
+  min-width: 72px;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.zoom-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.zoom-menu__item:hover {
+  background: var(--bg-muted);
+}
+
+.zoom-menu__item--active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .rail {

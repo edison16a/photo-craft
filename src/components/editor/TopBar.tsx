@@ -23,7 +23,6 @@ interface TopBarProps {
 export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarProps) {
   const router = useRouter();
   const name = useProjectStore((s) => s.project?.name ?? "");
-  const size = useProjectStore((s) => (s.project ? `${s.project.width} x ${s.project.height}` : ""));
   const dirty = useProjectStore((s) => s.dirty);
   const canUndo = useProjectStore((s) => s.history.past.length > 0);
   const canRedo = useProjectStore((s) => s.history.future.length > 0);
@@ -57,25 +56,31 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
           onBlur={commitName}
           onKeyDown={(event) => event.key === "Enter" && (event.target as HTMLInputElement).blur()}
         />
-        <span className="small muted">{size}</span>
-        <span className="small muted">{dirty ? "Unsaved changes" : "All changes saved"}</span>
       </div>
 
-      <div className="row">
+      <div className="row topbar__centre">
         <IconButton icon="undo" label="Undo (Ctrl+Z)" disabled={!canUndo} onClick={() => useProjectStore.getState().undo()} />
         <IconButton icon="redo" label="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => useProjectStore.getState().redo()} />
+        <span className="panel__divider" />
         <ZoomControls />
       </div>
 
-      <div className="row">
+      <div className="row" style={{ justifyContent: "flex-end" }}>
         <Toggle checked={autosave} onChange={onAutosaveChange} label="Autosave" />
         <ThemeToggle />
-        <button type="button" className="btn" onClick={() => void onSave()} disabled={saving}>
+        <button
+          type="button"
+          className="btn"
+          title={dirty ? "Unsaved changes (Ctrl+S)" : "All changes saved"}
+          onClick={() => void onSave()}
+          disabled={saving}
+        >
           <Icon name="save" size={16} />
           {saving ? "Saving" : "Save"}
+          {dirty ? <span className="save-dot" aria-label="Unsaved changes" /> : null}
         </button>
         <button type="button" className="btn btn--primary" onClick={() => useEditorUiStore.getState().setExportOpen(true)}>
-          <Icon name="download" size={16} />
+          <Icon name="export" size={16} />
           Export
         </button>
       </div>
