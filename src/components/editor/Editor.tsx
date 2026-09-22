@@ -54,7 +54,7 @@ export function Editor({ projectId }: EditorProps) {
   return (
     <div className="editor">
       <TopBar
-        onSave={() => void save()}
+        onSave={save}
         saving={saving}
         autosave={settings.autosave}
         onAutosaveChange={(autosave) => updateSettings({ autosave })}

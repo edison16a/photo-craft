@@ -36,7 +36,15 @@ export const createPageSlice: Slice<PageActions> = (set, get) => ({
     }),
 
   closeProject: () =>
-    set({ project: null, currentPageId: "", selectedIds: [], history: { past: [], future: [] } }),
+    set({
+      project: null,
+      currentPageId: "",
+      selectedIds: [],
+      history: { past: [], future: [] },
+      dirty: false,
+      savedAt: null,
+      clipboard: [],
+    }),
 
   renameProject: (name) =>
     applyProjectChange(set, get, (project) => {

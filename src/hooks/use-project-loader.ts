@@ -6,7 +6,8 @@
 import { useEffect, useState } from "react";
 import { ensureFontsLoaded } from "../lib/font-loader";
 import type { Project } from "../model/types";
-import { loadProject } from "../store/persistence";
+import { loadSettings } from "../services/settings";
+import { loadProject, saveProject } from "../store/persistence";
 import { useProjectStore } from "../store/project-store";
 
 export type LoadStatus = "loading" | "ready" | "missing" | "error";
@@ -22,6 +23,21 @@ export function fontsUsedBy(project: Project): string[] {
   return [...families];
 }
 
+/**
+ * Writes the project one last time when the editor closes with unsaved
+ * changes and autosave is on. In app navigation never fires beforeunload,
+ * so without this the last edits would be lost. The write keeps going
+ * after the component is gone.
+ */
+function flushUnsavedWork(): void {
+  const { project, dirty } = useProjectStore.getState();
+  if (!project || !dirty || !loadSettings().autosave) return;
+  saveProject(project).catch(() => {
+    // Nothing sensible to show once the editor is gone.
+  });
+}
+
+/** Loads the project for the editor route and reports how that is going. */
 export function useProjectLoader(projectId: string): { status: LoadStatus; error?: string } {
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [error, setError] = useState<string>();
@@ -48,6 +64,7 @@ export function useProjectLoader(projectId: string): { status: LoadStatus; error
       });
     return () => {
       cancelled = true;
+      flushUnsavedWork();
       useProjectStore.getState().closeProject();
     };
   }, [projectId]);

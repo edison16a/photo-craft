@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
@@ -8,10 +8,12 @@ import { Icon } from "../ui/Icon";
 import { IconButton } from "../ui/IconButton";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { Toggle } from "../ui/Toggle";
+import { LeaveDialog } from "./dialogs/LeaveDialog";
 import { ZoomControls } from "./ZoomControls";
 
 interface TopBarProps {
-  onSave: () => void;
+  /** Saves the project. Resolves with false when the save failed. */
+  onSave: () => Promise<boolean>;
   saving: boolean;
   autosave: boolean;
   onAutosaveChange: (enabled: boolean) => void;
@@ -19,12 +21,14 @@ interface TopBarProps {
 
 /** Top bar: logo, project name, undo and redo, zoom, theme, save and export. */
 export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarProps) {
+  const router = useRouter();
   const name = useProjectStore((s) => s.project?.name ?? "");
   const size = useProjectStore((s) => (s.project ? `${s.project.width} x ${s.project.height}` : ""));
   const dirty = useProjectStore((s) => s.dirty);
   const canUndo = useProjectStore((s) => s.history.past.length > 0);
   const canRedo = useProjectStore((s) => s.history.future.length > 0);
   const [draft, setDraft] = useState(name);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => setDraft(name), [name]);
 
@@ -33,12 +37,18 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
     else setDraft(name);
   };
 
+  /** With autosave on the loader flushes on unmount. Otherwise ask first. */
+  const goHome = () => {
+    if (dirty && !autosave) setLeaving(true);
+    else router.push("/");
+  };
+
   return (
     <header className="topbar">
       <div className="row" style={{ gap: 12 }}>
-        <Link href="/" className="row" aria-label="Back to projects" style={{ gap: 8 }}>
+        <button type="button" className="icon-btn" aria-label="Back to projects" title="Back to projects" onClick={goHome}>
           <CubeLogo size={26} />
-        </Link>
+        </button>
         <input
           className="topbar__name"
           value={draft}
@@ -60,7 +70,7 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
       <div className="row">
         <Toggle checked={autosave} onChange={onAutosaveChange} label="Autosave" />
         <ThemeToggle />
-        <button type="button" className="btn" onClick={onSave} disabled={saving}>
+        <button type="button" className="btn" onClick={() => void onSave()} disabled={saving}>
           <Icon name="save" size={16} />
           {saving ? "Saving" : "Save"}
         </button>
@@ -69,6 +79,17 @@ export function TopBar({ onSave, saving, autosave, onAutosaveChange }: TopBarPro
           Export
         </button>
       </div>
+      <LeaveDialog
+        open={leaving}
+        onCancel={() => setLeaving(false)}
+        onLeave={() => router.push("/")}
+        onSaveAndLeave={() => {
+          void onSave().then((saved) => {
+            if (saved) router.push("/");
+            else setLeaving(false);
+          });
+        }}
+      />
     </header>
   );
 }
