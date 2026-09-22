@@ -50,6 +50,8 @@ function TextEditBox({ element }: TextEditBoxProps) {
   }, [draft, zoom, element.fontSize, element.width]);
 
   const finish = () => {
+    // Escape and the blur that follows the unmount both land here. Run once.
+    if (useEditorUiStore.getState().editingTextId !== element.id) return;
     const text = draft.trim().length === 0 ? element.text : draft;
     if (text !== element.text) useProjectStore.getState().updateElement(element.id, { text });
     useEditorUiStore.getState().setEditingText(null);
