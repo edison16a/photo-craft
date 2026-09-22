@@ -6,15 +6,9 @@ I built it because I was tired of using Canva and being limited on features that
 
 ## Screenshots
 
-![The editor with a text selected and the quick toolbar above it](docs/screenshots/editor.png)
-
-![The colour picker with project colours at the top](docs/screenshots/colours.png)
-
-![Right click menu on an image](docs/screenshots/context-menu.png)
-
-![The export dialog](docs/screenshots/export.png)
-
 ![Your projects](docs/screenshots/home.png)
+
+![The editor with an image selected](docs/screenshots/editor.png)
 
 ## What you get
 
