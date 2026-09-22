@@ -60,8 +60,9 @@ function TextEditBox({ element }: TextEditBoxProps) {
     left: pan.x + element.x * zoom,
     top: pan.y + element.y * zoom,
     width: element.width * zoom,
+    // Rotate around the centre of the stored box, the same pivot the canvas uses.
     transform: `rotate(${element.rotation}deg)`,
-    transformOrigin: "top left",
+    transformOrigin: `${(element.width * zoom) / 2}px ${(element.height * zoom) / 2}px`,
     fontFamily: `"${element.fontFamily}", Arial, sans-serif`,
     fontSize: element.fontSize * zoom,
     fontWeight: element.fontWeight === "bold" ? 700 : 400,

@@ -1,5 +1,6 @@
 "use client";
 import { Line, Rect } from "react-konva";
+import { groupAttrs } from "@/lib/konva/element-attrs";
 import type { Guide } from "@/lib/snapping";
 import type { CanvasElement, Rect as RectShape } from "@/model/types";
 
@@ -65,11 +66,9 @@ export function LockedOutlines({ elements, zoom }: LockedOutlinesProps) {
       {elements.map((element) => (
         <Rect
           key={element.id}
-          x={element.x}
-          y={element.y}
+          {...groupAttrs({ ...element, opacity: 1 })}
           width={element.width}
           height={element.height}
-          rotation={element.rotation}
           stroke="#9aa3b2"
           strokeWidth={1.5 / zoom}
           dash={[6 / zoom, 4 / zoom]}

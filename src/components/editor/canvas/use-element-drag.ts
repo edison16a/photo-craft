@@ -11,6 +11,7 @@ import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useMemo } from "react";
 import { unionRects } from "@/lib/geometry";
+import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import { computeSnap, type Guide } from "@/lib/snapping";
 import type { Point, Rect } from "@/model/types";
 import { elementBounds } from "@/store/alignment";
@@ -89,9 +90,14 @@ export function useElementDrag() {
       if (!session) return;
       const layer = event.target.getLayer();
       const patches: Record<string, { x: number; y: number }> = {};
+      const elements = selectCurrentElements(useProjectStore.getState());
       for (const id of session.startPositions.keys()) {
         const target = findNode(layer, id);
-        if (target) patches[id] = { x: Math.round(target.x() * 100) / 100, y: Math.round(target.y() * 100) / 100 };
+        const element = elements.find((el) => el.id === id);
+        if (!target || !element) continue;
+        // Node positions are box centres, the model stores the top left corner.
+        const topLeft = topLeftFromCentre(target.position(), element.width, element.height);
+        patches[id] = { x: Math.round(topLeft.x * 100) / 100, y: Math.round(topLeft.y * 100) / 100 };
       }
       session = null;
       useEditorUiStore.getState().setGuides([]);

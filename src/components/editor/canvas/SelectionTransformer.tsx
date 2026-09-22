@@ -3,6 +3,7 @@ import type Konva from "konva";
 import { useEffect, useRef } from "react";
 import { Transformer } from "react-konva";
 import { normalizeDegrees } from "@/lib/geometry";
+import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
@@ -63,11 +64,16 @@ export function SelectionTransformer() {
       if (!element) continue;
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
+      const width = Math.max(MIN_SIZE, round(element.width * scaleX));
+      // Text keeps an auto height, so its stored height is measured later.
+      const height = Math.max(MIN_SIZE, round(element.height * scaleY));
+      // The node's position is the centre of the box, see groupAttrs.
+      const topLeft = topLeftFromCentre(node.position(), width, height);
       const patch: ElementPatch = {
-        x: round(node.x()),
-        y: round(node.y()),
+        x: round(topLeft.x),
+        y: round(topLeft.y),
         rotation: round(normalizeDegrees(node.rotation())),
-        width: Math.max(MIN_SIZE, round(element.width * scaleX)),
+        width,
       };
       if (element.type === "text") {
         // Corner anchors scale the font, side anchors only change the wrap width.
@@ -75,7 +81,7 @@ export function SelectionTransformer() {
           patch.fontSize = Math.max(1, round(element.fontSize * scaleX));
         }
       } else {
-        patch.height = Math.max(MIN_SIZE, round(element.height * scaleY));
+        patch.height = height;
       }
       node.scale({ x: 1, y: 1 });
       patches[element.id] = patch;

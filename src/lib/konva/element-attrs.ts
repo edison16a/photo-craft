@@ -8,9 +8,36 @@
 import type { ImageElement, ShapeElement, TextElement } from "../../model/types";
 import { linePoints, polygonPoints } from "../../data/shapes";
 
-/** Attributes for the outer group that carries position, rotation and opacity. */
-export function groupAttrs(element: { x: number; y: number; rotation: number; opacity: number }) {
-  return { x: element.x, y: element.y, rotation: element.rotation, opacity: element.opacity };
+/** The fields the outer group needs: the unrotated box plus rotation and opacity. */
+export interface GroupSource {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+}
+
+/**
+ * Attributes for the outer group that carries position, rotation and
+ * opacity. The group's origin sits at the centre of the unrotated box, so
+ * rotation turns the element in place and the model's x and y stay the
+ * top left corner of the unrotated box.
+ */
+export function groupAttrs(element: GroupSource) {
+  return {
+    x: element.x + element.width / 2,
+    y: element.y + element.height / 2,
+    offsetX: element.width / 2,
+    offsetY: element.height / 2,
+    rotation: element.rotation,
+    opacity: element.opacity,
+  };
+}
+
+/** Converts a group's position (its centre) back to the model's top left corner. */
+export function topLeftFromCentre(centre: { x: number; y: number }, width: number, height: number) {
+  return { x: centre.x - width / 2, y: centre.y - height / 2 };
 }
 
 /**
