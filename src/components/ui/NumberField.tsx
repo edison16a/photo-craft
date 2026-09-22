@@ -13,6 +13,8 @@ interface NumberFieldProps {
   decimals?: number;
   /** Maps a typed value to what will be stored, for example wrapping degrees. */
   normalize?: (value: number) => number;
+  /** A narrow input without a visible label, for toolbars. */
+  compact?: boolean;
 }
 
 function formatNumber(value: number, decimals: number): string {
@@ -25,7 +27,7 @@ function formatNumber(value: number, decimals: number): string {
  * edited is committed, and an empty draft falls back to the current value,
  * so tabbing through fields never changes anything.
  */
-export function NumberField({ label, value, onCommit, min, max, step = 1, suffix, disabled, decimals = 0, normalize }: NumberFieldProps) {
+export function NumberField({ label, value, onCommit, min, max, step = 1, suffix, disabled, decimals = 0, normalize, compact }: NumberFieldProps) {
   const [draft, setDraft] = useState(() => formatNumber(value, decimals));
   const edited = useRef(false);
   const commitRef = useRef<() => void>(() => undefined);
@@ -56,12 +58,13 @@ export function NumberField({ label, value, onCommit, min, max, step = 1, suffix
   useEffect(() => () => commitRef.current(), []);
 
   return (
-    <label className="field">
-      <span className="field__label">{label}</span>
+    <label className={compact ? "row" : "field"} style={compact ? { gap: 4 } : undefined} title={compact ? label : undefined}>
+      {compact ? null : <span className="field__label">{label}</span>}
       <span className="row" style={{ gap: 4 }}>
         <input
-          className="input input--sm"
+          className={`input input--sm ${compact ? "input--compact" : ""}`}
           type="number"
+          aria-label={compact ? `${label}${suffix ? ` ${suffix}` : ""}` : undefined}
           value={draft}
           step={step}
           min={min}

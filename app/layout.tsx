@@ -5,9 +5,11 @@ import "./globals.css";
 import "@/styles/ui.css";
 import "@/styles/overlays.css";
 import "@/styles/home.css";
+import "@/styles/new-project.css";
 import "@/styles/editor.css";
 import "@/styles/panels.css";
 import "@/styles/pickers.css";
+import "@/styles/toolbar.css";
 
 const DESCRIPTION = "A free, open source alternative to Canva for simple image editing, creation and iteration.";
 

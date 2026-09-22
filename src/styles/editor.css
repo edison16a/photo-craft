@@ -100,19 +100,6 @@
   display: block;
 }
 
-.text-edit {
-  margin: 0;
-  padding: 0;
-  border: 1px dashed var(--accent);
-  background: transparent;
-  outline: none;
-  resize: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
-  z-index: 5;
-}
-
 .pages {
   grid-area: pages;
   display: flex;

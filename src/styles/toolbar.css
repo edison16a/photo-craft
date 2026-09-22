@@ -1,0 +1,49 @@
+/*
+  Things that float over the canvas: the in place text editor and the
+  quick toolbar.
+*/
+
+.text-edit {
+  margin: 0;
+  padding: 0;
+  border: 1px dashed var(--accent);
+  background: transparent;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  z-index: 5;
+}
+
+.quick-toolbar {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+.quick-toolbar .icon-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.quick-toolbar__divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+.input--compact {
+  width: 58px;
+  height: 26px;
+  padding: 0 4px;
+}

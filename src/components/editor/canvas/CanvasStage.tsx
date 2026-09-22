@@ -11,6 +11,7 @@ import { screenToPage } from "@/store/viewport-actions";
 import { ElementNode } from "./ElementNode";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
+import { QuickToolbar } from "./QuickToolbar";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { TextEditOverlay } from "./TextEditOverlay";
 import { useCanvasDrop } from "./use-canvas-drop";
@@ -109,6 +110,7 @@ export function CanvasStage() {
         </Stage>
       ) : null}
       <TextEditOverlay />
+      <QuickToolbar />
     </div>
   );
 }
