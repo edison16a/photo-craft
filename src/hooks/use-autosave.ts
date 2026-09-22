@@ -17,7 +17,11 @@ export function useAutosave(enabled: boolean, save: (quiet?: boolean) => Promise
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         timer = null;
-        if (useProjectStore.getState().dirty) void save(true);
+        if (!useProjectStore.getState().dirty) return;
+        void save(true).then(() => {
+          // Edits made while the save was running are still unsaved. Go again.
+          if (useProjectStore.getState().dirty && !timer) schedule();
+        });
       }, AUTOSAVE_DELAY_MS);
     };
 

@@ -12,7 +12,8 @@ export interface PageActions {
   closeProject: () => void;
   renameProject: (name: string) => void;
   resizeProject: (width: number, height: number) => void;
-  markSaved: () => void;
+  /** Clears the unsaved flag if the given project is still the one in the store. */
+  markSaved: (saved: Project) => void;
 
   setCurrentPage: (pageId: string) => void;
   addPage: () => void;
@@ -51,7 +52,8 @@ export const createPageSlice: Slice<PageActions> = (set, get) => ({
       return { ...project, width: w, height: h };
     }),
 
-  markSaved: () => set({ dirty: false, savedAt: Date.now() }),
+  markSaved: (saved) =>
+    set((state) => (state.project === saved ? { dirty: false, savedAt: Date.now() } : { savedAt: Date.now() })),
 
   setCurrentPage: (pageId) => {
     const { project, currentPageId } = get();
