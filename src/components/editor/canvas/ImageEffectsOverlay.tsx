@@ -29,7 +29,11 @@ interface RevealBoxProps {
   pan: { x: number; y: number };
 }
 
-/** The sweep that plays over an image once its cutout has arrived. */
+/**
+ * The sweep that plays over an image once its cutout has arrived. Nothing
+ * is drawn behind the cutout, so the page shows through where the
+ * background used to be.
+ */
 function RevealBox({ element, originalSrc, cutoutSrc, zoom, pan }: RevealBoxProps) {
   const [split, setSplit] = useState(1);
   const [revealing, setRevealing] = useState(false);
@@ -53,7 +57,7 @@ function RevealBox({ element, originalSrc, cutoutSrc, zoom, pan }: RevealBoxProp
   const box = screenBox(element, zoom, pan);
   return (
     <div className="image-effect" style={box} aria-hidden="true">
-      <CompareView originalUrl={originalSrc} cutoutUrl={cutoutSrc} split={split} revealing={revealing} className="image-effect__compare" />
+      <CompareView originalUrl={originalSrc} cutoutUrl={cutoutSrc} split={split} revealing={revealing} checker={false} className="image-effect__compare" />
     </div>
   );
 }

@@ -12,6 +12,8 @@ interface CompareViewProps {
   onSplitChange?: (split: number) => void;
   /** Animate changes to the split instead of jumping. */
   revealing?: boolean;
+  /** Draw a checkerboard behind the cutout. Off, whatever is behind the box shows through. */
+  checker?: boolean;
   /** Exact box in pixels. Leave out to let the stylesheet size it. */
   width?: number;
   height?: number;
@@ -30,10 +32,11 @@ function clamp01(value: number): number {
 
 /**
  * The original and the cutout in one box, split by a vertical line. Left of
- * the line is the original, right of it the cutout on a checkerboard. The
- * line is dragged with the pointer or moved with the arrow keys.
+ * the line is the original, right of it the cutout, on a checkerboard unless
+ * told otherwise. The line is dragged with the pointer or moved with the
+ * arrow keys.
  */
-export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, revealing, width, height, className = "", alt = "", children }: CompareViewProps) {
+export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, revealing, checker = true, width, height, className = "", alt = "", children }: CompareViewProps) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const interactive = Boolean(cutoutUrl && onSplitChange);
@@ -85,7 +88,7 @@ export function CompareView({ originalUrl, cutoutUrl, split, onSplitChange, reve
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="compare__layer" src={originalUrl} alt={alt} draggable={false} />
       {cutoutUrl ? (
-        <div className="compare__reveal checker" style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}>
+        <div className={checker ? "compare__reveal checker" : "compare__reveal"} style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="compare__layer" src={cutoutUrl} alt="" draggable={false} />
         </div>
