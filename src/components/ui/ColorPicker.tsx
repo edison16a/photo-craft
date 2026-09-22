@@ -5,6 +5,7 @@
  * colour dialog for anything else.
  */
 import { useEffect, useRef, useState } from "react";
+import { NativeColorInput } from "./NativeColorInput";
 import { COLOR_PALETTE, PALETTE_COLUMNS, QUICK_COLORS, isValidHex, normalizeHex } from "@/data/colors";
 
 interface ColorPickerProps {
@@ -91,13 +92,7 @@ export function ColorPicker({ label, value, onChange, allowTransparent }: ColorP
               onBlur={commitHex}
               onKeyDown={(event) => event.key === "Enter" && commitHex()}
             />
-            <input
-              type="color"
-              className="color-native"
-              aria-label="Custom colour"
-              value={isValidHex(value) ? normalizeHex(value) : "#000000"}
-              onChange={(event) => onChange(event.target.value)}
-            />
+            <NativeColorInput value={isValidHex(value) ? normalizeHex(value) : "#000000"} onCommit={onChange} />
             {allowTransparent ? (
               <button type="button" className="btn btn--sm" onClick={() => onChange("transparent")}>
                 None

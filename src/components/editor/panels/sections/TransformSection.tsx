@@ -2,6 +2,7 @@
 import type { CanvasElement } from "@/model/types";
 import { useProjectStore } from "@/store/project-store";
 import { NumberField } from "../../../ui/NumberField";
+import { OpacitySlider } from "../../../ui/OpacitySlider";
 
 interface TransformSectionProps {
   element: CanvasElement;
@@ -52,11 +53,7 @@ export function TransformSection({ element }: TransformSectionProps) {
         )}
       </div>
       {scalePercent !== null ? (
-        <label className="field">
-          <span className="field__label">Opacity {Math.round(element.opacity * 100)}%</span>
-          <input type="range" className="slider" min={0} max={100} value={Math.round(element.opacity * 100)}
-            onChange={(event) => update({ opacity: Number(event.target.value) / 100 })} />
-        </label>
+        <OpacitySlider value={element.opacity} onCommit={(opacity) => update({ opacity })} />
       ) : null}
       {element.type === "image" ? (
         <p className="small muted">Original {element.naturalWidth} x {element.naturalHeight} px. Proportions are always kept.</p>
