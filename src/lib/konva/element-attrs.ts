@@ -7,6 +7,7 @@
  */
 import type { ImageElement, ShapeElement, TextElement } from "../../model/types";
 import { customPoints, linePoints, PATH_BOX, polygonPoints, shapeGeometry, shapePathData } from "../../data/shapes";
+import { roundedPolygonPath } from "../rounded-path";
 
 /** The fields the outer group needs: the unrotated box plus rotation and opacity. */
 export interface GroupSource {
@@ -98,9 +99,10 @@ export type ShapeNodeSpec =
 
 /**
  * Picks the Konva node type and attributes for a shape. Polygons and stars
- * are closed Konva.Line nodes built from shared point geometry, curved
- * shapes are Konva.Path nodes scaled from their 100 by 100 drawing, and
- * custom shapes are Konva.Line nodes with the tension the draw tool chose.
+ * are closed Konva.Line nodes built from shared point geometry, or
+ * Konva.Path nodes once their corners are rounded. Curved shapes are
+ * Konva.Path nodes scaled from their 100 by 100 drawing. Drawn shapes are
+ * Konva.Path nodes through their own corners, rounded as asked.
  */
 export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
   const paint = paintAttrs(element);
@@ -118,11 +120,9 @@ export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
     // An open outline with no stroke would be invisible, so it borrows the fill.
     const stroke = !closed && paint.stroke === undefined ? element.fill : paint.stroke;
     return {
-      node: "line",
+      node: "path",
       attrs: {
-        points: customPoints(element, width, height),
-        closed,
-        tension: element.tension ?? 0,
+        data: roundedPolygonPath(customPoints(element, width, height), element.cornerRadius, closed),
         lineJoin: "round",
         lineCap: "round",
         ...paint,
@@ -130,6 +130,12 @@ export function shapeNodeSpec(element: ShapeElement): ShapeNodeSpec {
         strokeWidth: !closed ? Math.max(1, element.strokeWidth) : element.strokeWidth,
         fill: closed ? paint.fill : undefined,
       },
+    };
+  }
+  if (geometry === "polygon" && element.cornerRadius > 0) {
+    return {
+      node: "path",
+      attrs: { data: roundedPolygonPath(polygonPoints(element.shape, width, height) ?? [], element.cornerRadius, true), lineJoin: "round", ...paint },
     };
   }
 

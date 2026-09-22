@@ -2,20 +2,24 @@
 import type { ShapeElement } from "@/model/types";
 import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
 import { ColorPicker } from "../../../ui/ColorPicker";
+import { shapeGeometry } from "@/data/shapes";
 import { NumberField } from "../../../ui/NumberField";
+import { RangeField } from "../../../ui/RangeField";
 import { Toggle } from "../../../ui/Toggle";
-import { CURVE_TENSION } from "@/lib/drawing";
 
 interface ShapeSectionProps {
   element: ShapeElement;
 }
 
-/** Fill, outline, corner radius and, for drawn shapes, curved and closed sides. */
+/** Fill, outline, a rounding slider for anything with corners, and a closed switch for drawn shapes. */
 export function ShapeSection({ element }: ShapeSectionProps) {
   const live = useLiveElementUpdate([element.id]);
   const preview = (patch: Partial<ShapeElement>) => live.preview(patch);
   const update = (patch: Partial<ShapeElement>) => live.commit(patch);
   const strokeOnly = element.shape === "line" || element.shape === "arrow" || (element.shape === "custom" && element.closed === false);
+  const geometry = shapeGeometry(element.shape);
+  const roundable = geometry === "rect" || geometry === "polygon" || geometry === "custom";
+  const maxRadius = Math.max(1, Math.floor(Math.min(element.width, element.height) / 2));
 
   return (
     <section className="stack" style={{ gap: 8 }}>
@@ -29,16 +33,11 @@ export function ShapeSection({ element }: ShapeSectionProps) {
         <NumberField label={strokeOnly ? "Thickness" : "Outline width"} value={element.strokeWidth} min={0} max={200} suffix="px"
           onPreview={(strokeWidth) => preview({ strokeWidth })} onCommit={(strokeWidth) => update({ strokeWidth })} />
       </div>
-      {element.shape === "rectangle" ? (
-        <NumberField label="Corner radius" value={element.cornerRadius} min={0} max={1000} suffix="px"
+      {roundable ? (
+        <RangeField label="Corner rounding" value={element.cornerRadius} min={0} max={maxRadius} suffix=" px"
           onPreview={(cornerRadius) => preview({ cornerRadius })} onCommit={(cornerRadius) => update({ cornerRadius })} />
       ) : null}
-      {element.shape === "custom" ? (
-        <div className="stack" style={{ gap: 8 }}>
-          <Toggle checked={(element.tension ?? 0) > 0} onChange={(curved) => update({ tension: curved ? CURVE_TENSION : 0 })} label="Curved sides" />
-          <Toggle checked={element.closed ?? true} onChange={(closed) => update({ closed })} label="Closed shape" />
-        </div>
-      ) : null}
+      {element.shape === "custom" ? <Toggle checked={element.closed ?? true} onChange={(closed) => update({ closed })} label="Closed shape" /> : null}
     </section>
   );
 }

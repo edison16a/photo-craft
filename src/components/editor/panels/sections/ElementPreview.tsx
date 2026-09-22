@@ -1,6 +1,6 @@
 "use client";
 import { customPoints, linePoints, PATH_BOX, pointsToSvgPath, polygonPoints, shapeGeometry, shapePathData } from "@/data/shapes";
-import { smoothPath } from "@/lib/curves";
+import { roundedPolygonPath } from "@/lib/rounded-path";
 import type { CanvasElement, ShapeElement, ShapeKind } from "@/model/types";
 
 interface ShapePreviewProps {
@@ -8,8 +8,8 @@ interface ShapePreviewProps {
   fill: string;
   stroke: string;
   size?: number;
-  /** The element itself, needed to draw a custom shape's own corners. */
-  element?: Pick<ShapeElement, "points" | "closed" | "tension">;
+  /** The element itself, needed to draw a custom shape's own corners and any rounding. */
+  element?: Pick<ShapeElement, "points" | "closed" | "cornerRadius" | "width" | "height">;
 }
 
 /** Small SVG drawing of a shape, used in the shapes panel and the selection preview. */
@@ -24,10 +24,15 @@ export function ShapePreview({ kind, fill, stroke, size = 48, element }: ShapePr
     if (geometry === "path") {
       return <path d={shapePathData(kind) ?? ""} transform={`scale(${box / PATH_BOX})`} vectorEffect="non-scaling-stroke" {...paint} />;
     }
+    // Rounding is in page pixels, so it shrinks with the drawing.
+    const previewRadius = element ? (element.cornerRadius * box) / Math.max(1, element.width, element.height) : 0;
     if (geometry === "custom") {
       const closed = element?.closed ?? true;
-      const d = smoothPath(customPoints(element ?? {}, box, box), closed, element?.tension ?? 0);
+      const d = roundedPolygonPath(customPoints(element ?? {}, box, box), previewRadius, closed);
       return <path d={d} {...paint} fill={closed ? paint.fill : "none"} stroke={closed ? paint.stroke : lineColor} strokeLinejoin="round" strokeLinecap="round" />;
+    }
+    if (geometry === "polygon" && previewRadius > 0) {
+      return <path d={roundedPolygonPath(polygonPoints(kind, box, box) ?? [], previewRadius, true)} {...paint} strokeLinejoin="round" />;
     }
     switch (kind) {
       case "rectangle":

@@ -86,14 +86,12 @@ export interface ShapeElement extends ElementBase {
   fill: string;
   stroke: string;
   strokeWidth: number;
-  /** Only used by rectangles. */
+  /** Rounding of the corners in pixels. Rectangles, polygons and drawn shapes use it. */
   cornerRadius: number;
   /** Custom shapes only: the corners as fractions of the box, in x, y pairs. */
   points?: number[];
   /** Custom shapes only: whether the outline joins back to its start. */
   closed?: boolean;
-  /** Custom shapes only: 0 for straight sides, up to 1 for the roundest curves. */
-  tension?: number;
 }
 
 /** A bitmap stored as a data URL. */
