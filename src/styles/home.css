@@ -1,5 +1,5 @@
 /*
-  Home page and shared page level layout.
+  Home page, the shared site bar with its two sections, and page level layout.
 */
 
 .centered {
@@ -13,6 +13,20 @@
   padding: 0 24px 64px;
 }
 
+.site-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: var(--topbar-height);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.site-bar--wide {
+  max-width: none;
+}
+
+/* The new project page keeps a plain bar: back link on the left, theme on the right. */
 .home__bar {
   display: flex;
   align-items: center;
@@ -20,6 +34,39 @@
   height: var(--topbar-height);
   max-width: 1100px;
   margin: 0 auto;
+}
+
+.site-bar__end {
+  justify-content: flex-end;
+}
+
+.site-nav {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+}
+
+.site-nav__item {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-nav__item:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-nav__item--active {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
 }
 
 .home__name {

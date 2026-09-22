@@ -3,17 +3,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useProjectList } from "@/hooks/use-project-list";
 import type { ProjectSummary } from "@/model/types";
-import { CubeLogo } from "../logo/CubeLogo";
+import { SiteHeader } from "../site/SiteHeader";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
-import { GitHubMark } from "../ui/GitHubMark";
 import { Icon } from "../ui/Icon";
 import { PromptDialog } from "../ui/PromptDialog";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { ProjectCard } from "./ProjectCard";
 
-const REPO_URL = "https://github.com/edison16a/photo-craft";
-
-/** Home page: the name, your projects and a tile that starts a new one. */
+/** Home page: your projects and a tile that starts a new one. */
 export function HomeScreen() {
   const { projects, loading, error, rename, duplicate, remove } = useProjectList();
   const [renaming, setRenaming] = useState<ProjectSummary | null>(null);
@@ -21,19 +17,7 @@ export function HomeScreen() {
 
   return (
     <main className="page-scroll home">
-      <header className="home__bar">
-        <div className="row" style={{ gap: 10 }}>
-          <CubeLogo size={28} />
-          <span className="home__name">Photo Craft</span>
-        </div>
-        <div className="row">
-          <a className="btn btn--github" href={REPO_URL} target="_blank" rel="noreferrer">
-            <GitHubMark />
-            View on GitHub
-          </a>
-          <ThemeToggle />
-        </div>
-      </header>
+      <SiteHeader />
       <section className="home__projects">
         {error ? <p className="muted">{error}</p> : null}
         <div className="project-grid">
