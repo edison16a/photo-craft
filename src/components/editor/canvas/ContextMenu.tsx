@@ -1,20 +1,12 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRemoveBackground } from "@/hooks/use-remove-background";
 import { positionPopover, type Placement } from "@/lib/popover-position";
-import type { ImageElement } from "@/model/types";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
 import { Icon } from "../../ui/Icon";
 import { elementMenuEntries, pageMenuEntries, type MenuEntry } from "./context-menu-items";
-
-/** Placeholder image so the removal hook can always be called. */
-const NO_IMAGE: ImageElement = {
-  id: "", type: "image", src: "", naturalWidth: 1, naturalHeight: 1, x: 0, y: 0, width: 1, height: 1,
-  rotation: 0, opacity: 1, locked: false, flipX: false, flipY: false,
-};
 
 /**
  * The right click menu. Opens where the pointer is, stays on screen, and
@@ -29,8 +21,6 @@ export function ContextMenu() {
   const [placement, setPlacement] = useState<Placement | null>(null);
 
   const selected = elements.filter((el) => selectedIds.includes(el.id));
-  const image = selected.length === 1 && selected[0].type === "image" ? selected[0] : NO_IMAGE;
-  const removal = useRemoveBackground(image);
 
   useLayoutEffect(() => {
     if (!menu || !ref.current) {
@@ -65,14 +55,7 @@ export function ContextMenu() {
 
   if (!menu || typeof document === "undefined") return null;
 
-  const entries: MenuEntry[] = menu.elementId
-    ? elementMenuEntries({
-        selected,
-        point: menu.point,
-        removeBackgroundAvailable: removal.available && !removal.busy,
-        onRemoveBackground: () => void removal.run(),
-      })
-    : pageMenuEntries(menu.point);
+  const entries: MenuEntry[] = menu.elementId ? elementMenuEntries({ selected, point: menu.point }) : pageMenuEntries(menu.point);
 
   return createPortal(
     <div

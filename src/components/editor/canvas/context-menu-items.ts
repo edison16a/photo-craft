@@ -23,8 +23,6 @@ interface MenuContext {
   selected: CanvasElement[];
   /** Page position of the right click, for actions that place things. */
   point: { x: number; y: number };
-  removeBackgroundAvailable: boolean;
-  onRemoveBackground: () => void;
 }
 
 /** Entries for a right click on empty page area. */
@@ -50,15 +48,6 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
 
   if (single?.type === "text") {
     entries.push({ id: "edit-text", label: "Edit text", icon: "text", run: () => useEditorUiStore.getState().setEditingText(single.id) });
-  }
-  if (single?.type === "image") {
-    entries.push({
-      id: "remove-background",
-      label: "Remove background",
-      icon: "image",
-      disabled: !context.removeBackgroundAvailable,
-      run: context.onRemoveBackground,
-    });
   }
   if (entries.length > 0) entries.push(MENU_DIVIDER);
 
