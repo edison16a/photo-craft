@@ -7,6 +7,8 @@
  * copied freely.
  */
 
+import type { ImageAdjust } from "../lib/image-adjust";
+
 /** Position and size of an element before rotation, in page pixels. */
 export interface ElementBase {
   id: string;
@@ -108,6 +110,10 @@ export interface ImageElement extends ElementBase {
   naturalHeight: number;
   /** The picture before its background was removed, so it can be put back. */
   originalSrc?: string;
+  /** One flat colour painted over every pixel, keeping transparency. */
+  tint?: string;
+  /** Brightness, contrast, saturation and hue changes. */
+  adjust?: ImageAdjust;
 }
 
 /** Anything that can sit on a page. */

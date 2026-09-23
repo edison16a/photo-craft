@@ -3,6 +3,7 @@ import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
 import { ArrangeSection } from "./sections/ArrangeSection";
 import { ElementPreview } from "./sections/ElementPreview";
+import { ImageColorSection } from "./sections/ImageColorSection";
 import { ImageSection } from "./sections/ImageSection";
 import { ShapeSection } from "./sections/ShapeSection";
 import { TextSection } from "./sections/TextSection";
@@ -47,6 +48,7 @@ export function PropertiesPanel() {
       {element.type === "text" ? <TextSection key={`text-${element.id}`} element={element} /> : null}
       {element.type === "shape" ? <ShapeSection key={`shape-${element.id}`} element={element} /> : null}
       {element.type === "image" ? <ImageSection key={`image-${element.id}`} element={element} /> : null}
+      {element.type === "image" ? <ImageColorSection key={`image-colour-${element.id}`} element={element} /> : null}
       <TransformSection key={`transform-${element.id}`} element={element} />
       <ArrangeSection elements={[element]} />
     </div>

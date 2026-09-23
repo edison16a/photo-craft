@@ -1,4 +1,5 @@
 "use client";
+import { isDefaultAdjust, type ImageAdjust } from "@/lib/image-adjust";
 import { customPoints, linePoints, PATH_BOX, pointsToSvgPath, polygonPoints, shapeGeometry, shapePathData } from "@/data/shapes";
 import { roundedPolygonPath } from "@/lib/rounded-path";
 import type { CanvasElement, ShapeElement, ShapeKind } from "@/model/types";
@@ -66,14 +67,23 @@ interface ElementPreviewProps {
   element: CanvasElement;
 }
 
+/** The browser's own filters, close enough to the canvas maths for a thumbnail. */
+function previewFilter(adjust: ImageAdjust | undefined): string | undefined {
+  if (!adjust || isDefaultAdjust(adjust)) return undefined;
+  return `hue-rotate(${adjust.hue}deg) saturate(${adjust.saturation}%) brightness(${1 + adjust.brightness / 100}) contrast(${1 + adjust.contrast / 100})`;
+}
+
 /** Preview box at the top of the selection panel. */
 export function ElementPreview({ element }: ElementPreviewProps) {
   const flip = `scale(${element.flipX ? -1 : 1}, ${element.flipY ? -1 : 1})`;
   return (
     <div className="element-preview">
-      {element.type === "image" ? (
+      {element.type === "image" && element.tint ? (
+        <div className="element-preview__tint" style={{ transform: flip, backgroundColor: element.tint, maskImage: `url(${element.src})`, WebkitMaskImage: `url(${element.src})` }} />
+      ) : null}
+      {element.type === "image" && !element.tint ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={element.src} alt="" style={{ transform: flip }} />
+        <img src={element.src} alt="" style={{ transform: flip, filter: previewFilter(element.adjust) }} />
       ) : null}
       {element.type === "shape" ? (
         <div style={{ transform: flip }}>

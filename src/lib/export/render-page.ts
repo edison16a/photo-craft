@@ -10,6 +10,7 @@ import type { CanvasElement, Page, Project } from "../../model/types";
 import { ensureFontsLoaded } from "../font-loader";
 import { getCachedImage } from "../image-cache";
 import { flipAttrs, groupAttrs, imageAttrs, shapeNodeSpec, textAttrs } from "../konva/element-attrs";
+import { filteredImage } from "../konva/filtered-image";
 
 /** Size and background choices for one render. */
 export interface RenderPageOptions {
@@ -64,7 +65,7 @@ function buildElementNode(
     inner.add(new K.Text(textAttrs(element)));
   } else if (element.type === "image") {
     const image = images.get(element.src);
-    if (image) inner.add(new K.Image({ image, ...imageAttrs(element) }));
+    if (image) inner.add(new K.Image({ image: filteredImage(image, element), ...imageAttrs(element) }));
   } else {
     const spec = shapeNodeSpec(element);
     if (spec.node === "rect") inner.add(new K.Rect(spec.attrs));

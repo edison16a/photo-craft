@@ -58,6 +58,18 @@
   object-fit: contain;
 }
 
+/* A photo painted one colour: the picture's shape as a mask over the colour. */
+.element-preview__tint {
+  width: 72px;
+  height: 72px;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
 .element-preview__text {
   padding: 6px;
   font-size: 13px;
