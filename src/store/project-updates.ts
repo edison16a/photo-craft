@@ -63,8 +63,25 @@ export function withElements(
 export function patchElement(element: CanvasElement, patch: Partial<CanvasElement>): CanvasElement {
   const record = element as unknown as Record<string, unknown>;
   const entries = Object.entries(patch);
-  if (entries.every(([key, value]) => record[key] === value)) return element;
+  if (entries.every(([key, value]) => sameValue(record[key], value))) return element;
   return { ...element, ...patch } as CanvasElement;
+}
+
+/**
+ * Equality for element fields: identity for most, key by key for a plain
+ * object such as a colour adjustment, so a fresh copy with the same values
+ * does not count as a change and does not leave an empty undo step.
+ */
+export function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!isPlainObject(a) || !isPlainObject(b)) return false;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  return keysA.length === keysB.length && keysA.every((key) => key in b && a[key] === b[key]);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /** Appends elements to the top of a page's stacking order. */

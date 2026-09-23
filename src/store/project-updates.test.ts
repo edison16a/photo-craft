@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createShapeElement } from "../model/element-factories";
+import { createImageElement, createShapeElement } from "../model/element-factories";
 import { createProject } from "../model/project-factories";
 import {
   addElementsToPage,
   movePage,
+  patchElement,
   removeElementsFromPage,
   reorderElements,
+  sameValue,
   withElements,
 } from "./project-updates";
 
@@ -54,5 +56,15 @@ describe("project updates", () => {
     const two = { ...project, pages: [project.pages[0], { ...project.pages[0], id: "p2", name: "Page 2" }] };
     expect(movePage(two, "p2", -1).pages[0].id).toBe("p2");
     expect(movePage(two, "p2", 1)).toBe(two);
+  });
+
+  it("treats a fresh copy of an object field with the same values as no change", () => {
+    const image = createImageElement("data:image/png;base64,AAAA", 10, 10, { adjust: { brightness: 0, contrast: 0, saturation: 50, hue: 0 } });
+    expect(patchElement(image, { adjust: { brightness: 0, contrast: 0, saturation: 50, hue: 0 } })).toBe(image);
+    expect(patchElement(image, { adjust: { brightness: 1, contrast: 0, saturation: 50, hue: 0 } })).not.toBe(image);
+    expect(patchElement(image, { adjust: undefined })).not.toBe(image);
+    expect(sameValue(undefined, undefined)).toBe(true);
+    expect(sameValue({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(sameValue([1], [1])).toBe(false);
   });
 });
