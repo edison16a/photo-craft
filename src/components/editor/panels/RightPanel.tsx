@@ -21,7 +21,9 @@ const TITLES: Record<PanelKind, string> = {
 /**
  * The panel on the right. Selecting something shows its properties.
  * Picking a tool shows that tool's panel. With nothing selected and the
- * pointer tool active it shows the page settings.
+ * pointer tool active it shows the page settings. There is no heading:
+ * the contents say what they are, and the select tool or Escape leaves
+ * a tool's panel.
  */
 export function RightPanel() {
   const panel = useEditorUiStore((s) => s.panel);
@@ -38,23 +40,8 @@ export function RightPanel() {
   const pointerWithSelection = hasSelection && tool === "select" && (panel === "page" || panel === "properties");
   const shown: PanelKind = pointerWithSelection ? "properties" : panel === "properties" && !hasSelection ? "page" : panel;
 
-  /** Done returns to the pointer tool and the panel that fits the selection. */
-  const done = () => {
-    const ui = useEditorUiStore.getState();
-    ui.setTool("select");
-    ui.openPanel(hasSelection ? "properties" : "page");
-  };
-
   return (
     <aside className="panel" aria-label={TITLES[shown]}>
-      <div className="panel__header">
-        <h2 className="panel__title">{TITLES[shown]}</h2>
-        {shown !== "page" && shown !== "properties" ? (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={done}>
-            Done
-          </button>
-        ) : null}
-      </div>
       <div className="panel__body">
         {shown === "properties" ? <PropertiesPanel /> : null}
         {shown === "page" ? <PagePanel /> : null}

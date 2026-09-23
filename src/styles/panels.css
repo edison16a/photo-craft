@@ -11,20 +11,6 @@
   background: var(--bg);
 }
 
-.panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 44px;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.panel__title {
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .panel__body {
   flex: 1;
   min-height: 0;
