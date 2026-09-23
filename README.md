@@ -81,7 +81,3 @@ Next.js 15 with the App Router. Four routes: `/` (your projects), `/remove-bg` (
 - `src/components`: UI. `editor/canvas` is the Konva stage with the quick toolbar and the context menu, `editor/panels` the side panel, `remove-bg` the batch cutout page and `site` the bar with the two sections.
 
 Every file stays small and does one thing. The export renderer and the live canvas share the same attribute builders in `src/lib/konva/element-attrs.ts`, so what you see is what you export.
-
-## Licence
-
-MIT.
