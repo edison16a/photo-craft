@@ -58,13 +58,18 @@ describe("project updates", () => {
     expect(movePage(two, "p2", 1)).toBe(two);
   });
 
-  it("treats a fresh copy of an object field with the same values as no change", () => {
-    const image = createImageElement("data:image/png;base64,AAAA", 10, 10, { adjust: { brightness: 0, contrast: 0, saturation: 50, hue: 0 } });
-    expect(patchElement(image, { adjust: { brightness: 0, contrast: 0, saturation: 50, hue: 0 } })).toBe(image);
-    expect(patchElement(image, { adjust: { brightness: 1, contrast: 0, saturation: 50, hue: 0 } })).not.toBe(image);
-    expect(patchElement(image, { adjust: undefined })).not.toBe(image);
+  it("leaves an element alone when the patch changes nothing", () => {
+    const image = createImageElement("data:image/png;base64,AAAA", 10, 10, { tint: "#ff0000" });
+    expect(patchElement(image, { tint: "#ff0000" })).toBe(image);
+    expect(patchElement(image, { tint: "#00ff00" })).not.toBe(image);
+    expect(patchElement(image, { tint: undefined })).not.toBe(image);
+  });
+
+  it("compares plain object fields by value", () => {
     expect(sameValue(undefined, undefined)).toBe(true);
+    expect(sameValue({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
     expect(sameValue({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(sameValue({ a: 1 }, { a: 2 })).toBe(false);
     expect(sameValue([1], [1])).toBe(false);
   });
 });

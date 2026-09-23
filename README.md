@@ -14,7 +14,7 @@ I built it because I was tired of using Canva and being limited on features that
 
 - Text, images and thirty shapes on as many pages as you like, with undo and redo.
 - A draw tool for shapes of your own: click corners or drag along a grid, so every side comes out straight and lined up. Drawing back to the start closes the shape, smooth corners rounds it as you go, and a slider rounds the corners of drawn shapes, polygons and rectangles.
-- Colour for photos: paint one flat colour over a picture, or shift its brightness, contrast, saturation and hue with sliders.
+- Colour for photos: paint one flat colour over a picture, keeping its transparency.
 - More than 250 fonts, a colour picker with the colours your project already uses at the top, and a floating toolbar next to whatever you select.
 - Resize, rotate, flip, lock, align and reorder. Images and drawn shapes keep their proportions unless you switch that off. Alignment guides snap to the page and to other items.
 - Export at any size as PNG, JPG, WebP or PDF, with a transparent background where the format allows it.
