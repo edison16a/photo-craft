@@ -24,8 +24,6 @@ I built it because I was tired of using Canva and being limited on features that
 
 Use it at [photo-craft.vercel.app](https://photo-craft.vercel.app).
 
-The live site builds from the `main` branch on Vercel. If it ever shows an older version than `main`, open the project on Vercel and redeploy the latest commit.
-
 ## Run it yourself
 
 ```bash
