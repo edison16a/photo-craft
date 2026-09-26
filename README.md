@@ -4,6 +4,8 @@ A simple, open source photo editor with everything you need for basic photo edit
 
 I built it because I was tired of using Canva and being limited on features that cost them nothing to run, like removing a background or exporting a PNG with a transparent background. Photo Craft does both for free, in your browser, with your projects saved on your own machine.
 
+It is also perfect for making high quality, modern logos. The logo for my personal site, edisonlaw, and the Standoff logo were each made in Photo Craft in less than 30 seconds.
+
 ## Screenshots
 
 <img width="1510" height="857" alt="image" src="https://github.com/user-attachments/assets/60f2e79a-4dc0-4473-b224-f3ee90faec28" />
