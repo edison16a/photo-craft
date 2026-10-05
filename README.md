@@ -1,16 +1,42 @@
-# Photo Craft
+<p align="center">
+  <img src="assets/brand/logo.svg" width="72" alt="Photo Craft logo">
+</p>
+
+<h1 align="center">Photo Craft</h1>
+
+<p align="center">
+  A free photo editor that runs in your browser, with one click background removal and transparent exports.<br>
+  <a href="https://photo-craft.vercel.app">photo-craft.vercel.app</a>
+</p>
+
+<p align="center">
+  <img alt="License" src="https://img.shields.io/github/license/edison16a/photo-craft?color=4da3ff">
+  <img alt="Node 18.18 or later" src="https://img.shields.io/badge/node-%3E%3D18.18-4da3ff?logo=nodedotjs&logoColor=white">
+  <img alt="Runs in Chrome, Edge, Firefox and Safari" src="https://img.shields.io/badge/platforms-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Safari-4da3ff">
+</p>
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/editor.png" width="100%" alt="The editor with a cutout photo selected">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/home.png" width="100%" alt="Your projects on the home page"></td>
+    <td width="50%"><img src="docs/screenshots/draw.png" width="100%" alt="Drawing a logo along the grid with smooth corners"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/remove-bg-landing.png" width="100%" alt="The Background Remover with its before and after sample"></td>
+    <td width="50%"><img src="docs/screenshots/remove-bg.png" width="100%" alt="Three pictures cut out at once, one compared with its original"></td>
+  </tr>
+</table>
 
 A simple, open source photo editor with everything you need for basic photo editing. Free transparent background exports, free background removal, and none of the fluff.
 
 I built it because I was tired of using Canva and being limited on features that cost them nothing to run, like removing a background or exporting a PNG with a transparent background. Photo Craft does both for free, in your browser, with your projects saved on your own machine.
 
 It is also perfect for making high quality, modern logos. The logo for my personal site, edisonlaw, and the Standoff logo were each made in Photo Craft in less than 30 seconds.
-
-## Screenshots
-
-<img width="1510" height="857" alt="image" src="https://github.com/user-attachments/assets/60f2e79a-4dc0-4473-b224-f3ee90faec28" />
-
-<img width="1512" height="858" alt="image" src="https://github.com/user-attachments/assets/3432091e-355f-48f5-935c-901eea392618" />
 
 ## What you get
 
