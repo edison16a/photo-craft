@@ -12,16 +12,16 @@ export const DEFAULT_TOLERANCE = 25;
 export const DEFAULT_SOFTNESS = 10;
 
 /** How much a difference in brightness counts next to a difference in hue. */
-const LUMA_WEIGHT = 0.35;
+const LUMA_WEIGHT = 0.5;
 /** Distance per point of tolerance or softness, on the 0 to 255 colour scale. */
-const STEP = 2;
+const STEP = 0.8;
 /** At tolerance 0 a pixel this close still counts as the same colour. */
 const NEAR = 2;
 
 /**
  * How far apart two colours look for keying, on the 0 to 255 scale.
  * Differences in hue count in full and differences in brightness at
- * about a third.
+ * half.
  */
 export function keyDistance(a: [number, number, number], b: [number, number, number]): number {
   return Math.sqrt(squaredDistance(a[0] - b[0], a[1] - b[1], a[2] - b[2]));

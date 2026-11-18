@@ -28,7 +28,7 @@ describe("chroma key", () => {
   });
 
   it("removes lighter and darker shades of the key at the default tolerance", () => {
-    expect(keyedAlphas(GREEN, [10, 150, 55, 255], [40, 210, 90, 255])).toEqual([0, 0]);
+    expect(keyedAlphas(GREEN, [8, 160, 58, 255], [25, 195, 75, 255])).toEqual([0, 0]);
   });
 
   it("fades pixels across the softness", () => {
@@ -56,7 +56,7 @@ describe("chroma key", () => {
 
   it("never raises existing transparency", () => {
     const key = { ...GREEN, tolerance: 10, softness: 30 };
-    const [far, half, clear] = keyedAlphas(key, [220, 30, 30, 128], [60, 177, 64, 128], [0, 177, 64, 0]);
+    const [far, half, clear] = keyedAlphas(key, [220, 30, 30, 128], [40, 177, 64, 128], [0, 177, 64, 0]);
     expect(far).toBe(128);
     expect(half).toBeGreaterThan(0);
     expect(half).toBeLessThan(128);
