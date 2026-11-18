@@ -1,3 +1,7 @@
+/**
+ * Pick mode with the real stores. jsdom cannot decode or read pictures,
+ * so the image cache and the pixel sampler stand in.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_SOFTNESS, DEFAULT_TOLERANCE } from "../lib/chroma-key";
 import { sampleImageAt } from "../lib/pixel-sample";
@@ -8,7 +12,6 @@ import { applyPickedColor, pickColorAt, toggleColorPick, watchPickTarget } from 
 import { useEditorUiStore } from "./editor-ui-store";
 import { useProjectStore } from "./project-store";
 
-// jsdom cannot decode or read pictures, so the cache and the sampler stand in.
 vi.mock("../lib/image-cache", () => ({ peekCachedImage: () => new Image(), getCachedImage: vi.fn() }));
 vi.mock("../lib/pixel-sample", () => ({ sampleImageAt: vi.fn() }));
 

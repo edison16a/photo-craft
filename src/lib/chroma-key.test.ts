@@ -1,3 +1,7 @@
+/**
+ * The chroma key maths on hand made pixels: what goes, what stays and
+ * what fades.
+ */
 import { describe, expect, it } from "vitest";
 import type { ChromaKey } from "../model/types";
 import { chromaKeyPixels, DEFAULT_SOFTNESS, DEFAULT_TOLERANCE, keepFactor, keyDistance, keyId, keyRange, pickedKey } from "./chroma-key";

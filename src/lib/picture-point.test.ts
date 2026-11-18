@@ -1,3 +1,7 @@
+/**
+ * Mapping page points to picture pixels, checked against the way Konva
+ * places a picture.
+ */
 import { describe, expect, it } from "vitest";
 import { pagePointToPicturePixel, type PictureBox } from "./picture-point";
 
