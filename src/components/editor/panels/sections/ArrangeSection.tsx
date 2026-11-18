@@ -1,4 +1,5 @@
 "use client";
+import { splitIntoUnits } from "@/lib/groups";
 import type { CanvasElement } from "@/model/types";
 import type { Alignment } from "@/store/alignment";
 import { useProjectStore } from "@/store/project-store";
@@ -24,7 +25,8 @@ export function ArrangeSection({ elements }: ArrangeSectionProps) {
   const store = useProjectStore.getState;
   const allLocked = elements.every((el) => el.locked);
   const anyLocked = elements.some((el) => el.locked);
-  const single = elements.length === 1;
+  // One unit, an element or a whole group, aligns to the page.
+  const single = splitIntoUnits(elements).length === 1;
 
   return (
     <section className="stack" style={{ gap: 8 }}>
@@ -35,7 +37,7 @@ export function ArrangeSection({ elements }: ArrangeSectionProps) {
         <IconButton icon="flipH" label="Flip horizontally" onClick={() => store().flip(ids, "x")} />
         <IconButton icon="flipV" label="Flip vertically" onClick={() => store().flip(ids, "y")} />
         <IconButton icon="rotate" label="Rotate 90 degrees" disabled={anyLocked}
-          onClick={() => store().patchElements(Object.fromEntries(elements.map((el) => [el.id, { rotation: (el.rotation + 90) % 360 }])))} />
+          onClick={() => store().rotateQuarter(ids)} />
         <span className="small muted" style={{ marginLeft: 4 }}>{allLocked ? "Locked" : ""}</span>
       </div>
       <span className="small muted">Layer order</span>

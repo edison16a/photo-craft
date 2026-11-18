@@ -58,6 +58,8 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
       if (mod && key === "y") return stop(event, store.redo);
       if (mod && key === "s") return stop(event, handlers.save);
       if (mod && key === "a") return stop(event, store.selectAll);
+      if (mod && key === "g" && event.shiftKey) return stop(event, () => store.ungroupElements(ids));
+      if (mod && key === "g") return stop(event, () => store.groupElements(ids));
       if (mod && key === "d") return stop(event, () => store.duplicateElements(ids));
       if (mod && key === "c") return ids.length > 0 ? stop(event, () => store.copy(ids)) : undefined;
       // Ctrl+V is left to the browser so the paste event fires. use-canvas-drop

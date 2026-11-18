@@ -44,6 +44,8 @@ export const ICON_PATHS = {
   textCenter: "M4 6h16M7 12h10M5 18h14",
   textRight: "M4 6h16M10 12h10M6 18h14",
   rotate: "M20 12a8 8 0 11-2.3-5.7M20 4v4h-4",
+  group: "M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4M7 7h6v6H7zM11 11h6v6h-6z",
+  ungroup: "M3 3h8v8H3zM13 13h8v8h-8z",
   chevronDown: "M6 9l6 6 6-6",
   chevronLeft: "M15 6l-6 6 6 6",
   chevronRight: "M9 6l6 6-6 6",

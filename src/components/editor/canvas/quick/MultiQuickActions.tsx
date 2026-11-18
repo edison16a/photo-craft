@@ -1,4 +1,5 @@
 "use client";
+import { groupAction } from "@/lib/groups";
 import type { CanvasElement } from "@/model/types";
 import type { Alignment } from "@/store/alignment";
 import { useProjectStore } from "@/store/project-store";
@@ -18,14 +19,22 @@ const ALIGNMENTS: { id: Alignment; icon: IconName; label: string }[] = [
   { id: "bottom", icon: "alignBottom", label: "Align bottom" },
 ];
 
-/** Alignment buttons for several selected elements. */
+/** Group or ungroup, and alignment buttons, for several selected elements. */
 export function MultiQuickActions({ elements }: MultiQuickActionsProps) {
   const ids = elements.map((el) => el.id);
+  const action = groupAction(elements);
+  const store = useProjectStore.getState;
   return (
     <>
-      <span className="small muted" style={{ padding: "0 4px" }}>{elements.length} items</span>
+      <span className="small muted" style={{ padding: "0 4px" }}>
+        {action === "ungroup" ? "Group" : `${elements.length} items`}
+      </span>
+      {action === "group" ? <IconButton icon="group" label="Group (Ctrl+G)" onClick={() => store().groupElements(ids)} /> : null}
+      {action === "ungroup" ? (
+        <IconButton icon="ungroup" label="Ungroup (Ctrl+Shift+G)" onClick={() => store().ungroupElements(ids)} />
+      ) : null}
       {ALIGNMENTS.map((item) => (
-        <IconButton key={item.id} icon={item.icon} label={item.label} onClick={() => useProjectStore.getState().align(ids, item.id)} />
+        <IconButton key={item.id} icon={item.icon} label={item.label} onClick={() => store().align(ids, item.id)} />
       ))}
       <span className="quick-toolbar__divider" />
     </>

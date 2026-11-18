@@ -3,6 +3,7 @@ import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
 import { ArrangeSection } from "./sections/ArrangeSection";
 import { ElementPreview } from "./sections/ElementPreview";
+import { GroupHeader } from "./sections/GroupHeader";
 import { ImageColorSection } from "./sections/ImageColorSection";
 import { ImageSection } from "./sections/ImageSection";
 import { ShapeSection } from "./sections/ShapeSection";
@@ -26,7 +27,7 @@ export function PropertiesPanel() {
   if (selected.length > 1) {
     return (
       <div className="stack" style={{ gap: 18 }}>
-        <p className="muted">{selected.length} items selected. Drag any of them to move them all.</p>
+        <GroupHeader elements={selected} />
         <ArrangeSection elements={selected} />
       </div>
     );

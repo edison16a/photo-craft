@@ -66,6 +66,17 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
   }
   if (entries.length > 0) entries.push(MENU_DIVIDER);
 
+  // A unit is a group or an element on its own, see lib/groups.
+  const unitCount = new Set(selected.map((el) => el.groupId ?? el.id)).size;
+  const groupEntries: MenuEntry[] = [];
+  if (unitCount >= 2) {
+    groupEntries.push({ id: "group", label: "Group", icon: "group", shortcut: "Ctrl+G", run: () => store().groupElements(ids) });
+  }
+  if (selected.some((el) => el.groupId !== undefined)) {
+    groupEntries.push({ id: "ungroup", label: "Ungroup", icon: "ungroup", shortcut: "Ctrl+Shift+G", run: () => store().ungroupElements(ids) });
+  }
+  if (groupEntries.length > 0) groupEntries.push(MENU_DIVIDER);
+
   entries.push(
     { id: "flip-h", label: "Flip horizontally", icon: "flipH", run: () => store().flip(ids, "x") },
     { id: "flip-v", label: "Flip vertically", icon: "flipV", run: () => store().flip(ids, "y") },
@@ -74,7 +85,7 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
       label: "Rotate 90 degrees",
       icon: "rotate",
       disabled: allLocked,
-      run: () => store().patchElements(Object.fromEntries(selected.map((el) => [el.id, { rotation: (el.rotation + 90) % 360 }]))),
+      run: () => store().rotateQuarter(ids),
     },
     MENU_DIVIDER,
     { id: "front", label: "Bring to front", icon: "toFront", run: () => store().reorder(ids, "front") },
@@ -82,6 +93,7 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
     { id: "backward", label: "Send backward", icon: "backward", run: () => store().reorder(ids, "backward") },
     { id: "back", label: "Send to back", icon: "toBack", run: () => store().reorder(ids, "back") },
     MENU_DIVIDER,
+    ...groupEntries,
     { id: "lock", label: allLocked ? "Unlock" : "Lock", icon: allLocked ? "unlock" : "lock", run: () => store().setLocked(ids, !allLocked) },
     { id: "copy", label: "Copy", icon: "duplicate", shortcut: "Ctrl+C", run: () => store().copy(ids) },
     { id: "duplicate", label: "Duplicate", icon: "duplicate", shortcut: "Ctrl+D", run: () => store().duplicateElements(ids) },
