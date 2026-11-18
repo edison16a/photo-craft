@@ -16,11 +16,10 @@ import type { CanvasElement, Point } from "../model/types";
 import { useEditorUiStore } from "./editor-ui-store";
 import { useProjectStore } from "./project-store";
 import { selectCurrentElements } from "./selectors";
+import { forgetStep, rememberStep, selectedBeneath } from "./stepped-selection";
 
 /** Konva's double click window, the default of Konva.dblClickWindow. */
 export const DOUBLE_CLICK_MS = 400;
-/** How far in screen pixels a click may land from the last step and still count as the same spot. */
-export const SAME_SPOT_PX = 8;
 
 /** What the canvas knows about a press or a click. */
 export interface PointerInput {
@@ -50,8 +49,6 @@ interface Press {
 let press: Press | null = null;
 let lastClick: { id: string; time: number } | null = null;
 let pendingStep: ReturnType<typeof setTimeout> | null = null;
-/** Where the last step landed and what it selected. */
-let lastStep: { point: Point; ids: string[] } | null = null;
 
 /** True for elements whose double click does something: unlocked text, and any grouped element. */
 export function hasDoubleClickAction(element: CanvasElement): boolean {
@@ -104,7 +101,7 @@ export function clickElement(input: PointerInput): void {
     const next = nextUnitUnder(selectCurrentElements(latest), actsOn.id, under);
     if (!next) return;
     latest.setSelection(next);
-    lastStep = { point: input.point, ids: next };
+    rememberStep(input.point, useProjectStore.getState().selectedIds);
   };
   const clicked = elements.find((element) => element.id === input.id);
   if (clicked && hasDoubleClickAction(clicked)) pendingStep = setTimeout(step, DOUBLE_CLICK_MS);
@@ -153,27 +150,7 @@ export function resetElementClicks(): void {
   cancelPendingStep();
   press = null;
   lastClick = null;
-  lastStep = null;
-}
-
-/**
- * The selected element a press counts for when it hits an unselected
- * element on top: only when the press lands on the spot of the last step,
- * the selection is still what that step chose, and a selected element is
- * drawn under the pointer. The topmost such element wins.
- */
-function selectedBeneath(
-  elements: readonly CanvasElement[],
-  selectedIds: readonly string[],
-  input: Pick<PointerInput, "id" | "point" | "under">,
-): string | undefined {
-  if (!lastStep || selectedIds.includes(input.id)) return undefined;
-  const sameSelection = lastStep.ids.length === selectedIds.length && lastStep.ids.every((id) => selectedIds.includes(id));
-  const zoom = useEditorUiStore.getState().zoom;
-  const distance = Math.hypot(input.point.x - lastStep.point.x, input.point.y - lastStep.point.y) * zoom;
-  if (!sameSelection || distance > SAME_SPOT_PX) return undefined;
-  const under = input.under();
-  return elements.findLast((element) => selectedIds.includes(element.id) && under.includes(element.id))?.id;
+  forgetStep();
 }
 
 function cancelPendingStep(): void {

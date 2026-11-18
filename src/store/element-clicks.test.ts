@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createShapeElement, createTextElement } from "../model/element-factories";
-import { createProject } from "../model/project-factories";
+import { click, input, load, rect, store } from "./click-test-kit";
 import { useEditorUiStore } from "./editor-ui-store";
 import {
   clickElement,
@@ -10,34 +10,7 @@ import {
   pressKeepsSelection,
   resetElementClicks,
   selectForMenu,
-  type PointerInput,
 } from "./element-clicks";
-import { useProjectStore } from "./project-store";
-
-const store = () => useProjectStore.getState();
-const at = { x: 50, y: 50 };
-
-/** Every element on the page, all drawn under the point unless a test says otherwise. */
-const everything = () => store().project?.pages[0].elements.map((element) => element.id) ?? [];
-
-/** A pointer event on an element, as the canvas reports it. */
-function input(id: string, extra: Partial<PointerInput> = {}): PointerInput {
-  return { id, point: at, under: everything, button: 0, shift: false, mod: false, ...extra };
-}
-
-/** A press and release on one element, as Konva reports it, then a pause long enough to not be a double click. */
-function click(id: string, extra: Partial<PointerInput> = {}) {
-  pressElement(input(id, extra));
-  clickElement(input(id, extra));
-  vi.advanceTimersByTime(DOUBLE_CLICK_MS + 1);
-}
-
-function load(elements: ReturnType<typeof createShapeElement | typeof createTextElement>[]) {
-  store().loadProject(createProject("Test", 800, 600));
-  store().addElements(elements, false);
-}
-
-const rect = (id: string, extra = {}) => createShapeElement("rectangle", { id, width: 100, height: 100, ...extra });
 
 describe("element clicks", () => {
   beforeEach(() => {
