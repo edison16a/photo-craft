@@ -1,7 +1,8 @@
 "use client";
 /**
  * Saves quietly a moment after the last change while autosave is on, and
- * warns before the tab closes when there are unsaved changes.
+ * warns before the tab closes when there are unsaved changes. While a
+ * slider or field is previewing a change, the save waits for it to end.
  */
 import { useEffect } from "react";
 import { useProjectStore } from "../store/project-store";
@@ -19,7 +20,10 @@ export function useAutosave(enabled: boolean, save: (quiet?: boolean) => Promise
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         timer = null;
-        if (!useProjectStore.getState().dirty) return;
+        const { dirty, previewBase } = useProjectStore.getState();
+        if (!dirty) return;
+        // A slider or field is still previewing. Wait for its final value.
+        if (previewBase) return schedule();
         void save(true).then(() => {
           // Edits made while the save was running are still unsaved. Go again.
           if (useProjectStore.getState().dirty && !timer) schedule();

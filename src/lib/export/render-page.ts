@@ -18,6 +18,8 @@ export interface RenderPageOptions {
   pixelRatio: number;
   /** Skip the background so the output keeps transparency. */
   transparent: boolean;
+  /** Keyed or coloured pictures may use their quicker, smaller copy, which is plenty for a thumbnail. */
+  draft?: boolean;
 }
 
 type KonvaModule = typeof Konva;
@@ -56,6 +58,7 @@ function buildElementNode(
   K: KonvaModule,
   element: CanvasElement,
   images: Map<string, HTMLImageElement>,
+  draft: boolean,
 ): Konva.Group {
   const outer = new K.Group(groupAttrs(element));
   const inner = new K.Group(flipAttrs(element));
@@ -65,7 +68,7 @@ function buildElementNode(
     inner.add(new K.Text(textAttrs(element)));
   } else if (element.type === "image") {
     const image = images.get(element.src);
-    if (image) inner.add(new K.Image({ image: filteredImage(image, element), ...imageAttrs(element) }));
+    if (image) inner.add(new K.Image({ image: filteredImage(image, element, { draft }), ...imageAttrs(element) }));
   } else {
     const spec = shapeNodeSpec(element);
     if (spec.node === "rect") inner.add(new K.Rect(spec.attrs));
@@ -98,7 +101,7 @@ export async function renderPageToCanvas(
     layer.add(new K.Rect({ x: 0, y: 0, width: project.width, height: project.height, fill }));
   }
   for (const element of page.elements) {
-    layer.add(buildElementNode(K, element, images));
+    layer.add(buildElementNode(K, element, images, options.draft === true));
   }
 
   try {
