@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTextElement } from "../model/element-factories";
 import { click, doubleClick, input, load, rect, store } from "./click-test-kit";
 import { useEditorUiStore } from "./editor-ui-store";
-import { clickElement, DOUBLE_CLICK_MS, pressElement, resetElementClicks } from "./element-clicks";
+import { clickElement, doubleClickElement, DOUBLE_CLICK_MS, pressElement, resetElementClicks } from "./element-clicks";
 
 const editing = () => useEditorUiStore.getState().editingTextId;
 const text = (id: string) => createTextElement({ id, width: 100 });
@@ -90,5 +90,27 @@ describe("element double clicks", () => {
     expect(store().selectedIds).toEqual(["g1", "g2"]);
     doubleClick("box");
     expect(store().selectedIds).toEqual(["g2"]);
+  });
+
+  it("ignores the double click Konva reports after a drag on a locked element", () => {
+    load([rect("g1"), rect("g2", { locked: true })]);
+    store().groupElements(["g1", "g2"]);
+    store().clearSelection();
+    pressElement(input("g2"));
+    clickElement(input("g2"));
+    pressElement(input("g2"));
+    clickElement(input("g2", { point: { x: 90, y: 90 } }));
+    doubleClickElement("g2");
+    expect(store().selectedIds).toEqual(["g1", "g2"]);
+  });
+
+  it("ignores the double click Konva reports after a right click", () => {
+    load([text("text")]);
+    pressElement(input("text", { button: 2 }));
+    clickElement(input("text", { button: 2 }));
+    pressElement(input("text"));
+    clickElement(input("text"));
+    doubleClickElement("text");
+    expect(editing()).toBeNull();
   });
 });

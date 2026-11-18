@@ -20,6 +20,12 @@ import { forgetStep, rememberStep, selectedBeneath } from "./stepped-selection";
 
 /** Konva's double click window, the default of Konva.dblClickWindow. */
 export const DOUBLE_CLICK_MS = 400;
+/**
+ * Konva's drag distance in screen pixels. A release this far from its
+ * press is a drag, not a click, even on a locked element Konva will not
+ * drag.
+ */
+export const DRAG_DISTANCE_PX = 3;
 
 /** What the canvas knows about a press or a click. */
 export interface PointerInput {
@@ -40,17 +46,19 @@ interface Press {
   id: string;
   /** The element the press counts for: the one hit, or a selected one beneath it. */
   actsOn: string;
+  point: Point;
   /** A plain press on something that was already selected, so a click may narrow or step. */
   wasSelected: boolean;
   /** The press landed on another element over the selection, which it keeps. */
   keepsSelection: boolean;
 }
 
-/** The last click: the element hit, the one it counted for, and when. */
+/** The last click: the element hit, the one it counted for, when, and whether it was the second of a double click. */
 interface Click {
   id: string;
   actsOn: string;
   time: number;
+  second: boolean;
 }
 
 let press: Press | null = null;
@@ -74,18 +82,23 @@ export function pressElement(input: PointerInput): void {
   else if (input.shift) store.setSelection(toggleUnitSelection(elements, store.selectedIds, input.id));
   else if (input.mod) store.setSelection([input.id]);
   else if (!wasSelected) store.setSelection(expandToGroups(elements, [input.id]));
-  press = { id: input.id, actsOn: beneath ?? input.id, wasSelected, keepsSelection: beneath !== undefined };
+  const actsOn = beneath ?? input.id;
+  press = { id: input.id, actsOn, point: input.point, wasSelected, keepsSelection: beneath !== undefined };
 }
 
-/** Handles a click, a press and release without a drag. */
+/** Handles a click Konva reports. One that moved as far as a drag is ignored and ends any double click. */
 export function clickElement(input: PointerInput): void {
   const current = press;
   press = null;
   if (input.button !== 0 || !current || current.id !== input.id) return;
+  if (movedFar(current.point, input.point)) {
+    lastClick = null;
+    return;
+  }
   const now = Date.now();
-  const repeat = lastClick !== null && lastClick.id === input.id && now - lastClick.time < DOUBLE_CLICK_MS;
-  lastClick = { id: input.id, actsOn: current.actsOn, time: now };
-  if (repeat || !current.wasSelected) return;
+  const second = lastClick !== null && lastClick.id === input.id && now - lastClick.time < DOUBLE_CLICK_MS;
+  lastClick = { id: input.id, actsOn: current.actsOn, time: now, second };
+  if (second || !current.wasSelected) return;
 
   const store = useProjectStore.getState();
   const elements = selectCurrentElements(store);
@@ -115,14 +128,17 @@ export function clickElement(input: PointerInput): void {
 }
 
 /**
- * Handles a double click on the element Konva hit. It acts on the element
- * the clicks counted for, which is a stepped selection beneath the hit one
+ * Handles a double click on the element Konva hit. Konva also reports one
+ * after a right click or a drag it did not see, so it only counts when the
+ * click before it was a second click here. It acts on the element the
+ * clicks counted for, which is a stepped selection beneath the hit one
  * when there is one. Text opens for editing, a grouped element is picked
  * out of its group.
  */
 export function doubleClickElement(id: string): void {
+  if (!lastClick?.second || lastClick.id !== id) return;
+  const target = lastClick.actsOn;
   cancelPendingStep();
-  const target = lastClick?.id === id ? lastClick.actsOn : id;
   const store = useProjectStore.getState();
   const element = selectCurrentElements(store).find((candidate) => candidate.id === target);
   if (!element) return;
@@ -154,7 +170,7 @@ export function pressKeepsSelection(): boolean {
 
 /** Counts a colour pick on an image as a click on it, so the rest of a double click does not step. */
 export function notePick(id: string): void {
-  lastClick = { id, actsOn: id, time: Date.now() };
+  lastClick = { id, actsOn: id, time: Date.now(), second: false };
 }
 
 /** Forgets earlier presses, clicks and steps. */
@@ -163,6 +179,12 @@ export function resetElementClicks(): void {
   press = null;
   lastClick = null;
   forgetStep();
+}
+
+/** True when the pointer moved far enough between two page points to count as a drag. */
+function movedFar(from: Point, to: Point): boolean {
+  const zoom = useEditorUiStore.getState().zoom;
+  return Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y)) * zoom >= DRAG_DISTANCE_PX;
 }
 
 function cancelPendingStep(): void {

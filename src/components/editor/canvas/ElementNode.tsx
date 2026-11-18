@@ -5,7 +5,8 @@ import { blurActiveField } from "@/lib/focus";
 import { flipAttrs, groupAttrs } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { useEditorUiStore } from "@/store/editor-ui-store";
-import { clickElement, doubleClickElement, pressElement } from "@/store/element-clicks";
+import { clickElement, doubleClickElement, pressElement, pressKeepsSelection } from "@/store/element-clicks";
+import { dragOnceMoved } from "./held-drag";
 import { ImageNode } from "./ImageNode";
 import { pointerInput } from "./pointer-input";
 import { ShapeNode } from "./ShapeNode";
@@ -22,7 +23,9 @@ type KonvaPointerEvent = KonvaEventObject<MouseEvent | TouchEvent>;
  * Wraps an element in two groups. The outer one carries position, rotation
  * and opacity and is what the transformer attaches to. The inner one only
  * flips, so flipping never confuses resize maths. Presses, clicks and
- * double clicks go to element-clicks, which decides the selection.
+ * double clicks go to element-clicks, which decides the selection. Konva
+ * will not drag a locked element, so a press on one that keeps the
+ * selection beneath it starts that drag through held-drag.
  */
 export function ElementNode({ element }: ElementNodeProps) {
   const drag = useElementDrag();
@@ -36,6 +39,7 @@ export function ElementNode({ element }: ElementNodeProps) {
     rememberPressPointer(event.target);
     const input = pointerInput(event, element.id);
     if (input) pressElement(input);
+    if (element.locked && pressKeepsSelection()) dragOnceMoved(event.currentTarget);
   };
 
   const onClick = (event: KonvaPointerEvent) => {

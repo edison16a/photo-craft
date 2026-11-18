@@ -2,13 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createShapeElement } from "../model/element-factories";
 import { click, input, load, rect, store } from "./click-test-kit";
 import { useEditorUiStore } from "./editor-ui-store";
-import { pressElement, pressKeepsSelection, resetElementClicks, selectForMenu } from "./element-clicks";
+import { clickElement, pressElement, pressKeepsSelection, resetElementClicks, selectForMenu } from "./element-clicks";
 
 describe("element clicks", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     resetElementClicks();
     useEditorUiStore.getState().setEditingText(null);
+    useEditorUiStore.getState().setViewport(1, { x: 0, y: 0 });
     load([rect("image"), rect("lower"), rect("upper")]);
   });
 
@@ -58,6 +59,35 @@ describe("element clicks", () => {
     expect(store().selectedIds).toEqual(["rect"]);
     pressElement(input("rect", corner));
     expect(pressKeepsSelection()).toBe(false);
+  });
+
+  it("does not count a release that moved as far as a drag as a click", () => {
+    click("upper");
+    pressElement(input("upper"));
+    clickElement(input("upper", { point: { x: 53, y: 50 } }));
+    expect(store().selectedIds).toEqual(["upper"]);
+    // At four times zoom a page pixel is four screen pixels.
+    useEditorUiStore.getState().setViewport(4, { x: 0, y: 0 });
+    pressElement(input("upper"));
+    clickElement(input("upper", { point: { x: 50, y: 50.75 } }));
+    expect(store().selectedIds).toEqual(["upper"]);
+  });
+
+  it("still steps when the pointer moved less than a drag needs", () => {
+    click("upper");
+    pressElement(input("upper"));
+    clickElement(input("upper", { point: { x: 52, y: 48 } }));
+    expect(store().selectedIds).toEqual(["lower"]);
+  });
+
+  it("does not let a drag pair up with a click into a double click", () => {
+    pressElement(input("upper"));
+    clickElement(input("upper"));
+    pressElement(input("upper"));
+    clickElement(input("upper", { point: { x: 80, y: 80 } }));
+    pressElement(input("upper"));
+    clickElement(input("upper"));
+    expect(store().selectedIds).toEqual(["lower"]);
   });
 
   it("never steps on a shift click", () => {
