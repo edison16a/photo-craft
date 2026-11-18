@@ -17,6 +17,7 @@ import { ElementNode } from "./ElementNode";
 import { ImageEffectsOverlay } from "./ImageEffectsOverlay";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
+import { pickOnTouch } from "./pick-touch";
 import { QuickToolbar } from "./QuickToolbar";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { TextEditOverlay } from "./TextEditOverlay";
@@ -125,11 +126,6 @@ export function CanvasStage() {
     if (point) marquee.move(point);
   };
 
-  const onPickTouch = (event: KonvaEventObject<TouchEvent>) => {
-    const point = pointerOnPage(event);
-    if (point) pickColorAt(point);
-  };
-
   const onMouseUp = () => {
     if (tool === "draw") drawing.onMouseUp();
     else marquee.finish();
@@ -157,7 +153,7 @@ export function CanvasStage() {
           y={pan.y}
           onWheel={onWheel}
           onMouseDown={onMouseDown}
-          onTouchStart={picking ? onPickTouch : undefined}
+          onTouchStart={picking ? pickOnTouch : undefined}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseLeave}
