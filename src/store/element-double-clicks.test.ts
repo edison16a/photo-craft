@@ -1,3 +1,8 @@
+/**
+ * Double clicks on elements and the wait before a step: editing text,
+ * picking out a group member, and the double clicks Konva reports that
+ * are not real ones.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTextElement } from "../model/element-factories";
 import { click, doubleClick, input, load, rect, store } from "./click-test-kit";

@@ -1,3 +1,8 @@
+/**
+ * Presses and clicks on elements: selecting, stepping through what is
+ * drawn under the pointer, narrowing, modifiers, and releases that moved
+ * as far as a drag.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createShapeElement } from "../model/element-factories";
 import { click, input, load, rect, store } from "./click-test-kit";

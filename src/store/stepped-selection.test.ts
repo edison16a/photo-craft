@@ -1,3 +1,7 @@
+/**
+ * The memory of the last step: a press at its spot keeps the stepped
+ * selection only while the selection is the one the step made.
+ */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { click, input, load, rect, store } from "./click-test-kit";
 import { pressElement, pressKeepsSelection, resetElementClicks } from "./element-clicks";

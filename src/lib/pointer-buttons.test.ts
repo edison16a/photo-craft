@@ -1,3 +1,7 @@
+/**
+ * How a press reads on a Mac and elsewhere: the button it stands for and
+ * whether it picks one element.
+ */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isMac, readButtons } from "./pointer-buttons";
 

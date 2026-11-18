@@ -8,7 +8,8 @@
  * selection to that unit, or else steps to the next unit behind it. The
  * second click of a double click does neither, and when the element the
  * click counts for has a double click action of its own the step waits
- * out the double click window first.
+ * out the double click window first. A release as far from its press as
+ * a drag needs is not a click.
  */
 import { nextUnitUnder } from "../lib/click-through";
 import { expandToGroups, toggleUnitSelection, unitKey } from "../lib/groups";
@@ -46,6 +47,7 @@ interface Press {
   id: string;
   /** The element the press counts for: the one hit, or a selected one beneath it. */
   actsOn: string;
+  /** Page pixels where the press landed. */
   point: Point;
   /** A plain press on something that was already selected, so a click may narrow or step. */
   wasSelected: boolean;

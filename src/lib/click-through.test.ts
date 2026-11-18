@@ -1,3 +1,7 @@
+/**
+ * Click through on hand made hit lists: the units under the pointer from
+ * the top down, and the one a click steps to next.
+ */
 import { describe, expect, it } from "vitest";
 import { createShapeElement } from "../model/element-factories";
 import type { CanvasElement } from "../model/types";
