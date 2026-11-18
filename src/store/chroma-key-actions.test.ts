@@ -123,7 +123,7 @@ describe("chroma key actions", () => {
     store().loadProject(createProject("Test", 400, 300));
     const src = "data:image/png;base64,AAAA";
     store().addElements([createShapeElement("rectangle", { id: "box" }), createImageElement(src, 100, 80, { id: "img" })], false);
-    const input = { id: "img", point: { x: 20, y: 20 }, button: 0, shift: false, mod: false };
+    const input = { id: "img", point: { x: 20, y: 20 }, under: () => ["box", "img"], button: 0, shift: false, mod: false };
     toggleColorPick("img");
     pickColorAt(input.point);
     expect(inPickDoubleClick()).toBe(true);

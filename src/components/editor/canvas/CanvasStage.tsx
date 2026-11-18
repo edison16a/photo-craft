@@ -18,6 +18,7 @@ import { ImageEffectsOverlay } from "./ImageEffectsOverlay";
 import { GuideLines, LockedOutlines, MarqueeRect } from "./OverlayShapes";
 import { PAGE_BACKGROUND_NAME, PageBackground } from "./PageBackground";
 import { pickOnTouch } from "./pick-touch";
+import { pointerInput } from "./pointer-input";
 import { QuickToolbar } from "./QuickToolbar";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { TextEditOverlay } from "./TextEditOverlay";
@@ -109,10 +110,10 @@ export function CanvasStage() {
     const point = pointerOnPage(event);
     if (!point) return;
     const group = event.target.findAncestor(".element", true);
-    const elementId = group?.id();
-    const store = useProjectStore.getState();
-    if (elementId) selectForMenu(elementId, point);
-    else store.clearSelection();
+    const input = group ? pointerInput(event, group.id()) : null;
+    if (input) selectForMenu(input);
+    else useProjectStore.getState().clearSelection();
+    const elementId = input?.id;
     useEditorUiStore.getState().openContextMenu({ x: event.evt.clientX, y: event.evt.clientY, point, elementId });
   };
 

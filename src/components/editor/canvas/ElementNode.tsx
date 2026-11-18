@@ -5,9 +5,9 @@ import { blurActiveField } from "@/lib/focus";
 import { flipAttrs, groupAttrs } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { useEditorUiStore } from "@/store/editor-ui-store";
-import { clickElement, doubleClickElement, pressElement, type PointerInput } from "@/store/element-clicks";
-import { screenToPage } from "@/store/viewport-actions";
+import { clickElement, doubleClickElement, pressElement } from "@/store/element-clicks";
 import { ImageNode } from "./ImageNode";
+import { pointerInput } from "./pointer-input";
 import { ShapeNode } from "./ShapeNode";
 import { TextNode } from "./TextNode";
 import { rememberPressPointer, useElementDrag } from "./use-element-drag";
@@ -17,20 +17,6 @@ interface ElementNodeProps {
 }
 
 type KonvaPointerEvent = KonvaEventObject<MouseEvent | TouchEvent>;
-
-/** What element-clicks needs to know about a Konva pointer event. */
-function pointerInput(event: KonvaPointerEvent, id: string): PointerInput | null {
-  const pointer = event.target.getStage()?.getPointerPosition();
-  if (!pointer) return null;
-  const evt = event.evt;
-  return {
-    id,
-    point: screenToPage(pointer),
-    button: "button" in evt ? evt.button : 0,
-    shift: evt.shiftKey,
-    mod: evt.ctrlKey || evt.metaKey,
-  };
-}
 
 /**
  * Wraps an element in two groups. The outer one carries position, rotation

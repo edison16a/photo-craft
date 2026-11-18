@@ -1,72 +1,70 @@
 import { describe, expect, it } from "vitest";
 import { createShapeElement } from "../model/element-factories";
 import type { CanvasElement } from "../model/types";
-import { boxContainsPoint, nextUnitUnder, unitsUnderPoint } from "./click-through";
+import { nextUnitUnder, unitsUnder } from "./click-through";
 
-function box(id: string, x: number, y: number, extra: Partial<CanvasElement> = {}): CanvasElement {
-  return createShapeElement("rectangle", { id, x, y, width: 100, height: 100, ...extra });
+function box(id: string, extra: Partial<CanvasElement> = {}): CanvasElement {
+  return createShapeElement("rectangle", { id, width: 100, height: 100, ...extra });
 }
 
-describe("boxContainsPoint", () => {
-  const bar = box("bar", 0, 90, { width: 200, height: 20 });
-
-  it("checks the upright box, edges included", () => {
-    expect(boxContainsPoint(bar, { x: 150, y: 100 })).toBe(true);
-    expect(boxContainsPoint(bar, { x: 200, y: 110 })).toBe(true);
-    expect(boxContainsPoint(bar, { x: 100, y: 130 })).toBe(false);
-  });
-
-  it("turns the box about its centre", () => {
-    // Turned a quarter, the bar stands upright through its centre (100, 100).
-    const turned = { ...bar, rotation: 90 };
-    expect(boxContainsPoint(turned, { x: 100, y: 190 })).toBe(true);
-    expect(boxContainsPoint(turned, { x: 190, y: 100 })).toBe(false);
-    const diagonal = { ...bar, rotation: 45 };
-    expect(boxContainsPoint(diagonal, { x: 160, y: 160 })).toBe(true);
-    expect(boxContainsPoint(diagonal, { x: 160, y: 40 })).toBe(false);
-  });
-});
-
-describe("unitsUnderPoint", () => {
-  it("lists units from the top down and collapses groups", () => {
+describe("unitsUnder", () => {
+  it("lists hit units from the top down and collapses groups", () => {
     const elements = [
-      box("bottom", 0, 0),
-      box("g1", 50, 50, { groupId: "g" }),
-      box("middle", 0, 0),
-      box("g2", 500, 500, { groupId: "g" }),
-      box("top", 0, 0),
-      box("away", 300, 300),
+      box("bottom"),
+      box("g1", { groupId: "g" }),
+      box("middle"),
+      box("g2", { groupId: "g" }),
+      box("top"),
+      box("away"),
     ];
-    expect(unitsUnderPoint(elements, { x: 60, y: 60 })).toEqual([["top"], ["middle"], ["g1", "g2"], ["bottom"]]);
+    const hits = ["g1", "bottom", "top", "middle"];
+    expect(unitsUnder(elements, hits)).toEqual([["top"], ["middle"], ["g1", "g2"], ["bottom"]]);
   });
 
-  it("counts the clicked element even when its box misses", () => {
-    expect(unitsUnderPoint([box("a", 0, 0), box("b", 200, 0)], { x: 50, y: 50 }, "b")).toEqual([["b"], ["a"]]);
+  it("places a group at its highest member that is hit", () => {
+    const elements = [box("g1", { groupId: "g" }), box("middle"), box("g2", { groupId: "g" })];
+    expect(unitsUnder(elements, ["g1", "middle"])).toEqual([["middle"], ["g1", "g2"]]);
+    expect(unitsUnder(elements, ["g2", "middle"])).toEqual([["g1", "g2"], ["middle"]]);
+  });
+
+  it("leaves out elements that are not hit, whatever their box covers", () => {
+    // Same box, but only the rectangle is drawn at a corner the ellipse misses.
+    const elements = [box("rect"), createShapeElement("ellipse", { id: "ellipse", width: 100, height: 100 })];
+    expect(unitsUnder(elements, ["rect"])).toEqual([["rect"]]);
+  });
+
+  it("counts the clicked element even when it is not among the hits", () => {
+    expect(unitsUnder([box("a"), box("b")], ["a"], "b")).toEqual([["b"], ["a"]]);
   });
 });
 
 describe("nextUnitUnder", () => {
-  const elements = [box("image", 0, 0), box("lower", 20, 20), box("upper", 40, 40)];
-  const point = { x: 60, y: 60 };
+  const elements = [box("image"), box("lower"), box("upper")];
+  const all = ["image", "lower", "upper"];
 
   it("goes down the stacking order", () => {
-    expect(nextUnitUnder(elements, "upper", point)).toEqual(["lower"]);
-    expect(nextUnitUnder(elements, "lower", point)).toEqual(["image"]);
+    expect(nextUnitUnder(elements, "upper", all)).toEqual(["lower"]);
+    expect(nextUnitUnder(elements, "lower", all)).toEqual(["image"]);
   });
 
   it("wraps from the bottom back to the top", () => {
-    expect(nextUnitUnder(elements, "image", point)).toEqual(["upper"]);
+    expect(nextUnitUnder(elements, "image", all)).toEqual(["upper"]);
+  });
+
+  it("never wraps to an element in front that is not hit", () => {
+    expect(nextUnitUnder(elements, "lower", ["image", "lower"])).toEqual(["image"]);
+    expect(nextUnitUnder(elements, "image", ["image", "lower"])).toEqual(["lower"]);
   });
 
   it("steps past a whole group at once", () => {
-    const grouped = [box("image", 0, 0), box("a", 20, 20, { groupId: "g" }), box("b", 40, 40, { groupId: "g" })];
-    expect(nextUnitUnder(grouped, "b", point)).toEqual(["image"]);
-    expect(nextUnitUnder(grouped, "image", point)).toEqual(["a", "b"]);
+    const grouped = [box("image"), box("a", { groupId: "g" }), box("b", { groupId: "g" })];
+    expect(nextUnitUnder(grouped, "b", ["image", "a", "b"])).toEqual(["image"]);
+    expect(nextUnitUnder(grouped, "image", ["image", "a", "b"])).toEqual(["a", "b"]);
   });
 
-  it("changes nothing when only one unit is under the point", () => {
-    expect(nextUnitUnder(elements, "image", { x: 5, y: 5 })).toBeNull();
-    const pair = [box("a", 0, 0, { groupId: "g" }), box("b", 10, 10, { groupId: "g" })];
-    expect(nextUnitUnder(pair, "a", { x: 50, y: 50 })).toBeNull();
+  it("changes nothing when only one unit is hit", () => {
+    expect(nextUnitUnder(elements, "image", ["image"])).toBeNull();
+    const pair = [box("a", { groupId: "g" }), box("b", { groupId: "g" })];
+    expect(nextUnitUnder(pair, "a", ["a", "b"])).toBeNull();
   });
 });

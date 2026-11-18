@@ -17,11 +17,18 @@ import { useProjectStore } from "./project-store";
 const store = () => useProjectStore.getState();
 const at = { x: 50, y: 50 };
 
+/** Every element on the page, all drawn under the point unless a test says otherwise. */
+const everything = () => store().project?.pages[0].elements.map((element) => element.id) ?? [];
+
+/** A pointer event on an element, as the canvas reports it. */
+function input(id: string, extra: Partial<PointerInput> = {}): PointerInput {
+  return { id, point: at, under: everything, button: 0, shift: false, mod: false, ...extra };
+}
+
 /** A press and release on one element, as Konva reports it, then a pause long enough to not be a double click. */
 function click(id: string, extra: Partial<PointerInput> = {}) {
-  const input = { id, point: at, button: 0, shift: false, mod: false, ...extra };
-  pressElement(input);
-  clickElement(input);
+  pressElement(input(id, extra));
+  clickElement(input(id, extra));
   vi.advanceTimersByTime(DOUBLE_CLICK_MS + 1);
 }
 
@@ -56,7 +63,7 @@ describe("element clicks", () => {
   it("keeps the stepped selection for a drag from the same spot", () => {
     click("upper");
     click("upper");
-    pressElement({ id: "upper", point: at, button: 0, shift: false, mod: false });
+    pressElement(input("upper"));
     expect(pressKeepsSelection()).toBe(true);
     expect(store().selectedIds).toEqual(["lower"]);
   });
@@ -64,19 +71,38 @@ describe("element clicks", () => {
   it("does not keep the stepped selection for a press somewhere else", () => {
     click("upper");
     click("upper");
-    pressElement({ id: "upper", point: { x: 90, y: 90 }, button: 0, shift: false, mod: false });
+    pressElement(input("upper", { point: { x: 90, y: 90 } }));
     expect(pressKeepsSelection()).toBe(false);
     expect(store().selectedIds).toEqual(["upper"]);
   });
 
+  it("keeps the stepped selection for a drag only where it is drawn", () => {
+    click("upper");
+    click("upper");
+    pressElement(input("upper", { under: () => ["image", "upper"] }));
+    expect(pressKeepsSelection()).toBe(false);
+    expect(store().selectedIds).toEqual(["upper"]);
+  });
+
+  it("steps only through elements drawn under the pointer", () => {
+    // The ellipse's box covers the corner, but only the rectangle is drawn there.
+    load([rect("rect"), createShapeElement("ellipse", { id: "ellipse", width: 100, height: 100 })]);
+    const corner = { point: { x: 4, y: 4 }, under: () => ["rect"] };
+    click("rect", corner);
+    click("rect", corner);
+    expect(store().selectedIds).toEqual(["rect"]);
+    pressElement(input("rect", corner));
+    expect(pressKeepsSelection()).toBe(false);
+  });
+
   it("does not step on the second click of a double click", () => {
     click("upper");
-    const input = { id: "upper", point: at, button: 0, shift: false, mod: false };
-    pressElement(input);
-    clickElement(input);
+    const press = input("upper");
+    pressElement(press);
+    clickElement(press);
     expect(store().selectedIds).toEqual(["lower"]);
-    pressElement(input);
-    clickElement(input);
+    pressElement(press);
+    clickElement(press);
     expect(store().selectedIds).toEqual(["lower"]);
   });
 
@@ -108,9 +134,9 @@ describe("element clicks", () => {
 
   it("waits out the double click window before stepping from a grouped element", () => {
     store().groupElements(["lower", "upper"]);
-    const input = { id: "upper", point: at, button: 0, shift: false, mod: false };
-    pressElement(input);
-    clickElement(input);
+    const press = input("upper");
+    pressElement(press);
+    clickElement(press);
     expect(store().selectedIds).toEqual(["lower", "upper"]);
     vi.advanceTimersByTime(DOUBLE_CLICK_MS);
     expect(store().selectedIds).toEqual(["image"]);
@@ -118,11 +144,11 @@ describe("element clicks", () => {
 
   it("picks a grouped element out on double click instead of stepping", () => {
     store().groupElements(["lower", "upper"]);
-    const input = { id: "upper", point: at, button: 0, shift: false, mod: false };
-    pressElement(input);
-    clickElement(input);
-    pressElement(input);
-    clickElement(input);
+    const press = input("upper");
+    pressElement(press);
+    clickElement(press);
+    pressElement(press);
+    clickElement(press);
     doubleClickElement("upper");
     vi.advanceTimersByTime(DOUBLE_CLICK_MS * 2);
     expect(store().selectedIds).toEqual(["upper"]);
@@ -130,14 +156,14 @@ describe("element clicks", () => {
 
   it("edits text on double click, selected first or not", () => {
     load([rect("image"), createTextElement({ id: "text" })]);
-    const input = { id: "text", point: { x: 20, y: 20 }, button: 0, shift: false, mod: false };
+    const press = input("text", { point: { x: 20, y: 20 } });
     for (const selectedFirst of [false, true]) {
       useEditorUiStore.getState().setEditingText(null);
       store().setSelection(selectedFirst ? ["text"] : []);
-      pressElement(input);
-      clickElement(input);
-      pressElement(input);
-      clickElement(input);
+      pressElement(press);
+      clickElement(press);
+      pressElement(press);
+      clickElement(press);
       doubleClickElement("text");
       vi.advanceTimersByTime(DOUBLE_CLICK_MS * 2);
       expect(store().selectedIds).toEqual(["text"]);
@@ -150,7 +176,7 @@ describe("element clicks", () => {
     click("upper");
     click("upper", { button: 2 });
     expect(store().selectedIds).toEqual(["lower"]);
-    selectForMenu("image", { x: 400, y: 400 });
+    selectForMenu(input("image", { point: { x: 400, y: 400 } }));
     expect(store().selectedIds).toEqual(["image"]);
   });
 });

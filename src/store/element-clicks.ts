@@ -10,7 +10,7 @@
  * double click action of its own the step waits out the double click
  * window first.
  */
-import { boxContainsPoint, nextUnitUnder } from "../lib/click-through";
+import { nextUnitUnder } from "../lib/click-through";
 import { expandToGroups, toggleUnitSelection, unitKey } from "../lib/groups";
 import type { CanvasElement, Point } from "../model/types";
 import { useEditorUiStore } from "./editor-ui-store";
@@ -28,6 +28,8 @@ export interface PointerInput {
   id: string;
   /** Page pixels under the pointer. */
   point: Point;
+  /** Ids of every element drawn under the pointer. A function, since finding them redraws each shape. */
+  under: () => readonly string[];
   /** Mouse button, 0 for touch. */
   button: number;
   shift: boolean;
@@ -64,7 +66,7 @@ export function pressElement(input: PointerInput): void {
   const plain = input.button === 0 && !input.shift && !input.mod;
   const beneath = plain ? selectedBeneath(elements, store.selectedIds, input) : undefined;
   const wasSelected = plain && (store.selectedIds.includes(input.id) || beneath !== undefined);
-  if (input.button !== 0) selectForMenu(input.id, input.point);
+  if (input.button !== 0) selectForMenu(input);
   else if (input.shift) store.setSelection(toggleUnitSelection(elements, store.selectedIds, input.id));
   else if (input.mod) store.setSelection([input.id]);
   else if (!wasSelected) store.setSelection(expandToGroups(elements, [input.id]));
@@ -94,11 +96,12 @@ export function clickElement(input: PointerInput): void {
   }
 
   const selectionAtClick = store.selectedIds;
+  const under = input.under();
   const step = () => {
     pendingStep = null;
     const latest = useProjectStore.getState();
     if (latest.selectedIds !== selectionAtClick) return;
-    const next = nextUnitUnder(selectCurrentElements(latest), actsOn.id, input.point);
+    const next = nextUnitUnder(selectCurrentElements(latest), actsOn.id, under);
     if (!next) return;
     latest.setSelection(next);
     lastStep = { point: input.point, ids: next };
@@ -127,12 +130,12 @@ export function doubleClickElement(id: string): void {
  * the element, or when the click lands where the last step selected
  * something beneath it. Otherwise the element's unit is selected.
  */
-export function selectForMenu(id: string, point: Point): void {
+export function selectForMenu(input: Pick<PointerInput, "id" | "point" | "under">): void {
   const store = useProjectStore.getState();
   const elements = selectCurrentElements(store);
-  if (store.selectedIds.includes(id)) return;
-  if (selectedBeneath(elements, store.selectedIds, { id, point })) return;
-  store.setSelection(expandToGroups(elements, [id]));
+  if (store.selectedIds.includes(input.id)) return;
+  if (selectedBeneath(elements, store.selectedIds, input)) return;
+  store.setSelection(expandToGroups(elements, [input.id]));
 }
 
 /** True while the current press keeps a selection that lies under the element it hit, so a drag moves that selection. */
@@ -155,20 +158,22 @@ export function resetElementClicks(): void {
 
 /**
  * The selected element a press counts for when it hits an unselected
- * element on top: only when the press lands on the spot of the last step
- * and the selection is still what that step chose.
+ * element on top: only when the press lands on the spot of the last step,
+ * the selection is still what that step chose, and a selected element is
+ * drawn under the pointer. The topmost such element wins.
  */
 function selectedBeneath(
   elements: readonly CanvasElement[],
   selectedIds: readonly string[],
-  input: Pick<PointerInput, "id" | "point">,
+  input: Pick<PointerInput, "id" | "point" | "under">,
 ): string | undefined {
   if (!lastStep || selectedIds.includes(input.id)) return undefined;
   const sameSelection = lastStep.ids.length === selectedIds.length && lastStep.ids.every((id) => selectedIds.includes(id));
   const zoom = useEditorUiStore.getState().zoom;
   const distance = Math.hypot(input.point.x - lastStep.point.x, input.point.y - lastStep.point.y) * zoom;
   if (!sameSelection || distance > SAME_SPOT_PX) return undefined;
-  return elements.findLast((element) => selectedIds.includes(element.id) && boxContainsPoint(element, input.point))?.id;
+  const under = input.under();
+  return elements.findLast((element) => selectedIds.includes(element.id) && under.includes(element.id))?.id;
 }
 
 function cancelPendingStep(): void {
