@@ -99,6 +99,16 @@ export interface ShapeElement extends ElementBase {
   closed?: boolean;
 }
 
+/** One colour of a picture made see through, with how close a pixel must be to go. */
+export interface ChromaKey {
+  /** The colour to remove, as #rrggbb. */
+  color: string;
+  /** 0 to 100. Pixels this close to the colour go fully. */
+  tolerance: number;
+  /** 0 to 100. How far past the tolerance pixels fade out. */
+  softness: number;
+}
+
 /** A bitmap stored as a data URL. */
 export interface ImageElement extends ElementBase {
   type: "image";
@@ -110,6 +120,8 @@ export interface ImageElement extends ElementBase {
   originalSrc?: string;
   /** One flat colour painted over every pixel, keeping transparency. */
   tint?: string;
+  /** A colour taken out of the picture. src stays the original, so this can be turned off. */
+  chromaKey?: ChromaKey;
 }
 
 /** Anything that can sit on a page. */
