@@ -1,10 +1,11 @@
 "use client";
 /**
  * Rubber band selection. Dragging on empty page area draws a rectangle and
- * selects every element it touches.
+ * selects every element it touches, with the whole of any group it touches.
  */
 import { useCallback, useRef, useState } from "react";
 import { rectsIntersect } from "@/lib/geometry";
+import { expandToGroups } from "@/lib/groups";
 import type { Point, Rect } from "@/model/types";
 import { elementBounds } from "@/store/alignment";
 import { useEditorUiStore } from "@/store/editor-ui-store";
@@ -63,9 +64,9 @@ export function useMarquee() {
     const rect = marqueeRect(active);
     if (!bigEnough(rect)) return;
     const state = useProjectStore.getState();
-    const hits = selectCurrentElements(state)
-      .filter((element) => rectsIntersect(rect, elementBounds(element)))
-      .map((element) => element.id);
+    const elements = selectCurrentElements(state);
+    const touched = elements.filter((element) => rectsIntersect(rect, elementBounds(element)));
+    const hits = expandToGroups(elements, touched.map((element) => element.id));
     if (active.additive) state.addToSelection(hits);
     else state.setSelection(hits);
   }, []);

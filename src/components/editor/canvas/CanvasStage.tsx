@@ -6,6 +6,7 @@ import { useAddElement } from "@/hooks/use-add-element";
 import { blurActiveField } from "@/lib/focus";
 import { pickColorAt, watchPickTarget } from "@/store/chroma-key-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
+import { selectForMenu } from "@/store/element-clicks";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
@@ -98,7 +99,7 @@ export function CanvasStage() {
     marquee.begin(point, event.evt.shiftKey);
   };
 
-  /** Right click: select what is under the pointer (keeping a multi selection) and open the menu. */
+  /** Right click: select what is under the pointer (keeping a selection that holds it) and open the menu. */
   const onContextMenu = (event: KonvaEventObject<PointerEvent>) => {
     event.evt.preventDefault();
     // A right click while picking only leaves pick mode.
@@ -108,8 +109,8 @@ export function CanvasStage() {
     const group = event.target.findAncestor(".element", true);
     const elementId = group?.id();
     const store = useProjectStore.getState();
-    if (elementId && !store.selectedIds.includes(elementId)) store.setSelection([elementId]);
-    if (!elementId) store.clearSelection();
+    if (elementId) selectForMenu(elementId, point);
+    else store.clearSelection();
     useEditorUiStore.getState().openContextMenu({ x: event.evt.clientX, y: event.evt.clientY, point, elementId });
   };
 

@@ -7,15 +7,22 @@
  * them, which fires extra dragstart and dragmove events; measuring the
  * pointer keeps every node exactly where the grabbed one says it should
  * be. On drag end the new positions go into the store as one undo step.
+ *
+ * Grabbing an unselected element drags its whole group. When the press
+ * kept a selection that lies beneath the grabbed element (see
+ * element-clicks), the selection moves and the grabbed element is held
+ * where it is.
  */
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useMemo } from "react";
 import { unionRects } from "@/lib/geometry";
+import { expandToGroups } from "@/lib/groups";
 import { computeSnap, type Guide } from "@/lib/snapping";
 import type { Point, Rect } from "@/model/types";
 import { elementBounds } from "@/store/alignment";
 import { useEditorUiStore } from "@/store/editor-ui-store";
+import { pressKeepsSelection } from "@/store/element-clicks";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
@@ -29,6 +36,8 @@ interface DragSession {
   targets: Rect[];
   /** Latest snapped top left corner per element, written on every move. */
   latest: Map<string, Point>;
+  /** The grabbed node when it is not part of what moves, with where it must stay. */
+  held: { node: Konva.Node; position: Point } | null;
 }
 
 /** Screen pixels within which an edge snaps. Divided by zoom on use. */
@@ -69,8 +78,10 @@ export function useElementDrag() {
       if (!pointer) return;
 
       const elements = selectCurrentElements(state);
-      const selected = state.selectedIds.includes(id) ? state.selectedIds : [id];
-      if (!state.selectedIds.includes(id)) state.setSelection([id]);
+      const grabbedSelected = state.selectedIds.includes(id);
+      const keep = !grabbedSelected && pressKeepsSelection();
+      const selected = grabbedSelected || keep ? state.selectedIds : expandToGroups(elements, [id]);
+      if (!grabbedSelected && !keep) state.setSelection(selected);
 
       const moving = elements.filter((el) => selected.includes(el.id) && !el.locked);
       const movingIds = new Set(moving.map((el) => el.id));
@@ -84,6 +95,7 @@ export function useElementDrag() {
         startBounds: unionRects(moving.map(elementBounds)),
         targets: elements.filter((el) => !movingIds.has(el.id)).map(elementBounds),
         latest: new Map(),
+        held: keep ? { node, position: node.position() } : null,
       };
     };
 
@@ -110,12 +122,14 @@ export function useElementDrag() {
         // Node positions are box centres, see groupAttrs.
         layer?.findOne(`#${id}`)?.position({ x: topLeft.x + box.width / 2, y: topLeft.y + box.height / 2 });
       }
+      session.held?.node.position(session.held.position);
       if (!sameGuides(ui.guides, snap.guides)) ui.setGuides(snap.guides);
     };
 
     const onDragEnd = () => {
       // Every dragged node fires dragend. The first one commits for all of them.
       if (!session) return;
+      session.held?.node.position(session.held.position);
       const patches: Record<string, { x: number; y: number }> = {};
       for (const [id, topLeft] of session.latest) {
         patches[id] = { x: Math.round(topLeft.x * 100) / 100, y: Math.round(topLeft.y * 100) / 100 };
