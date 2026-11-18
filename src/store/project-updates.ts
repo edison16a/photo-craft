@@ -5,7 +5,10 @@
  * touches (project, page, element) so untouched pages and elements keep
  * their identity. That keeps React renders and undo snapshots cheap.
  */
+import { restack, type StackDirection } from "../lib/stack-order";
 import type { CanvasElement, Page, Project } from "../model/types";
+
+export type { StackDirection };
 
 /** Finds a page by ID. */
 export function findPage(project: Project, pageId: string): Page | undefined {
@@ -124,13 +127,9 @@ export function removeElementsFromPage(
   }));
 }
 
-/** How far to move elements in the stacking order. */
-export type StackDirection = "forward" | "backward" | "front" | "back";
-
 /**
- * Moves elements up or down the stacking order. "forward" and "backward"
- * step one place past the nearest unselected neighbour. "front" and "back"
- * move the whole group to the end or start while keeping its own order.
+ * Moves elements up or down the stacking order. Groups move as one block
+ * and members picked out of a group stay inside it, see restack.
  */
 export function reorderElements(
   project: Project,
@@ -138,32 +137,7 @@ export function reorderElements(
   ids: readonly string[],
   direction: StackDirection,
 ): Project {
-  const moving = new Set(ids);
-  return withPage(project, pageId, (page) => {
-    const selected = page.elements.filter((element) => moving.has(element.id));
-    const others = page.elements.filter((element) => !moving.has(element.id));
-    if (selected.length === 0) return page;
-
-    if (direction === "front") return { ...page, elements: [...others, ...selected] };
-    if (direction === "back") return { ...page, elements: [...selected, ...others] };
-
-    const elements = [...page.elements];
-    if (direction === "forward") {
-      for (let i = elements.length - 2; i >= 0; i -= 1) {
-        if (moving.has(elements[i].id) && !moving.has(elements[i + 1].id)) {
-          [elements[i], elements[i + 1]] = [elements[i + 1], elements[i]];
-        }
-      }
-    } else {
-      for (let i = 1; i < elements.length; i += 1) {
-        if (moving.has(elements[i].id) && !moving.has(elements[i - 1].id)) {
-          [elements[i], elements[i - 1]] = [elements[i - 1], elements[i]];
-        }
-      }
-    }
-    const moved = elements.some((element, index) => element !== page.elements[index]);
-    return moved ? { ...page, elements } : page;
-  });
+  return withPageElements(project, pageId, (elements) => restack(elements, ids, direction));
 }
 
 /** Replaces the page list, used for adding, deleting and moving pages. */

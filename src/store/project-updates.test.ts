@@ -62,6 +62,15 @@ describe("project updates", () => {
     expect(front.pages[0].elements.map((e) => e.id)).toEqual(["e0", "e3", "e4", "e1", "e2"]);
   });
 
+  it("steps an element past a whole group and leaves the project alone when nothing moves", () => {
+    const project = projectWithShapes(3);
+    const pageId = project.pages[0].id;
+    const grouped = withElements(project, pageId, ["e1", "e2"], (e) => ({ ...e, groupId: "g" }));
+    const forward = reorderElements(grouped, pageId, ["e0"], "forward");
+    expect(forward.pages[0].elements.map((e) => e.id)).toEqual(["e1", "e2", "e0"]);
+    expect(reorderElements(forward, pageId, ["e0"], "forward")).toBe(forward);
+  });
+
   it("moves a page and refuses to move past the ends", () => {
     const project = createProject("Test", 10, 10);
     const two = { ...project, pages: [project.pages[0], { ...project.pages[0], id: "p2", name: "Page 2" }] };
