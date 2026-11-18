@@ -6,7 +6,7 @@
  */
 
 /** Everything a key can be bound to. */
-export type KeybindAction = "select" | "text" | "shapes" | "draw" | "upload" | "removeBackground";
+export type KeybindAction = "select" | "text" | "shapes" | "draw" | "upload" | "removeBackground" | "chromaKey";
 
 /** The key for each action, lowercase, or null when unset. */
 export type Keybinds = Record<KeybindAction, string | null>;
@@ -26,12 +26,21 @@ export const KEYBIND_SPECS: KeybindSpec[] = [
   { action: "draw", label: "Draw", group: "Tools" },
   { action: "upload", label: "Upload", group: "Tools" },
   { action: "removeBackground", label: "Remove or restore background", group: "Image" },
+  { action: "chromaKey", label: "Chroma key", group: "Image" },
 ];
 
 export const KEYBIND_ACTIONS: KeybindAction[] = KEYBIND_SPECS.map((spec) => spec.action);
 
 /** What a fresh install starts with. */
-export const DEFAULT_KEYBINDS: Keybinds = { select: "s", text: "t", shapes: "h", draw: "d", upload: "u", removeBackground: "r" };
+export const DEFAULT_KEYBINDS: Keybinds = {
+  select: "s",
+  text: "t",
+  shapes: "h",
+  draw: "d",
+  upload: "u",
+  removeBackground: "r",
+  chromaKey: null,
+};
 
 /** True for a key that can be bound: one printable character. */
 export function isBindableKey(key: string): boolean {

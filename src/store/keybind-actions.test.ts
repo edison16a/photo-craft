@@ -34,4 +34,17 @@ describe("keybind actions", () => {
     expect(() => runKeybindAction("removeBackground")).not.toThrow();
     expect(useEditorUiStore.getState().busyImageIds).toEqual([]);
   });
+
+  it("starts and stops picking a chroma key colour on the selected image", () => {
+    const store = useProjectStore.getState();
+    const image = createImageElement("data:image/png;base64,AAAA", 10, 10);
+    store.addElement(image);
+    runKeybindAction("chromaKey");
+    expect(useEditorUiStore.getState().pickingColorFor).toBe(image.id);
+    runKeybindAction("chromaKey");
+    expect(useEditorUiStore.getState().pickingColorFor).toBeNull();
+    store.clearSelection();
+    runKeybindAction("chromaKey");
+    expect(useEditorUiStore.getState().pickingColorFor).toBeNull();
+  });
 });
