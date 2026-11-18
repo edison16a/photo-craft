@@ -74,9 +74,7 @@ export function CanvasStage() {
     const point = pointerOnPage(event);
     if (!point) return;
     if (picking) {
-      // Any other button just leaves pick mode, so a right click still opens the menu.
       if (event.evt.button === 0) pickColorAt(point);
-      else useEditorUiStore.getState().endColorPick();
       return;
     }
     if (tool === "draw") {
@@ -103,6 +101,8 @@ export function CanvasStage() {
   /** Right click: select what is under the pointer (keeping a multi selection) and open the menu. */
   const onContextMenu = (event: KonvaEventObject<PointerEvent>) => {
     event.evt.preventDefault();
+    // A right click while picking only leaves pick mode.
+    if (picking) return useEditorUiStore.getState().endColorPick();
     const point = pointerOnPage(event);
     if (!point) return;
     const group = event.target.findAncestor(".element", true);
