@@ -5,7 +5,7 @@
  */
 import { pickedKey } from "../lib/chroma-key";
 import { peekCachedImage } from "../lib/image-cache";
-import { sampleImageAt } from "../lib/pixel-sample";
+import { sampleImageAt, type PixelSample } from "../lib/pixel-sample";
 import type { ImageElement, Point } from "../model/types";
 import { useEditorUiStore } from "./editor-ui-store";
 import { useProjectStore, type ProjectStore } from "./project-store";
@@ -15,6 +15,23 @@ import { selectCurrentElements } from "./selectors";
 function imageOnPage(state: ProjectStore, id: string): ImageElement | null {
   const element = selectCurrentElements(state).find((candidate) => candidate.id === id);
   return element?.type === "image" ? element : null;
+}
+
+/** True for points on the page. Elements are clipped to it, so nothing outside can be seen. */
+function onPage(state: ProjectStore, point: Point): boolean {
+  const { project } = state;
+  return project !== null && point.x >= 0 && point.y >= 0 && point.x < project.width && point.y < project.height;
+}
+
+/**
+ * The colour a pick at a page point takes from an image: the picture's own
+ * pixel there, before any key. Null off the picture, and off the page,
+ * where the picture is clipped away.
+ */
+export function sampleForPick(state: ProjectStore, id: string, point: Point): PixelSample | null {
+  const element = onPage(state, point) ? imageOnPage(state, id) : null;
+  const image = element ? peekCachedImage(element.src) : undefined;
+  return element && image ? sampleImageAt(element, image, point) : null;
 }
 
 /**
@@ -39,19 +56,16 @@ export function applyPickedColor(elementId: string, color: string): void {
 }
 
 /**
- * The click in pick mode. On the picture it keys the colour under the
- * point; off it, or on a see through pixel, nothing changes. Either way
- * pick mode ends.
+ * The click in pick mode. On the picture, within the page, it keys the
+ * colour under the point. Off the picture, off the page or on a see
+ * through pixel, nothing changes. Either way pick mode ends.
  */
 export function pickColorAt(point: Point): void {
   const ui = useEditorUiStore.getState();
   const id = ui.pickingColorFor;
   if (!id) return;
   ui.endColorPick();
-  const element = imageOnPage(useProjectStore.getState(), id);
-  const image = element ? peekCachedImage(element.src) : undefined;
-  if (!element || !image) return;
-  const sample = sampleImageAt(element, image, point);
+  const sample = sampleForPick(useProjectStore.getState(), id, point);
   if (sample && sample.alpha > 0) applyPickedColor(id, sample.color);
 }
 

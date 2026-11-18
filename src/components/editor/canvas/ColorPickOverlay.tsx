@@ -1,10 +1,8 @@
 "use client";
 import { useEffect, useState, type RefObject } from "react";
-import { peekCachedImage } from "@/lib/image-cache";
-import { sampleImageAt } from "@/lib/pixel-sample";
+import { sampleForPick } from "@/store/chroma-key-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
-import { selectCurrentElements } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
 
 interface ColorPickOverlayProps {
@@ -20,8 +18,8 @@ interface Hover {
 /**
  * The swatch that follows the pointer while a chroma key colour is being
  * picked. It shows the picture's own colour under the pointer, before any
- * key, and hides off the picture. It listens on the workspace itself so
- * pointer moves never re-render the stage.
+ * key, and hides off the picture and off the page. It listens on the
+ * workspace itself so pointer moves never re-render the stage.
  */
 export function ColorPickOverlay({ containerRef }: ColorPickOverlayProps) {
   const pickingFor = useEditorUiStore((s) => s.pickingColorFor);
@@ -34,9 +32,7 @@ export function ColorPickOverlay({ containerRef }: ColorPickOverlayProps) {
       if (!(event.target instanceof HTMLCanvasElement)) return setHover(null);
       const box = node.getBoundingClientRect();
       const screen = { x: event.clientX - box.left, y: event.clientY - box.top };
-      const element = selectCurrentElements(useProjectStore.getState()).find((candidate) => candidate.id === pickingFor);
-      const image = element?.type === "image" ? peekCachedImage(element.src) : undefined;
-      const sample = element?.type === "image" && image ? sampleImageAt(element, image, screenToPage(screen)) : null;
+      const sample = sampleForPick(useProjectStore.getState(), pickingFor, screenToPage(screen));
       setHover(sample && sample.alpha > 0 ? { left: screen.x, top: screen.y, color: sample.color } : null);
     };
     const onLeave = () => setHover(null);

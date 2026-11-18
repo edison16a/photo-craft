@@ -8,7 +8,7 @@ import { sampleImageAt } from "../lib/pixel-sample";
 import { createImageElement, createShapeElement } from "../model/element-factories";
 import { createProject } from "../model/project-factories";
 import type { ImageElement } from "../model/types";
-import { applyPickedColor, pickColorAt, toggleColorPick, watchPickTarget } from "./chroma-key-actions";
+import { applyPickedColor, pickColorAt, sampleForPick, toggleColorPick, watchPickTarget } from "./chroma-key-actions";
 import { useEditorUiStore } from "./editor-ui-store";
 import { useProjectStore } from "./project-store";
 
@@ -83,12 +83,26 @@ describe("chroma key actions", () => {
     const before = store().history.past.length;
     vi.mocked(sampleImageAt).mockReturnValueOnce(null).mockReturnValueOnce({ color: "#000000", alpha: 0 });
     toggleColorPick("img");
-    pickColorAt({ x: -5, y: -5 });
+    pickColorAt({ x: 300, y: 200 });
     expect(ui().pickingColorFor).toBeNull();
     toggleColorPick("img");
     pickColorAt({ x: 5, y: 5 });
     expect(image().chromaKey).toBeUndefined();
     expect(store().history.past.length).toBe(before);
+  });
+
+  it("treats points off the page as a miss, where the picture is clipped away", () => {
+    vi.mocked(sampleImageAt).mockReturnValue({ color: "#00b140", alpha: 255 });
+    store().updateElement("img", { x: -100, y: -100, width: 600, height: 500 });
+    for (const point of [{ x: -1, y: 10 }, { x: 10, y: -1 }, { x: 400, y: 10 }, { x: 10, y: 300 }]) {
+      expect(sampleForPick(store(), "img", point)).toBeNull();
+      toggleColorPick("img");
+      pickColorAt(point);
+      expect(ui().pickingColorFor).toBeNull();
+    }
+    expect(sampleImageAt).not.toHaveBeenCalled();
+    expect(image().chromaKey).toBeUndefined();
+    expect(sampleForPick(store(), "img", { x: 0, y: 0 })).toEqual({ color: "#00b140", alpha: 255 });
   });
 
   it("does nothing when not picking", () => {
