@@ -67,6 +67,11 @@ describe("groupInStack", () => {
     expect(ids(grouped)).toEqual(["b", "a", "c", "d"]);
   });
 
+  it("hands back the same list when no id matches", () => {
+    const elements = [shape("a"), shape("b")];
+    expect(groupInStack(elements, ["zzz"], "g")).toBe(elements);
+  });
+
   it("moves members of earlier groups into the new one", () => {
     const grouped = normaliseGroups(groupInStack([shape("a", "old"), shape("b", "old"), shape("c")], ["a", "b", "c"], "new"));
     expect(groupIds(grouped)).toEqual(["new", "new", "new"]);

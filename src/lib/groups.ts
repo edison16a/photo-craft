@@ -58,16 +58,12 @@ export function toggleUnitSelection(
 /**
  * Gives the elements one groupId and makes them a contiguous block in the
  * stacking order, placed where the topmost of them was. Their order among
- * themselves is kept.
+ * themselves is kept. Hands back the same list when none of the ids is in it.
  */
-export function groupInStack(
-  elements: readonly CanvasElement[],
-  ids: readonly string[],
-  groupId: string,
-): CanvasElement[] {
+export function groupInStack(elements: CanvasElement[], ids: readonly string[], groupId: string): CanvasElement[] {
   const members = new Set(ids);
   const top = elements.findLastIndex((element) => members.has(element.id));
-  if (top < 0) return [...elements];
+  if (top < 0) return elements;
   const block = elements.filter((element) => members.has(element.id)).map((element) => ({ ...element, groupId }));
   const result: CanvasElement[] = [];
   elements.forEach((element, index) => {
