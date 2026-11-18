@@ -8,8 +8,12 @@ import { peekCachedImage } from "../lib/image-cache";
 import { sampleImageAt, type PixelSample } from "../lib/pixel-sample";
 import type { ImageElement, Point } from "../model/types";
 import { useEditorUiStore } from "./editor-ui-store";
+import { DOUBLE_CLICK_MS, notePick } from "./element-clicks";
 import { useProjectStore, type ProjectStore } from "./project-store";
 import { selectCurrentElements } from "./selectors";
+
+/** When the last pick press landed. */
+let pickedAt = Number.NEGATIVE_INFINITY;
 
 /** An image on the current page by id. */
 function imageOnPage(state: ProjectStore, id: string): ImageElement | null {
@@ -58,15 +62,23 @@ export function applyPickedColor(elementId: string, color: string): void {
 /**
  * The click in pick mode. On the picture, within the page, it keys the
  * colour under the point. Off the picture, off the page or on a see
- * through pixel, nothing changes. Either way pick mode ends.
+ * through pixel, nothing changes. Either way pick mode ends, and the
+ * press counts as the first click of a double click.
  */
 export function pickColorAt(point: Point): void {
   const ui = useEditorUiStore.getState();
   const id = ui.pickingColorFor;
   if (!id) return;
   ui.endColorPick();
+  pickedAt = Date.now();
+  notePick(id);
   const sample = sampleForPick(useProjectStore.getState(), id, point);
   if (sample && sample.alpha > 0) applyPickedColor(id, sample.color);
+}
+
+/** True while the second press of a double click that picked a colour may still arrive. */
+export function inPickDoubleClick(): boolean {
+  return Date.now() - pickedAt < DOUBLE_CLICK_MS;
 }
 
 /** Whether an image can still be picked from: on the current page and the only thing selected. */

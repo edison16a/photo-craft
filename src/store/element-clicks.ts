@@ -140,6 +140,11 @@ export function pressKeepsSelection(): boolean {
   return press?.keepsSelection ?? false;
 }
 
+/** Counts a colour pick on an image as a click on it, so the rest of a double click does not step. */
+export function notePick(id: string): void {
+  lastClick = { id, time: Date.now() };
+}
+
 /** Forgets earlier presses, clicks and steps. */
 export function resetElementClicks(): void {
   cancelPendingStep();

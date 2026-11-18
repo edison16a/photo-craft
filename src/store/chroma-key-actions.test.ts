@@ -8,8 +8,16 @@ import { sampleImageAt } from "../lib/pixel-sample";
 import { createImageElement, createShapeElement } from "../model/element-factories";
 import { createProject } from "../model/project-factories";
 import type { ImageElement } from "../model/types";
-import { applyPickedColor, pickColorAt, sampleForPick, toggleColorPick, watchPickTarget } from "./chroma-key-actions";
+import {
+  applyPickedColor,
+  inPickDoubleClick,
+  pickColorAt,
+  sampleForPick,
+  toggleColorPick,
+  watchPickTarget,
+} from "./chroma-key-actions";
 import { useEditorUiStore } from "./editor-ui-store";
+import { clickElement, DOUBLE_CLICK_MS, pressElement, resetElementClicks } from "./element-clicks";
 import { useProjectStore } from "./project-store";
 
 vi.mock("../lib/image-cache", () => ({ peekCachedImage: () => new Image(), getCachedImage: vi.fn() }));
@@ -29,7 +37,10 @@ beforeEach(() => {
   unwatch = watchPickTarget();
 });
 
-afterEach(() => unwatch());
+afterEach(() => {
+  unwatch();
+  vi.useRealTimers();
+});
 
 describe("chroma key actions", () => {
   it("starts picking on an image, selecting it, and stops when asked again", () => {
@@ -103,6 +114,28 @@ describe("chroma key actions", () => {
     expect(sampleImageAt).not.toHaveBeenCalled();
     expect(image().chromaKey).toBeUndefined();
     expect(sampleForPick(store(), "img", { x: 0, y: 0 })).toEqual({ color: "#00b140", alpha: 255 });
+  });
+
+  it("counts the pick as the first click of a double click, so the second does not step", () => {
+    vi.useFakeTimers();
+    resetElementClicks();
+    vi.mocked(sampleImageAt).mockReturnValue({ color: "#00b140", alpha: 255 });
+    store().loadProject(createProject("Test", 400, 300));
+    const src = "data:image/png;base64,AAAA";
+    store().addElements([createShapeElement("rectangle", { id: "box" }), createImageElement(src, 100, 80, { id: "img" })], false);
+    const input = { id: "img", point: { x: 20, y: 20 }, button: 0, shift: false, mod: false };
+    toggleColorPick("img");
+    pickColorAt(input.point);
+    expect(inPickDoubleClick()).toBe(true);
+    vi.advanceTimersByTime(100);
+    pressElement(input);
+    clickElement(input);
+    expect(store().selectedIds).toEqual(["img"]);
+    vi.advanceTimersByTime(DOUBLE_CLICK_MS);
+    expect(inPickDoubleClick()).toBe(false);
+    pressElement(input);
+    clickElement(input);
+    expect(store().selectedIds).toEqual(["box"]);
   });
 
   it("does nothing when not picking", () => {

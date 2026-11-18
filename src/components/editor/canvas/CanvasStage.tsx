@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Group, Layer, Stage } from "react-konva";
 import { useAddElement } from "@/hooks/use-add-element";
 import { blurActiveField } from "@/lib/focus";
-import { pickColorAt, watchPickTarget } from "@/store/chroma-key-actions";
+import { inPickDoubleClick, pickColorAt, watchPickTarget } from "@/store/chroma-key-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { selectForMenu } from "@/store/element-clicks";
 import { useProjectStore } from "@/store/project-store";
@@ -95,7 +95,8 @@ export function CanvasStage() {
       void addText({ x: Math.round(point.x), y: Math.round(point.y) });
       return;
     }
-    if (tool !== "select") return;
+    // A double click that picked a colour must not go on to clear the selection.
+    if (tool !== "select" || inPickDoubleClick()) return;
     if (!event.evt.shiftKey) useProjectStore.getState().clearSelection();
     marquee.begin(point, event.evt.shiftKey);
   };
