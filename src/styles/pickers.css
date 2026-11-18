@@ -1,5 +1,6 @@
 /*
-  Popovers plus the colour and font pickers that live inside them.
+  Popovers plus the colour and font pickers that live inside them, and
+  the eyedropper that picks a chroma key colour on the canvas.
 */
 
 .popover {
@@ -78,4 +79,21 @@
 .font-picker__item--active {
   background: var(--accent-soft);
   color: var(--accent-text);
+}
+
+/* Picking a chroma key colour on the canvas: a crosshair and a swatch of the colour under it. */
+.workspace--pick {
+  cursor: crosshair;
+}
+
+.pick-swatch {
+  position: absolute;
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  margin: 14px 0 0 14px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), var(--shadow);
+  pointer-events: none;
 }

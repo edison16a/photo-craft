@@ -43,6 +43,9 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         if (action) return stop(event, () => runKeybindAction(action));
       }
 
+      // Escape leaves pick mode and keeps the image selected.
+      if (key === "escape" && ui.pickingColorFor) return stop(event, ui.endColorPick);
+
       // The draw tool owns Enter, Escape and Backspace while corners are down.
       if (ui.tool === "draw") {
         if (key === "enter") return stop(event, () => finishDrawing());

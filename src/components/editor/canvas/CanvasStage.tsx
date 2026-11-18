@@ -4,10 +4,12 @@ import { useEffect, useRef } from "react";
 import { Group, Layer, Stage } from "react-konva";
 import { useAddElement } from "@/hooks/use-add-element";
 import { blurActiveField } from "@/lib/focus";
+import { pickColorAt, watchPickTarget } from "@/store/chroma-key-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentPage } from "@/store/selectors";
 import { screenToPage } from "@/store/viewport-actions";
+import { ColorPickOverlay } from "./ColorPickOverlay";
 import { ContextMenu } from "./ContextMenu";
 import { DrawGrid, DrawPreview } from "./DrawPreview";
 import { ElementNode } from "./ElementNode";
@@ -25,7 +27,9 @@ import { useViewport } from "./use-viewport";
 /**
  * The workspace: a Konva stage with the page, its elements, the selection
  * transformer and the overlay for guides and the marquee. Loaded on the
- * client only because Konva needs a real canvas.
+ * client only because Konva needs a real canvas. While a chroma key colour
+ * is being picked, elements and the transformer stop listening so the
+ * click only picks.
  */
 export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,6 +46,9 @@ export function CanvasStage() {
   const drop = useCanvasDrop(containerRef, screenToPage);
   const { addText } = useAddElement();
   const pendingTextAt = useEditorUiStore((s) => s.pendingTextAt);
+  const picking = useEditorUiStore((s) => s.pickingColorFor !== null);
+
+  useEffect(() => watchPickTarget(), []);
 
   // "Add text here" from the right click menu.
   useEffect(() => {
@@ -66,6 +73,12 @@ export function CanvasStage() {
     const onEmpty = event.target === stage || event.target.name() === PAGE_BACKGROUND_NAME;
     const point = pointerOnPage(event);
     if (!point) return;
+    if (picking) {
+      // Any other button just leaves pick mode, so a right click still opens the menu.
+      if (event.evt.button === 0) pickColorAt(point);
+      else useEditorUiStore.getState().endColorPick();
+      return;
+    }
     if (tool === "draw") {
       // Drawing works over elements too, so it does not wait for empty space.
       if (event.evt.button !== 0) return;
@@ -111,6 +124,11 @@ export function CanvasStage() {
     if (point) marquee.move(point);
   };
 
+  const onPickTouch = (event: KonvaEventObject<TouchEvent>) => {
+    const point = pointerOnPage(event);
+    if (point) pickColorAt(point);
+  };
+
   const onMouseUp = () => {
     if (tool === "draw") drawing.onMouseUp();
     else marquee.finish();
@@ -124,7 +142,7 @@ export function CanvasStage() {
   return (
     <div
       ref={containerRef}
-      className={`workspace workspace--${tool}`}
+      className={`workspace workspace--${picking ? "pick" : tool}`}
       onDragOver={drop.onDragOver}
       onDrop={drop.onDrop}
     >
@@ -138,6 +156,7 @@ export function CanvasStage() {
           y={pan.y}
           onWheel={onWheel}
           onMouseDown={onMouseDown}
+          onTouchStart={picking ? onPickTouch : undefined}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseLeave}
@@ -146,8 +165,8 @@ export function CanvasStage() {
         >
           <Layer>
             <PageBackground width={project.width} height={project.height} background={page.background} />
-            {/* While drawing, clicks must reach the page even over elements. */}
-            <Group clipX={0} clipY={0} clipWidth={project.width} clipHeight={project.height} listening={tool !== "draw"}>
+            {/* While drawing or picking, clicks must reach the page even over elements. */}
+            <Group clipX={0} clipY={0} clipWidth={project.width} clipHeight={project.height} listening={tool !== "draw" && !picking}>
               {elements.map((element) => (
                 <ElementNode key={element.id} element={element} />
               ))}
@@ -164,11 +183,12 @@ export function CanvasStage() {
             <MarqueeRect rect={marquee.rect} zoom={zoom} />
             {tool === "draw" ? <DrawPreview points={drawPoints} hover={drawing.hover} options={drawOptions} zoom={zoom} /> : null}
           </Layer>
-          <Layer listening={tool !== "draw"}>
+          <Layer listening={tool !== "draw" && !picking}>
             <SelectionTransformer />
           </Layer>
         </Stage>
       ) : null}
+      <ColorPickOverlay containerRef={containerRef} />
       <ImageEffectsOverlay />
       <TextEditOverlay />
       <QuickToolbar />

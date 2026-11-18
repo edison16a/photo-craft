@@ -1,8 +1,9 @@
 /**
  * Transient editor UI state: the active tool, which side panel is open,
  * zoom and pan, in place text editing, alignment guides, toasts, which
- * images are still having their background removed and the shape being
- * drawn. None of this is saved with the project.
+ * images are still having their background removed, the shape being
+ * drawn and the image a colour is being picked from. None of this is
+ * saved with the project.
  */
 import { create } from "zustand";
 import type { DrawOptions } from "../lib/drawing";
@@ -59,6 +60,8 @@ export interface EditorUiState {
   drawOptions: DrawOptions;
   /** Corners placed so far with the draw tool, as page coordinates in x, y pairs. */
   drawPoints: number[];
+  /** The image whose chroma key colour the next click picks, or null. */
+  pickingColorFor: string | null;
 
   setTool: (tool: Tool) => void;
   openPanel: (panel: PanelKind) => void;
@@ -79,6 +82,8 @@ export interface EditorUiState {
   endReveal: () => void;
   setDrawOptions: (patch: Partial<DrawOptions>) => void;
   setDrawPoints: (points: number[]) => void;
+  startColorPick: (elementId: string) => void;
+  endColorPick: () => void;
 }
 
 /** Smallest zoom the workspace allows. */
@@ -115,9 +120,10 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   reveal: null,
   drawOptions: { closed: true, grid: 20, smooth: false },
   drawPoints: [],
+  pickingColorFor: null,
 
-  // Leaving the draw tool drops any half drawn shape.
-  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool], drawPoints: [] }),
+  // Leaving the draw tool drops any half drawn shape, and any tool change ends picking.
+  setTool: (tool) => set({ tool, panel: PANEL_FOR_TOOL[tool], drawPoints: [], pickingColorFor: null }),
   openPanel: (panel) => set({ panel }),
   setViewport: (zoom, pan) =>
     set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom)), pan }),
@@ -145,4 +151,6 @@ export const useEditorUiStore = create<EditorUiState>()((set) => ({
   endReveal: () => set({ reveal: null }),
   setDrawOptions: (patch) => set((state) => ({ drawOptions: { ...state.drawOptions, ...patch } })),
   setDrawPoints: (drawPoints) => set({ drawPoints }),
+  startColorPick: (elementId) => set({ pickingColorFor: elementId }),
+  endColorPick: () => set((state) => (state.pickingColorFor ? { pickingColorFor: null } : state)),
 }));
