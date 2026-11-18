@@ -43,8 +43,10 @@ It is also perfect for making high quality, modern logos. The logo for my person
 - Text, images and thirty shapes on as many pages as you like, with undo and redo.
 - A draw tool for shapes of your own: click corners or drag along a grid, so every side comes out straight and lined up. Drawing back to the start closes the shape, smooth corners rounds it as you go, and a slider rounds the corners of drawn shapes, polygons and rectangles.
 - Colour for photos: paint one flat colour over a picture, keeping its transparency.
+- Chroma key: pick a colour on a photo with the eyedropper and every pixel close to it turns transparent. Tolerance and softness sliders tune the edge, and turning it off brings the picture back.
 - More than 250 fonts, a colour picker with the colours your project already uses at the top, and a floating toolbar next to whatever you select.
 - Resize, rotate, flip, lock, align and reorder. Images and drawn shapes keep their proportions unless you switch that off. Alignment guides snap to the page and to other items.
+- Select several items with Shift+click or a drag box, then group them so they move, align, flip and turn as one. Click a selected item again to select whatever sits behind it.
 - Export at any size as PNG, JPG, WebP or PDF, with a transparent background where the format allows it.
 - One click background removal, in the editor or on its own page where you can drop in a batch of pictures, compare each cutout with its original, touch it up with restore and erase brushes, and download any size. It runs in your browser, so nothing is uploaded.
 - Preset sizes for social posts, thumbnails, logos, wallpapers and print, or any custom size.
@@ -77,7 +79,7 @@ It runs entirely in the browser, on WebGPU where the browser allows it and on We
 
 ## Shortcuts
 
-The single letter keys can be changed or cleared under Keybinds in the settings. They never fire while you type.
+The single letter keys can be changed or cleared under Keybinds in the settings. They never fire while you type. Chroma key has no key until you give it one.
 
 | Keys | Action |
 | --- | --- |
@@ -86,13 +88,17 @@ The single letter keys can be changed or cleared under Keybinds in the settings.
 | Ctrl+A | Select all |
 | Ctrl+C, Ctrl+V | Copy, paste (also pastes images from the clipboard) |
 | Ctrl+D | Duplicate |
+| Ctrl+G, Ctrl+Shift+G | Group, ungroup |
+| Shift+click, drag a box | Select several items |
+| Click a selected item again | Select what is behind it |
+| Ctrl+click, double click | Select one item inside a group |
 | Delete | Remove selection |
 | Arrows, Shift+Arrows | Nudge by 1 px or 10 px |
 | S, T, H, D, U | Select, text, shapes, draw, upload |
 | R | Remove or restore the background of the selected image |
 | Enter, Backspace, Escape | While drawing: finish the shape, take a corner back, start over |
 | Ctrl+Plus, Ctrl+Minus, Ctrl+0 | Zoom in, zoom out, fit |
-| Escape | Deselect or finish editing text |
+| Escape | Deselect, finish editing text, or leave the eyedropper |
 | Ctrl+Wheel | Zoom around the pointer |
 | Wheel | Pan |
 
@@ -102,7 +108,7 @@ Next.js 15 with the App Router. Four routes: `/` (your projects), `/remove-bg` (
 
 - `src/model`: the project, page and element types, plus factories.
 - `src/data`: presets, fonts, colours and shape geometry, including the point lists and paths behind every shape.
-- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, grid snapping and rounded corner paths for shapes, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the background remover.
+- `src/lib`: browser free helpers: geometry, snapping, IndexedDB, ZIP writing, image loading, popover and toolbar placement, colour extraction, grid snapping and rounded corner paths for shapes, chroma key maths, groups and click through hit testing, and the export renderer under `src/lib/export`. `src/lib/background` holds the cutout model's maths and the worker that runs it, `src/lib/remove-bg` the sizing and download helpers of the background remover.
 - `src/store`: the zustand stores. `project-store` holds the open project, selection, live previews and undo history and is split into slices. `editor-ui-store` holds tool, panel, zoom, pan and the open menus.
 - `src/services/background-removal.ts`: the main thread side of the remover. It starts the worker and hands it pictures one at a time.
 - `src/hooks`: React hooks for saving, autosave, shortcuts, theme, settings, live updates and the removal queue.
