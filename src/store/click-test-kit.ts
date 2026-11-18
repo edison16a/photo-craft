@@ -6,7 +6,7 @@ import { vi } from "vitest";
 import { createShapeElement } from "../model/element-factories";
 import { createProject } from "../model/project-factories";
 import type { CanvasElement } from "../model/types";
-import { clickElement, DOUBLE_CLICK_MS, pressElement, type PointerInput } from "./element-clicks";
+import { clickElement, doubleClickElement, DOUBLE_CLICK_MS, pressElement, type PointerInput } from "./element-clicks";
 import { useProjectStore } from "./project-store";
 
 /** The project store's current state. */
@@ -39,3 +39,12 @@ export function load(elements: CanvasElement[]): void {
 /** A 100 by 100 rectangle at the page's top left corner. */
 export const rect = (id: string, extra: Partial<CanvasElement> = {}) =>
   createShapeElement("rectangle", { id, width: 100, height: 100, ...extra });
+
+/** Two quick clicks on one element and the double click Konva fires after them. */
+export function doubleClick(id: string, extra: Partial<PointerInput> = {}): void {
+  for (let count = 0; count < 2; count += 1) {
+    pressElement(input(id, extra));
+    clickElement(input(id, extra));
+  }
+  doubleClickElement(id);
+}

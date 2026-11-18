@@ -6,9 +6,9 @@
  * A press selects the unit under the pointer, so a drag that follows moves
  * it. A click on something that was already selected narrows a bigger
  * selection to that unit, or else steps to the next unit behind it. The
- * second click of a double click does neither, and when the element has a
- * double click action of its own the step waits out the double click
- * window first.
+ * second click of a double click does neither, and when the element the
+ * click counts for has a double click action of its own the step waits
+ * out the double click window first.
  */
 import { nextUnitUnder } from "../lib/click-through";
 import { expandToGroups, toggleUnitSelection, unitKey } from "../lib/groups";
@@ -46,8 +46,15 @@ interface Press {
   keepsSelection: boolean;
 }
 
+/** The last click: the element hit, the one it counted for, and when. */
+interface Click {
+  id: string;
+  actsOn: string;
+  time: number;
+}
+
 let press: Press | null = null;
-let lastClick: { id: string; time: number } | null = null;
+let lastClick: Click | null = null;
 let pendingStep: ReturnType<typeof setTimeout> | null = null;
 
 /** True for elements whose double click does something: unlocked text, and any grouped element. */
@@ -77,7 +84,7 @@ export function clickElement(input: PointerInput): void {
   if (input.button !== 0 || !current || current.id !== input.id) return;
   const now = Date.now();
   const repeat = lastClick !== null && lastClick.id === input.id && now - lastClick.time < DOUBLE_CLICK_MS;
-  lastClick = { id: input.id, time: now };
+  lastClick = { id: input.id, actsOn: current.actsOn, time: now };
   if (repeat || !current.wasSelected) return;
 
   const store = useProjectStore.getState();
@@ -103,22 +110,27 @@ export function clickElement(input: PointerInput): void {
     latest.setSelection(next);
     rememberStep(input.point, useProjectStore.getState().selectedIds);
   };
-  const clicked = elements.find((element) => element.id === input.id);
-  if (clicked && hasDoubleClickAction(clicked)) pendingStep = setTimeout(step, DOUBLE_CLICK_MS);
+  if (hasDoubleClickAction(actsOn)) pendingStep = setTimeout(step, DOUBLE_CLICK_MS);
   else step();
 }
 
-/** Handles a double click: text opens for editing, a grouped element is picked out of its group. */
+/**
+ * Handles a double click on the element Konva hit. It acts on the element
+ * the clicks counted for, which is a stepped selection beneath the hit one
+ * when there is one. Text opens for editing, a grouped element is picked
+ * out of its group.
+ */
 export function doubleClickElement(id: string): void {
   cancelPendingStep();
+  const target = lastClick?.id === id ? lastClick.actsOn : id;
   const store = useProjectStore.getState();
-  const element = selectCurrentElements(store).find((candidate) => candidate.id === id);
+  const element = selectCurrentElements(store).find((candidate) => candidate.id === target);
   if (!element) return;
   if (element.type === "text" && !element.locked) {
-    store.setSelection([id]);
-    useEditorUiStore.getState().setEditingText(id);
+    store.setSelection([target]);
+    useEditorUiStore.getState().setEditingText(target);
   } else if (element.groupId !== undefined) {
-    store.setSelection([id]);
+    store.setSelection([target]);
   }
 }
 
@@ -142,7 +154,7 @@ export function pressKeepsSelection(): boolean {
 
 /** Counts a colour pick on an image as a click on it, so the rest of a double click does not step. */
 export function notePick(id: string): void {
-  lastClick = { id, time: Date.now() };
+  lastClick = { id, actsOn: id, time: Date.now() };
 }
 
 /** Forgets earlier presses, clicks and steps. */

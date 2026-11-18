@@ -1,16 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createShapeElement, createTextElement } from "../model/element-factories";
+import { createShapeElement } from "../model/element-factories";
 import { click, input, load, rect, store } from "./click-test-kit";
 import { useEditorUiStore } from "./editor-ui-store";
-import {
-  clickElement,
-  doubleClickElement,
-  DOUBLE_CLICK_MS,
-  pressElement,
-  pressKeepsSelection,
-  resetElementClicks,
-  selectForMenu,
-} from "./element-clicks";
+import { pressElement, pressKeepsSelection, resetElementClicks, selectForMenu } from "./element-clicks";
 
 describe("element clicks", () => {
   beforeEach(() => {
@@ -68,17 +60,6 @@ describe("element clicks", () => {
     expect(pressKeepsSelection()).toBe(false);
   });
 
-  it("does not step on the second click of a double click", () => {
-    click("upper");
-    const press = input("upper");
-    pressElement(press);
-    clickElement(press);
-    expect(store().selectedIds).toEqual(["lower"]);
-    pressElement(press);
-    clickElement(press);
-    expect(store().selectedIds).toEqual(["lower"]);
-  });
-
   it("never steps on a shift click", () => {
     click("upper");
     click("upper", { shift: true });
@@ -103,45 +84,6 @@ describe("element clicks", () => {
     expect(store().selectedIds).toEqual([]);
     click("upper", { mod: true });
     expect(store().selectedIds).toEqual(["upper"]);
-  });
-
-  it("waits out the double click window before stepping from a grouped element", () => {
-    store().groupElements(["lower", "upper"]);
-    const press = input("upper");
-    pressElement(press);
-    clickElement(press);
-    expect(store().selectedIds).toEqual(["lower", "upper"]);
-    vi.advanceTimersByTime(DOUBLE_CLICK_MS);
-    expect(store().selectedIds).toEqual(["image"]);
-  });
-
-  it("picks a grouped element out on double click instead of stepping", () => {
-    store().groupElements(["lower", "upper"]);
-    const press = input("upper");
-    pressElement(press);
-    clickElement(press);
-    pressElement(press);
-    clickElement(press);
-    doubleClickElement("upper");
-    vi.advanceTimersByTime(DOUBLE_CLICK_MS * 2);
-    expect(store().selectedIds).toEqual(["upper"]);
-  });
-
-  it("edits text on double click, selected first or not", () => {
-    load([rect("image"), createTextElement({ id: "text" })]);
-    const press = input("text", { point: { x: 20, y: 20 } });
-    for (const selectedFirst of [false, true]) {
-      useEditorUiStore.getState().setEditingText(null);
-      store().setSelection(selectedFirst ? ["text"] : []);
-      pressElement(press);
-      clickElement(press);
-      pressElement(press);
-      clickElement(press);
-      doubleClickElement("text");
-      vi.advanceTimersByTime(DOUBLE_CLICK_MS * 2);
-      expect(store().selectedIds).toEqual(["text"]);
-      expect(useEditorUiStore.getState().editingTextId).toBe("text");
-    }
   });
 
   it("ignores clicks from other buttons and keeps the stepped selection for a right click", () => {
