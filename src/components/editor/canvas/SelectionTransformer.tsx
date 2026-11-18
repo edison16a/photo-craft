@@ -7,6 +7,7 @@ import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { keepsRatio } from "@/lib/keeps-ratio";
 import { useEditorUiStore } from "@/store/editor-ui-store";
+import { cancelElementStep } from "@/store/element-clicks";
 import { useProjectStore } from "@/store/project-store";
 import { selectCurrentElements } from "@/store/selectors";
 
@@ -149,7 +150,11 @@ export function SelectionTransformer() {
       boundBoxFunc={(oldBox, newBox) =>
         Math.abs(newBox.width) < MIN_SIZE || Math.abs(newBox.height) < MIN_SIZE ? oldBox : newBox
       }
-      onTransformStart={() => useEditorUiStore.getState().setInteracting(true)}
+      onTransformStart={() => {
+        // A step from the click just before must not swap the nodes mid transform.
+        cancelElementStep();
+        useEditorUiStore.getState().setInteracting(true);
+      }}
       onTransform={onTransform}
       onTransformEnd={commit}
     />

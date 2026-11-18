@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTextElement } from "../model/element-factories";
 import { click, doubleClick, input, load, rect, store } from "./click-test-kit";
 import { useEditorUiStore } from "./editor-ui-store";
-import { clickElement, doubleClickElement, DOUBLE_CLICK_MS, pressElement, resetElementClicks } from "./element-clicks";
+import {
+  cancelElementStep,
+  clickElement,
+  doubleClickElement,
+  DOUBLE_CLICK_MS,
+  pressElement,
+  resetElementClicks,
+} from "./element-clicks";
 
 const editing = () => useEditorUiStore.getState().editingTextId;
 const text = (id: string) => createTextElement({ id, width: 100 });
@@ -36,6 +43,16 @@ describe("element double clicks", () => {
     expect(store().selectedIds).toEqual(["lower", "upper"]);
     vi.advanceTimersByTime(DOUBLE_CLICK_MS);
     expect(store().selectedIds).toEqual(["image"]);
+  });
+
+  it("drops a waiting step when a transform starts", () => {
+    load([rect("box"), text("text")]);
+    store().setSelection(["text"]);
+    pressElement(input("text"));
+    clickElement(input("text"));
+    cancelElementStep();
+    vi.advanceTimersByTime(DOUBLE_CLICK_MS * 2);
+    expect(store().selectedIds).toEqual(["text"]);
   });
 
   it("picks a grouped element out on double click instead of stepping", () => {

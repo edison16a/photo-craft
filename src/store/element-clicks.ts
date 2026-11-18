@@ -72,7 +72,7 @@ export function hasDoubleClickAction(element: CanvasElement): boolean {
 
 /** Handles a press on an element. */
 export function pressElement(input: PointerInput): void {
-  cancelPendingStep();
+  cancelElementStep();
   const store = useProjectStore.getState();
   const elements = selectCurrentElements(store);
   const plain = input.button === 0 && !input.shift && !input.mod;
@@ -138,7 +138,7 @@ export function clickElement(input: PointerInput): void {
 export function doubleClickElement(id: string): void {
   if (!lastClick?.second || lastClick.id !== id) return;
   const target = lastClick.actsOn;
-  cancelPendingStep();
+  cancelElementStep();
   const store = useProjectStore.getState();
   const element = selectCurrentElements(store).find((candidate) => candidate.id === target);
   if (!element) return;
@@ -175,7 +175,7 @@ export function notePick(id: string): void {
 
 /** Forgets earlier presses, clicks and steps. */
 export function resetElementClicks(): void {
-  cancelPendingStep();
+  cancelElementStep();
   press = null;
   lastClick = null;
   forgetStep();
@@ -187,7 +187,8 @@ function movedFar(from: Point, to: Point): boolean {
   return Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y)) * zoom >= DRAG_DISTANCE_PX;
 }
 
-function cancelPendingStep(): void {
+/** Drops a step still waiting out the double click window, as when a transform starts. */
+export function cancelElementStep(): void {
   if (pendingStep) clearTimeout(pendingStep);
   pendingStep = null;
 }
