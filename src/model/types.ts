@@ -29,6 +29,11 @@ export interface ElementBase {
    * default: images and drawn shapes keep them, other shapes do not.
    */
   lockRatio?: boolean;
+  /**
+   * Elements on a page that share a groupId form a group and select, move
+   * and align as one. Unset means the element is on its own.
+   */
+  groupId?: string;
 }
 
 /** Horizontal alignment of text inside its box. */

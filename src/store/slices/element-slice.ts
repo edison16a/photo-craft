@@ -1,8 +1,10 @@
 /**
  * Element actions on the current page: add, change, remove, duplicate,
- * reorder, align, lock, flip, copy and paste.
+ * reorder, align, lock, flip, turn, copy and paste. The ones that move or
+ * copy elements know about groups.
  */
 import { resizeKeepingCorner } from "../../lib/geometry";
+import { freshGroupIds, normaliseGroups } from "../../lib/groups";
 import { cloneElement } from "../../model/element-factories";
 import type { CanvasElement } from "../../model/types";
 import { alignElements, type Alignment } from "../alignment";
@@ -14,9 +16,10 @@ import {
   removeElementsFromPage,
   reorderElements,
   withElements,
-  withPage,
+  withPageElements,
   type StackDirection,
 } from "../project-updates";
+import { flipUnits, rotateUnitsQuarter } from "../unit-transforms";
 
 /** Partial patch keyed by element ID. Used when several elements move at once. */
 export type ElementPatches = Record<string, Partial<CanvasElement>>;
@@ -32,12 +35,17 @@ export interface ElementActions {
   patchElements: (patches: ElementPatches) => void;
   /** Stores a measured size without an undo step. Used for auto height text. */
   syncElementSize: (id: string, size: { width?: number; height?: number }) => void;
+  /** Removes elements. A group left with one member stops being a group. */
   removeElements: (ids: string[]) => void;
+  /** Copies elements in place, offset a little. Copies of a group form a new group. */
   duplicateElements: (ids: string[]) => void;
   reorder: (ids: string[], direction: StackDirection) => void;
   align: (ids: string[], alignment: Alignment) => void;
   setLocked: (ids: string[], locked: boolean) => void;
+  /** Flips elements. A group mirrors as a whole. */
   flip: (ids: string[], axis: "x" | "y") => void;
+  /** Turns elements 90 degrees clockwise. A group turns about its centre. */
+  rotateQuarter: (ids: string[]) => void;
   nudge: (ids: string[], dx: number, dy: number) => void;
   copy: (ids: string[]) => void;
   paste: () => void;
@@ -104,7 +112,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
     applyProjectChange(
       set,
       get,
-      (project) => removeElementsFromPage(project, currentPageId, ids),
+      (project) => withPageElements(removeElementsFromPage(project, currentPageId, ids), currentPageId, normaliseGroups),
       { selectedIds: selectedIds.filter((id) => !doomed.has(id)) },
     );
   },
@@ -117,7 +125,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
     const copies = page.elements
       .filter((element) => wanted.has(element.id))
       .map((element) => cloneElement(element, DUPLICATE_OFFSET));
-    get().addElements(copies, true);
+    get().addElements(freshGroupIds(copies), true);
   },
 
   reorder: (ids, direction) => {
@@ -128,10 +136,7 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   align: (ids, alignment) => {
     const { currentPageId } = get();
     applyProjectChange(set, get, (project) =>
-      withPage(project, currentPageId, (page) => {
-        const elements = alignElements(page.elements, ids, alignment, project);
-        return elements === page.elements ? page : { ...page, elements };
-      }),
+      withPageElements(project, currentPageId, (elements) => alignElements(elements, ids, alignment, project)),
     );
   },
 
@@ -140,9 +145,14 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   flip: (ids, axis) => {
     const { currentPageId } = get();
     applyProjectChange(set, get, (project) =>
-      withElements(project, currentPageId, ids, (element) =>
-        axis === "x" ? { ...element, flipX: !element.flipX } : { ...element, flipY: !element.flipY },
-      ),
+      withPageElements(project, currentPageId, (elements) => flipUnits(elements, ids, axis)),
+    );
+  },
+
+  rotateQuarter: (ids) => {
+    const { currentPageId } = get();
+    applyProjectChange(set, get, (project) =>
+      withPageElements(project, currentPageId, (elements) => rotateUnitsQuarter(elements, ids)),
     );
   },
 
@@ -169,6 +179,6 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   paste: () => {
     const { clipboard } = get();
     if (clipboard.length === 0) return;
-    get().addElements(clipboard.map((element) => cloneElement(element, DUPLICATE_OFFSET)), true);
+    get().addElements(freshGroupIds(clipboard.map((element) => cloneElement(element, DUPLICATE_OFFSET))), true);
   },
 });

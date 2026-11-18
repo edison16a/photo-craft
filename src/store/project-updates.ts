@@ -57,6 +57,21 @@ export function withElements(
 }
 
 /**
+ * Replaces a page's element list using a transform. Hands back the same
+ * project when the transform returns the list it was given.
+ */
+export function withPageElements(
+  project: Project,
+  pageId: string,
+  transform: (elements: CanvasElement[]) => CanvasElement[],
+): Project {
+  return withPage(project, pageId, (page) => {
+    const elements = transform(page.elements);
+    return elements === page.elements ? page : { ...page, elements };
+  });
+}
+
+/**
  * Merges a patch into an element, or returns the element itself when every
  * patched field already has that value.
  */

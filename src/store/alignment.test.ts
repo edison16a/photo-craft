@@ -26,3 +26,26 @@ describe("alignElements", () => {
     expect(aligned).toBe(el);
   });
 });
+
+describe("alignElements with groups", () => {
+  const member = (id: string, x: number, y: number, locked = false) =>
+    createShapeElement("rectangle", { id, x, y, width: 100, height: 100, groupId: "g", locked });
+
+  it("aligns one group to the page as a whole", () => {
+    const [a, b] = alignElements([member("a", 100, 0), member("b", 300, 50)], ["a", "b"], "right", page);
+    expect(a.x).toBe(700);
+    expect(b.x).toBe(900);
+    expect(b.y).toBe(50);
+  });
+
+  it("aligns the group's bounds with other units", () => {
+    const other = createShapeElement("rectangle", { id: "c", x: 50, y: 0, width: 10, height: 10 });
+    const [a, b, c] = alignElements([member("a", 100, 0), member("b", 300, 0), other], ["a", "b", "c"], "left", page);
+    expect([a.x, b.x, c.x]).toEqual([50, 250, 50]);
+  });
+
+  it("keeps a group with a locked member in place", () => {
+    const elements = [member("a", 100, 0), member("b", 300, 0, true)];
+    expect(alignElements(elements, ["a", "b"], "left", page)).toBe(elements);
+  });
+});

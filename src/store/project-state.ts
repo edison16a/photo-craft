@@ -6,6 +6,7 @@ import type { StateCreator } from "zustand";
 import type { CanvasElement, Project } from "../model/types";
 import { emptyHistory, pushHistory, type History } from "./history";
 import type { ElementActions } from "./slices/element-slice";
+import type { GroupActions } from "./slices/group-slice";
 import type { HistoryActions } from "./slices/history-slice";
 import type { PageActions } from "./slices/page-slice";
 import type { PreviewActions } from "./slices/preview-slice";
@@ -37,6 +38,7 @@ export interface ProjectState {
 export type ProjectStore = ProjectState &
   PageActions &
   ElementActions &
+  GroupActions &
   SelectionActions &
   HistoryActions &
   PreviewActions;

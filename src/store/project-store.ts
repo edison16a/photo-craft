@@ -9,6 +9,7 @@
 import { create } from "zustand";
 import { initialProjectState, type ProjectStore } from "./project-state";
 import { createElementSlice } from "./slices/element-slice";
+import { createGroupSlice } from "./slices/group-slice";
 import { createHistorySlice } from "./slices/history-slice";
 import { createPageSlice } from "./slices/page-slice";
 import { createPreviewSlice } from "./slices/preview-slice";
@@ -20,6 +21,7 @@ export const useProjectStore = create<ProjectStore>()((...args) => ({
   ...createPageSlice(...args),
   ...createSelectionSlice(...args),
   ...createElementSlice(...args),
+  ...createGroupSlice(...args),
   ...createHistorySlice(...args),
   ...createPreviewSlice(...args),
 }));
