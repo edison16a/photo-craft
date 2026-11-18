@@ -5,6 +5,7 @@
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
+import { isMac, readButtons } from "@/lib/pointer-buttons";
 import type { PointerInput } from "@/store/element-clicks";
 import { screenToPage } from "@/store/viewport-actions";
 
@@ -22,18 +23,19 @@ export function elementsUnder(stage: Konva.Stage, pointer: Vector2d): string[] {
   return [...ids];
 }
 
-/** What element-clicks needs to know about a Konva pointer event on the element with this id. */
+/**
+ * What element-clicks needs to know about a Konva pointer event on the
+ * element with this id. A Mac Ctrl+click reads as the right click it is.
+ */
 export function pointerInput(event: KonvaEventObject<MouseEvent | TouchEvent>, id: string): PointerInput | null {
   const stage = event.target.getStage();
   const pointer = stage?.getPointerPosition();
   if (!stage || !pointer) return null;
-  const evt = event.evt;
   return {
     id,
     point: screenToPage(pointer),
     under: () => elementsUnder(stage, pointer),
-    button: "button" in evt ? evt.button : 0,
-    shift: evt.shiftKey,
-    mod: evt.ctrlKey || evt.metaKey,
+    shift: event.evt.shiftKey,
+    ...readButtons(event.evt, isMac()),
   };
 }

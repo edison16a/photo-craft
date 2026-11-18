@@ -116,6 +116,13 @@ describe("element clicks", () => {
     expect(store().selectedIds).toEqual(["upper"]);
   });
 
+  it("keeps a selection that holds the element for a right click, as a Mac Ctrl+click is", () => {
+    store().groupElements(["lower", "upper"]);
+    store().setSelection(["image", "lower", "upper"]);
+    click("upper", { button: 2 });
+    expect(store().selectedIds).toEqual(["image", "lower", "upper"]);
+  });
+
   it("ignores clicks from other buttons and keeps the stepped selection for a right click", () => {
     click("upper");
     click("upper");
