@@ -4,7 +4,7 @@
  * the centre of its bounds. An element on its own flips or turns in place.
  */
 import { centerOf, normalizeDegrees, unionRects } from "../lib/geometry";
-import { splitIntoUnits } from "../lib/groups";
+import { isFrozenUnit, splitIntoUnits } from "../lib/groups";
 import type { CanvasElement, Point } from "../model/types";
 import { elementBounds } from "./alignment";
 
@@ -24,7 +24,7 @@ export function flipUnits(elements: CanvasElement[], ids: readonly string[], axi
       changes.set(unit[0].id, toggled(unit[0]));
       continue;
     }
-    if (unit.some((element) => element.locked)) continue;
+    if (isFrozenUnit(unit)) continue;
     const centre = unitCentre(unit);
     for (const element of unit) {
       const own = centerOf(element);
@@ -44,7 +44,7 @@ export function flipUnits(elements: CanvasElement[], ids: readonly string[], axi
 export function rotateUnitsQuarter(elements: CanvasElement[], ids: readonly string[]): CanvasElement[] {
   const changes = new Map<string, CanvasElement>();
   for (const unit of selectedUnits(elements, ids)) {
-    if (unit.some((element) => element.locked)) continue;
+    if (isFrozenUnit(unit)) continue;
     const centre = unitCentre(unit);
     for (const element of unit) {
       const rotation = normalizeDegrees(element.rotation + 90);

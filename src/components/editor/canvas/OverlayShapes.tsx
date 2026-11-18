@@ -59,7 +59,7 @@ interface LockedOutlinesProps {
   zoom: number;
 }
 
-/** Dashed outline around selected elements that are locked. */
+/** Dashed outline around selected elements held still by a lock on them or their group. */
 export function LockedOutlines({ elements, zoom }: LockedOutlinesProps) {
   return (
     <>

@@ -4,7 +4,7 @@
  * copy elements know about groups.
  */
 import { resizeKeepingCorner } from "../../lib/geometry";
-import { freshGroupIds, normaliseGroups } from "../../lib/groups";
+import { freshGroupIds, normaliseGroups, splitByLock } from "../../lib/groups";
 import { cloneElement } from "../../model/element-factories";
 import type { CanvasElement } from "../../model/types";
 import { alignElements, type Alignment } from "../alignment";
@@ -46,6 +46,7 @@ export interface ElementActions {
   flip: (ids: string[], axis: "x" | "y") => void;
   /** Turns elements 90 degrees clockwise. A group turns about its centre. */
   rotateQuarter: (ids: string[]) => void;
+  /** Moves elements a few pixels. A unit with a locked member stays put, as it does for align. */
   nudge: (ids: string[], dx: number, dy: number) => void;
   copy: (ids: string[]) => void;
   paste: () => void;
@@ -159,11 +160,14 @@ export const createElementSlice: Slice<ElementActions> = (set, get) => ({
   nudge: (ids, dx, dy) => {
     if (ids.length === 0 || (dx === 0 && dy === 0)) return;
     const { currentPageId } = get();
-    applyProjectChange(set, get, (project) =>
-      withElements(project, currentPageId, ids, (element) =>
-        element.locked ? element : { ...element, x: element.x + dx, y: element.y + dy },
-      ),
-    );
+    applyProjectChange(set, get, (project) => {
+      const { movable } = splitByLock(findPage(project, currentPageId)?.elements ?? [], ids);
+      return withElements(project, currentPageId, movable.map((element) => element.id), (element) => ({
+        ...element,
+        x: element.x + dx,
+        y: element.y + dy,
+      }));
+    });
   },
 
   copy: (ids) => {

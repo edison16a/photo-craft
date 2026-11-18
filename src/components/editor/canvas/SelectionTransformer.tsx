@@ -3,6 +3,7 @@ import type Konva from "konva";
 import { useEffect, useMemo, useRef } from "react";
 import { Transformer } from "react-konva";
 import { normalizeDegrees } from "@/lib/geometry";
+import { splitByLock } from "@/lib/groups";
 import { topLeftFromCentre } from "@/lib/konva/element-attrs";
 import type { CanvasElement } from "@/model/types";
 import { keepsRatio } from "@/lib/keeps-ratio";
@@ -34,10 +35,10 @@ function transformRules(selected: CanvasElement[]) {
 }
 
 /**
- * Konva transformer bound to the selected, unlocked elements. Elements that
- * keep their proportions only get corner handles. When a transform ends the
- * node's scale is folded into width, height and font size and the scale
- * reset to one.
+ * Konva transformer bound to the selected elements that may move. A unit
+ * with a locked member gets none. Elements that keep their proportions
+ * only get corner handles. When a transform ends the node's scale is
+ * folded into width, height and font size and the scale reset to one.
  */
 export function SelectionTransformer() {
   const ref = useRef<Konva.Transformer>(null);
@@ -46,10 +47,7 @@ export function SelectionTransformer() {
   const tool = useEditorUiStore((s) => s.tool);
   const editing = useEditorUiStore((s) => s.editingTextId);
 
-  const selected = useMemo(
-    () => elements.filter((el) => selectedIds.includes(el.id) && !el.locked),
-    [elements, selectedIds],
-  );
+  const selected = useMemo(() => splitByLock(elements, selectedIds).movable, [elements, selectedIds]);
   const rules = transformRules(selected);
   const visible = tool === "select" && selected.length > 0 && !editing;
 

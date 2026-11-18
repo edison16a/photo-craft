@@ -43,6 +43,33 @@ export function splitIntoUnits(elements: readonly CanvasElement[]): CanvasElemen
   return [...units.values()];
 }
 
+/**
+ * Whether a unit holds still. A unit with a locked member does not move,
+ * resize or turn, so a lock never pulls a group apart.
+ */
+export function isFrozenUnit(unit: readonly CanvasElement[]): boolean {
+  return unit.some((element) => element.locked);
+}
+
+/**
+ * Splits the elements with the given ids into those free to move and
+ * those held still because their unit has a locked member. Units come
+ * from the given ids only, as in splitIntoUnits, so a member picked out of
+ * its group moves unless it is locked itself. Both keep stacking order.
+ */
+export function splitByLock(
+  elements: readonly CanvasElement[],
+  ids: readonly string[],
+): { movable: CanvasElement[]; frozen: CanvasElement[] } {
+  const wanted = new Set(ids);
+  const selected = elements.filter((element) => wanted.has(element.id));
+  const frozenUnits = new Set(selected.filter((element) => element.locked).map(unitKey));
+  const movable: CanvasElement[] = [];
+  const frozen: CanvasElement[] = [];
+  for (const element of selected) (frozenUnits.has(unitKey(element)) ? frozen : movable).push(element);
+  return { movable, frozen };
+}
+
 /** Adds the element's whole unit to the selection, or takes it out when the element is selected. */
 export function toggleUnitSelection(
   elements: readonly CanvasElement[],

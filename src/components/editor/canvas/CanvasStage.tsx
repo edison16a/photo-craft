@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Group, Layer, Stage } from "react-konva";
 import { useAddElement } from "@/hooks/use-add-element";
 import { blurActiveField } from "@/lib/focus";
+import { splitByLock } from "@/lib/groups";
 import { inPickDoubleClick, pickColorAt, watchPickTarget } from "@/store/chroma-key-actions";
 import { useEditorUiStore } from "@/store/editor-ui-store";
 import { selectForMenu } from "@/store/element-clicks";
@@ -63,7 +64,7 @@ export function CanvasStage() {
   if (!project || !page) return <div ref={containerRef} className="workspace" />;
 
   const elements = page.elements;
-  const lockedSelected = elements.filter((el) => el.locked && selectedIds.includes(el.id));
+  const lockedSelected = splitByLock(elements, selectedIds).frozen;
 
   const pointerOnPage = (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
     const stage = event.target.getStage();

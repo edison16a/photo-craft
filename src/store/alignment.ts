@@ -7,7 +7,7 @@
  * in a layout tool.
  */
 import { rotatedBoundingBox, unionRects } from "../lib/geometry";
-import { splitIntoUnits } from "../lib/groups";
+import { isFrozenUnit, splitIntoUnits } from "../lib/groups";
 import type { CanvasElement, Rect } from "../model/types";
 
 /** Edges and centres an element can be aligned to. */
@@ -62,7 +62,7 @@ export function alignElements(
 
   const moves = new Map<string, { dx: number; dy: number }>();
   units.forEach((unit, index) => {
-    if (unit.some((element) => element.locked)) return;
+    if (isFrozenUnit(unit)) return;
     const delta = alignmentDelta(boxes[index], target, alignment);
     if (Math.abs(delta.dx) < 0.001 && Math.abs(delta.dy) < 0.001) return;
     for (const element of unit) moves.set(element.id, delta);

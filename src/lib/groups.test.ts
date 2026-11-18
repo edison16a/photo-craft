@@ -6,7 +6,9 @@ import {
   freshGroupIds,
   groupAction,
   groupInStack,
+  isFrozenUnit,
   normaliseGroups,
+  splitByLock,
   splitIntoUnits,
   toggleUnitSelection,
   ungroupInStack,
@@ -39,6 +41,25 @@ describe("splitIntoUnits", () => {
 
   it("treats a group with one member given as a unit of one", () => {
     expect(splitIntoUnits([shape("a", "g")]).map(ids)).toEqual([["a"]]);
+  });
+});
+
+describe("splitByLock", () => {
+  const locked = (id: string, groupId?: string) => ({ ...shape(id, groupId), locked: true });
+
+  it("holds every given member of a unit with a locked member", () => {
+    const elements = [shape("a", "g"), locked("b", "g"), shape("c"), locked("d")];
+    const { movable, frozen } = splitByLock(elements, ["a", "b", "c", "d"]);
+    expect(ids(movable)).toEqual(["c"]);
+    expect(ids(frozen)).toEqual(["a", "b", "d"]);
+    expect(isFrozenUnit([shape("a"), locked("b")])).toBe(true);
+    expect(isFrozenUnit([shape("a")])).toBe(false);
+  });
+
+  it("lets a member picked out of its group move unless it is locked itself", () => {
+    const elements = [shape("a", "g"), locked("b", "g")];
+    expect(ids(splitByLock(elements, ["a"]).movable)).toEqual(["a"]);
+    expect(ids(splitByLock(elements, ["b"]).frozen)).toEqual(["b"]);
   });
 });
 

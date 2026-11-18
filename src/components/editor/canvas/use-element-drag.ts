@@ -11,13 +11,14 @@
  * Grabbing an unselected element drags its whole group. When the press
  * kept a selection that lies beneath the grabbed element (see
  * element-clicks), the selection moves and the grabbed element is held
- * where it is.
+ * where it is. A unit with a locked member holds still, and grabbing a
+ * member of one drags nothing, the same as grabbing a locked element.
  */
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { useMemo } from "react";
 import { unionRects } from "@/lib/geometry";
-import { expandToGroups } from "@/lib/groups";
+import { expandToGroups, splitByLock } from "@/lib/groups";
 import { computeSnap, type Guide } from "@/lib/snapping";
 import type { Point, Rect } from "@/model/types";
 import { elementBounds } from "@/store/alignment";
@@ -83,7 +84,12 @@ export function useElementDrag() {
       const selected = grabbedSelected || keep ? state.selectedIds : expandToGroups(elements, [id]);
       if (!grabbedSelected && !keep) state.setSelection(selected);
 
-      const moving = elements.filter((el) => selected.includes(el.id) && !el.locked);
+      const { movable } = splitByLock(elements, selected);
+      const moving = keep || movable.some((el) => el.id === id) ? movable : [];
+      if (moving.length === 0) {
+        node.stopDrag();
+        return;
+      }
       const movingIds = new Set(moving.map((el) => el.id));
       const start = new Map<string, Rect>();
       for (const el of moving) start.set(el.id, { x: el.x, y: el.y, width: el.width, height: el.height });

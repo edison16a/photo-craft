@@ -8,6 +8,7 @@ const store = () => useProjectStore.getState();
 const elements = (): CanvasElement[] => store().project!.pages[0].elements;
 const ids = () => elements().map((element) => element.id);
 const groupOf = (id: string) => elements().find((element) => element.id === id)?.groupId;
+const xOf = (id: string) => elements().find((element) => element.id === id)?.x;
 
 describe("group actions", () => {
   beforeEach(() => {
@@ -92,5 +93,25 @@ describe("group actions", () => {
     store().undo();
     store().undo();
     expect(pick("x")).toEqual([0, 100]);
+  });
+
+  it("holds a group with a locked member still for nudge, align and flip", () => {
+    store().groupElements(["a", "b"]);
+    store().setLocked(["b"], true);
+    const before = store().history.past.length;
+    store().nudge(["a", "b"], 10, 0);
+    store().align(["a", "b"], "right");
+    store().flip(["a", "b"], "x");
+    expect(["a", "b"].map(xOf)).toEqual([0, 100]);
+    expect(store().history.past.length).toBe(before);
+  });
+
+  it("nudges the rest of the selection, and a member picked out on its own", () => {
+    store().groupElements(["a", "b"]);
+    store().setLocked(["b"], true);
+    store().nudge(["a", "b", "c"], 10, 0);
+    expect(["a", "b", "c"].map(xOf)).toEqual([0, 100, 210]);
+    store().nudge(["a"], 10, 0);
+    expect(["a", "b"].map(xOf)).toEqual([10, 100]);
   });
 });
