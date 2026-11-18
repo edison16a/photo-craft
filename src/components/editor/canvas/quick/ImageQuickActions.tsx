@@ -2,6 +2,8 @@
 import { useLiveElementUpdate } from "@/hooks/use-live-element-update";
 import { useRemoveBackground } from "@/hooks/use-remove-background";
 import type { ImageElement } from "@/model/types";
+import { toggleColorPick } from "@/store/chroma-key-actions";
+import { useEditorUiStore } from "@/store/editor-ui-store";
 import { useProjectStore } from "@/store/project-store";
 import { ColorPicker } from "../../../ui/ColorPicker";
 import { IconButton } from "../../../ui/IconButton";
@@ -10,10 +12,11 @@ interface ImageQuickActionsProps {
   element: ImageElement;
 }
 
-/** The flat colour, background removal (or putting it back) and flips for an image. */
+/** The flat colour, background removal (or putting it back), the chroma key eyedropper and flips for an image. */
 export function ImageQuickActions({ element }: ImageQuickActionsProps) {
   const { supported, busy, removed, label, run } = useRemoveBackground(element);
   const live = useLiveElementUpdate([element.id]);
+  const picking = useEditorUiStore((s) => s.pickingColorFor === element.id);
   const store = useProjectStore.getState;
   const tintPatch = (hex: string): Partial<ImageElement> => ({ tint: hex === "transparent" ? undefined : hex });
   return (
@@ -35,6 +38,7 @@ export function ImageQuickActions({ element }: ImageQuickActionsProps) {
       >
         {label}
       </button>
+      <IconButton icon="eyedropper" label="Chroma key" active={picking} onClick={() => toggleColorPick(element.id)} />
       <IconButton icon="flipH" label="Flip horizontally" onClick={() => store().flip([element.id], "x")} />
       <IconButton icon="flipV" label="Flip vertically" onClick={() => store().flip([element.id], "y")} />
       <span className="quick-toolbar__divider" />

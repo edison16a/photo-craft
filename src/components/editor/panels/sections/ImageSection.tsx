@@ -1,6 +1,7 @@
 "use client";
 import { useRemoveBackground } from "@/hooks/use-remove-background";
 import type { ImageElement } from "@/model/types";
+import { ChromaKeyControls } from "./ChromaKeyControls";
 
 interface ImageSectionProps {
   element: ImageElement;
@@ -9,6 +10,7 @@ interface ImageSectionProps {
 /**
  * Image only tools. Background removal runs in the browser and swaps in
  * the cutout as one undo step. The same button puts the background back.
+ * The chroma key block sits under it.
  */
 export function ImageSection({ element }: ImageSectionProps) {
   const { supported, busy, removed, label, run } = useRemoveBackground(element);
@@ -29,6 +31,7 @@ export function ImageSection({ element }: ImageSectionProps) {
         </p>
       ) : null}
       {busy ? <p className="small muted">Larger pictures take a few seconds. You can keep working meanwhile.</p> : null}
+      <ChromaKeyControls element={element} />
     </section>
   );
 }

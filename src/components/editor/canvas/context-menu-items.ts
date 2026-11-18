@@ -2,6 +2,7 @@
  * Builds the entries of the right click menu from what is under the pointer.
  */
 import type { CanvasElement } from "../../../model/types";
+import { toggleColorPick } from "../../../store/chroma-key-actions";
 import { useEditorUiStore } from "../../../store/editor-ui-store";
 import { useProjectStore } from "../../../store/project-store";
 import type { IconName } from "../../ui/icon-paths";
@@ -61,6 +62,7 @@ export function elementMenuEntries(context: MenuContext): MenuEntry[] {
       disabled: !context.removeBackgroundAvailable,
       run: context.onRemoveBackground,
     });
+    entries.push({ id: "chroma-key", label: "Chroma key", icon: "eyedropper", run: () => toggleColorPick(single.id) });
   }
   if (entries.length > 0) entries.push(MENU_DIVIDER);
 

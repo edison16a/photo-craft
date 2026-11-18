@@ -2,6 +2,7 @@
 import { customPoints, linePoints, PATH_BOX, pointsToSvgPath, polygonPoints, shapeGeometry, shapePathData } from "@/data/shapes";
 import { roundedPolygonPath } from "@/lib/rounded-path";
 import type { CanvasElement, ShapeElement, ShapeKind } from "@/model/types";
+import { KeyedImagePreview } from "./KeyedImagePreview";
 
 interface ShapePreviewProps {
   kind: ShapeKind;
@@ -66,15 +67,16 @@ interface ElementPreviewProps {
   element: CanvasElement;
 }
 
-/** Preview box at the top of the selection panel. */
+/** Preview box at the top of the selection panel. A keyed image is drawn with its key applied. */
 export function ElementPreview({ element }: ElementPreviewProps) {
   const flip = `scale(${element.flipX ? -1 : 1}, ${element.flipY ? -1 : 1})`;
   return (
     <div className="element-preview">
-      {element.type === "image" && element.tint ? (
+      {element.type === "image" && element.chromaKey ? <KeyedImagePreview element={element} size={72} /> : null}
+      {element.type === "image" && !element.chromaKey && element.tint ? (
         <div className="element-preview__tint" style={{ transform: flip, backgroundColor: element.tint, maskImage: `url(${element.src})`, WebkitMaskImage: `url(${element.src})` }} />
       ) : null}
-      {element.type === "image" && !element.tint ? (
+      {element.type === "image" && !element.chromaKey && !element.tint ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={element.src} alt="" style={{ transform: flip }} />
       ) : null}
